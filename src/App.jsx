@@ -1,12 +1,17 @@
-import { useState } from "react";
-import "./App.css";
+import './App.css'
+import { HeroUIProvider } from "@heroui/system";
+import { Button } from "@heroui/button";
+
 
 function App() {
+
   return (
     <>
-      <p>TFM-verde-frontend</p>
+      <HeroUIProvider>
+        <Button>Press me</Button>
+      </HeroUIProvider>
     </>
-  );
+  )
 }
 
-export default App;
+export default App
