@@ -1,18 +1,19 @@
 import "./App.css";
-import { HeroUIProvider } from "@heroui/system";
-import { Button } from "@heroui/button";
-import Login from "./components/Login/Login";
+import LoginPage from "./pages/Login.jsx";
+import RegisterPage from "./pages/Register.jsx";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Header from "./components/Header/Header.jsx";
 
 function App() {
   return (
-    <>
-      {/*}
-      <HeroUIProvider>
-        <Button>Press me</Button>
-      </HeroUIProvider>
-      */}
-      <Login />
-    </>
+    <BrowserRouter>
+      <Header />
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
