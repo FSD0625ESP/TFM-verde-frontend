@@ -7,12 +7,26 @@ const api = axios.create({
 
 const loginUser = async (email, password) => {
     const response = await api.post('/users/login', { email, password });
+    localStorage.setItem("user", JSON.stringify(response.data.user));
     return response.data;
 }
 
 const registerUser = async (firstName, lastName, email, password) => {
     const response = await api.post('/users/register', { firstName, lastName, email, password });
+    localStorage.setItem("user", JSON.stringify(response.data.user));
     return response.data;
 }
 
-export { loginUser, registerUser };
+const getUser = async () => {
+    const response = await api.get('/users/me');
+    return response.data;
+}
+
+const logoutUser = async () => {
+    const response = await api.post('/users/logout');
+    return response.data;
+}
+
+
+
+export { loginUser, registerUser, getUser, logoutUser };

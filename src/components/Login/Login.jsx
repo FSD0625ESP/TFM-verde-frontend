@@ -1,10 +1,15 @@
 import "./Login.css";
 import { Form, Input, Button } from "@heroui/react";
 import React, { useState } from "react";
-import { loginUser } from "../../services/api";
+import { AuthContext } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+
+  const { user, login } = React.useContext(AuthContext);
+
   const [action, setAction] = useState(null);
+  const navigate = useNavigate();
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -12,9 +17,10 @@ export default function Login() {
     const email = formData.get("email");
     const password = formData.get("password");
     try {
-      const data = await loginUser(email, password);
+      const data = await login(email, password);
       console.log("Login successful:", data);
       setAction("login successful");
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
       setAction("login failed");
