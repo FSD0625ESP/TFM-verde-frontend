@@ -5,14 +5,21 @@ export const AuthContext = React.createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-
     useEffect(() => {
-        getUser(JSON.parse(localStorage.getItem("user"))).then((data) => {
-            console.log("Fetched user on AuthProvider mount:", data);
-            setUser(data);
-        }).catch((error) => {
-            console.error("Failed to fetch user:", error);
-        });
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                getUser(parsedUser).then((data) => {
+                    console.log("Fetched user on AuthProvider mount:", data);
+                    setUser(data);
+                }).catch((error) => {
+                    console.error("Failed to fetch user:", error);
+                });
+            } catch (error) {
+                console.error("Failed to parse stored user:", error);
+            }
+        }
     }, []);
 
     const login = (email, password) => {
@@ -27,6 +34,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         logoutUser().then(() => {
             setUser(null);
+            localStorage.removeItem("user");
         }).catch((error) => {
             console.error("Logout failed:", error);
         });
@@ -38,3 +46,4 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
+
