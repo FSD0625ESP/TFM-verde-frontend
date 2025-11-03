@@ -37,4 +37,16 @@ const getAllStores = async () => {
   return response.data;
 };
 
-export { loginUser, registerUser, getUser, logoutUser, getAllStores };
+const getAllProducts = async () => {
+  const response = await api.get("/products/all");
+  return response.data;
+};
+
+export {
+  loginUser,
+  registerUser,
+  getUser,
+  logoutUser,
+  getAllStores,
+  getAllProducts,
+};
