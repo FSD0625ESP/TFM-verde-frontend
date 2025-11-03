@@ -10,13 +10,23 @@ import {
     NavbarMenuItem,
     Link as HeroLink,
     Button,
+    Avatar,
+    Dropdown,
+    DropdownTrigger,
+    DropdownMenu,
+    DropdownItem,
 } from "@heroui/react";
 import logo from "../../assets/logo.png";
+import { AuthContext } from "../../contexts/AuthContext";
+import { User as UserIcon, Store, ShoppingBag, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 export default function App() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const [userLocation, setUserLocation] = React.useState(null);
+    const { user, logout } = React.useContext(AuthContext);
+    const navigate = useNavigate();
 
     const location = useLocation();
 
@@ -41,8 +51,10 @@ export default function App() {
     ];
 
     return (
-        <Navbar onMenuOpenChange={setIsMenuOpen} className="bg-primary-500">
-            <NavbarContent>
+        <Navbar onMenuOpenChange={setIsMenuOpen} className="bg-primary-500" maxWidth="2xl" classNames={{
+            wrapper: "container mx-auto ", // o "max-w-7xl mx-auto px-4"
+        }} >
+            <NavbarContent className="">
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                     className="sm:hidden"
@@ -52,7 +64,7 @@ export default function App() {
                 </NavbarBrand>
             </NavbarContent>
 
-            <NavbarContent className="hidden sm:flex gap-4" justify="center">
+            <NavbarContent className="hidden sm:flex gap-4 mx-auto" justify="center">
                 <NavbarItem isActive={userLocation === "/"}>
                     <HeroLink as={Link} to="/" aria-current="page" className={`text-white text-xl font-bold ${userLocation === "/" ? "text-shadow-md text-secondary" : ""}`}>
                         INICIO
@@ -70,16 +82,55 @@ export default function App() {
                 </NavbarItem>
             </NavbarContent>
             <NavbarContent justify="end">
-                <NavbarItem className="hidden lg:flex">
-                    <Button as={Link} to="/login" color="default">
-                        Login
-                    </Button>
-                </NavbarItem>
-                <NavbarItem>
-                    <Button as={Link} to="/register" color="secondary"  >
-                        Sign Up
-                    </Button>
-                </NavbarItem>
+                {user ? (
+                    <Dropdown placement="bottom-end">
+                        <DropdownTrigger>
+                            <Avatar
+                                isBordered
+                                as="button"
+                                className="transition-transform"
+                                size="md"
+                                src={user.profileImage || undefined}
+                                name={`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User'}
+                            />
+                        </DropdownTrigger>
+                        <DropdownMenu
+                            aria-label="Opciones de usuario"
+                            onAction={(key) => {
+                                if (key === "logout") return logout();
+                                if (key === "profile") return navigate("/profile");
+                                if (key === "store") return navigate("/my-store");
+                                if (key === "orders") return navigate("/orders");
+                            }}
+                        >
+                            <DropdownItem key="profile" startContent={<UserIcon size={18} />}>
+                                Perfil
+                            </DropdownItem>
+                            <DropdownItem key="store" startContent={<Store size={18} />}>
+                                Mi tienda
+                            </DropdownItem>
+                            <DropdownItem key="orders" startContent={<ShoppingBag size={18} />}>
+                                Mis pedidos
+                            </DropdownItem>
+                            <DropdownItem key="logout" className="text-danger" color="danger" startContent={<LogOut size={18} />}>
+                                Logout
+                            </DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                ) : (
+                    <>
+                        <NavbarItem className="hidden lg:flex">
+                            <Button as={Link} to="/login" color="default">
+                                Login
+                            </Button>
+                        </NavbarItem>
+                        <NavbarItem>
+                            <Button as={Link} to="/register" color="secondary">
+                                Sign Up
+                            </Button>
+                        </NavbarItem>
+                    </>
+                )}
             </NavbarContent>
             <NavbarMenu>
                 {menuItems.map((item, index) => (
@@ -96,6 +147,20 @@ export default function App() {
                         </HeroLink>
                     </NavbarMenuItem>
                 ))}
+                {user ? (
+                    <NavbarMenuItem>
+                        <Button fullWidth color="danger" onPress={logout}>Logout</Button>
+                    </NavbarMenuItem>
+                ) : (
+                    <>
+                        <NavbarMenuItem>
+                            <Button as={Link} to="/login" fullWidth color="default">Login</Button>
+                        </NavbarMenuItem>
+                        <NavbarMenuItem>
+                            <Button as={Link} to="/register" fullWidth color="secondary">Sign Up</Button>
+                        </NavbarMenuItem>
+                    </>
+                )}
             </NavbarMenu>
         </Navbar>
     );

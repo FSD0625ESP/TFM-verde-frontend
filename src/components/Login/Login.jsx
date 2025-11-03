@@ -1,15 +1,19 @@
 import "./Login.css";
 import { Form, Input, Button } from "@heroui/react";
+import { GoogleLogin } from "@react-oauth/google";
+import { addToast } from "@heroui/react";
+import { loginWithGoogle } from "../../services/api";
 import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { AuthContext } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
-export default function Login() {
-
+export default function Login({ switchForm }) {
   const { user, login } = React.useContext(AuthContext);
-
   const [action, setAction] = useState(null);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -27,62 +31,110 @@ export default function Login() {
     }
   };
 
-
   return (
-    <>
-      <div className="login_wrapper">
-        <div>
-          <Form
-            className="w-full max-w-xs flex flex-col gap-4"
-            onReset={() => setAction("reset")}
-            onSubmit={(e) => handleLogin(e)}
-          >
-            <Input
-              isRequired
-              label="Email"
-              labelPlacement="outside"
-              name="email"
-              placeholder="Enter your email"
-              type="email"
-              validate={(value) => {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
-                  return "Introduce un email válido";
-                }
-                return null;
-              }}
-            />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="w-full"
+    >
+      <Form
+        /* Usar ancho completo para encajar en la columna padre */
+        className="w-full flex flex-col gap-4"
+        onReset={() => setAction("reset")}
+        onSubmit={(e) => handleLogin(e)}
+      >
+        <Input
+          isRequired
+          label="Email"
+          labelPlacement="outside"
+          name="email"
+          placeholder="Introduce tu email"
+          type="email"
+        />
 
-            <Input
-              isRequired
-              label="password"
-              labelPlacement="outside"
-              name="password"
-              placeholder="Introduce tu contraseña"
-              type="password"
-              validate={(value) => {
-                if (value.length < 6) {
-                  return "La contraseña debe tener al menos 6 caracteres";
-                }
-                if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/.test(value)) {
-                  return "La contraseña debe contener al menos una mayúscula, una minúscula y un número";
-                }
-                return null;
-              }}
-            />
-            <p className="text-default-500">No tienes cuenta? <a href="/register">Registrate</a></p>
+        <div className="w-full">
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-sm font-medium text-default-700">
+              Password
+            </label>
+            <a className="text-sm text-primary-600  cursor-pointer" onClick={switchForm}>
+              Forgot password?
+            </a>
 
-            <div className="flex gap-2">
-              <Button color="primary" type="submit">
-                Submit
-              </Button>
-              <Button type="reset" variant="flat">
-                Reset
-              </Button>
-            </div>
-          </Form>
+          </div>
+          <Input
+            isRequired
+            labelPlacement="outside"
+            name="password"
+            placeholder="Introduce tu contraseña"
+            type={showPassword ? "text" : "password"}
+            endContent={
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none text-default-400">
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            }
+          />
         </div>
-      </div>
-    </>
+
+        <div
+          className="flex gap-2"
+        >
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <Button color="primary" className="text-white" type="submit">
+              Acceder
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <Button type="reset" variant="flat">
+              Resetear
+            </Button>
+          </motion.div>
+        </div>
+        <div className="pt-2">
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <GoogleLogin
+              width="100%"
+              shape="pill"
+              theme="outline"
+              text="continue_with"
+              onSuccess={async (credentialResponse) => {
+                try {
+                  await loginWithGoogle(credentialResponse.credential);
+                  navigate("/");
+                  addToast({
+                    title: "Login con Google exitoso",
+                    color: "success",
+                    duration: 4000,
+                  });
+                } catch (error) {
+                  addToast({
+                    title: "Error con Google",
+                    description:
+                      error.response?.data?.msg ||
+                      "No se pudo iniciar sesión con Google",
+                    color: "danger",
+                    duration: 5000,
+                  });
+                }
+              }}
+              onError={() =>
+                addToast({ title: "Google Auth cancelado", color: "warning" })
+              }
+            />
+          </motion.div>
+
+        </div>
+      </Form>
+    </motion.div>
   );
 }

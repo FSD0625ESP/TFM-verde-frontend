@@ -11,12 +11,13 @@ const loginUser = async (email, password) => {
   return response.data;
 };
 
-const registerUser = async (firstName, lastName, email, password) => {
+const registerUser = async (firstName, lastName, email, password, role = "customer") => {
   const response = await api.post("/users/register", {
     firstName,
     lastName,
     email,
     password,
+    role
   });
   localStorage.setItem("user", JSON.stringify(response.data.user));
   return response.data;
@@ -37,4 +38,25 @@ const getAllStores = async () => {
   return response.data;
 };
 
-export { loginUser, registerUser, getUser, logoutUser, getAllStores };
+const registerStore = async (storeData) => {
+  const response = await api.post("/stores/register", storeData);
+  return response.data;
+}
+
+export { loginUser, registerUser, getUser, logoutUser, getAllStores, registerStore };
+// Login con Google: enviar idToken (credential) al backend
+export const loginWithGoogle = async (idToken) => {
+  const response = await api.post('/users/google', { idToken });
+  localStorage.setItem('user', JSON.stringify(response.data.user));
+  return response.data;
+};
+
+export const forgotPassword = async (token, newPassword) => {
+  const response = await api.post('/users/forgot-password', { token, newPassword });
+  return response.data;
+}
+
+export const verifyForgotPasswordToken = async (email) => {
+  const response = await api.post('/users/verify-forgot-password-token', { email });
+  return response.data;
+}

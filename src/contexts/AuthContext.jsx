@@ -23,20 +23,23 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (email, password) => {
-        loginUser(email, password).then((data) => {
+        return loginUser(email, password).then((data) => {
             setUser(data.user);
             localStorage.setItem("user", JSON.stringify(data.user));
+            return data;
         }).catch((error) => {
             console.error("Login failed:", error);
+            throw error;
         });
     };
 
     const logout = () => {
-        logoutUser().then(() => {
+        return logoutUser().then(() => {
             setUser(null);
             localStorage.removeItem("user");
         }).catch((error) => {
             console.error("Logout failed:", error);
+            throw error;
         });
     };
 
