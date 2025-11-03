@@ -43,7 +43,6 @@ const registerStore = async (storeData) => {
   return response.data;
 }
 
-export { loginUser, registerUser, getUser, logoutUser, getAllStores, registerStore };
 // Login con Google: enviar idToken (credential) al backend
 export const loginWithGoogle = async (idToken) => {
   const response = await api.post('/users/google', { idToken });
@@ -60,3 +59,12 @@ export const verifyForgotPasswordToken = async (email) => {
   const response = await api.post('/users/verify-forgot-password-token', { email });
   return response.data;
 }
+
+const getAllProducts = async () => {
+  const response = await api.get("/products/all");
+  return response.data;
+};
+
+
+export { loginUser, registerUser, getUser, logoutUser, getAllStores, registerStore, getAllProducts };
+

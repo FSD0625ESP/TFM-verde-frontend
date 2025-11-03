@@ -1,28 +1,28 @@
 import { useEffect, useState } from "react";
 import StoreListElement from "../components/StoreListElement/StoreListElement";
-import { getAllStores } from "../services/api";
+import { getAllProducts } from "../services/api";
 import { Link } from "react-router-dom";
 
-export default function StoresPage() {
-  const [storesList, setStoresList] = useState([]);
-  const fetchStores = async () => {
+export default function ProductsPage() {
+  const [productsList, setProductList] = useState([]);
+  const fetchProducts = async () => {
     try {
-      const data = await getAllStores();
-      setStoresList(data);
+      const data = await getAllProducts();
+      setProductList(data);
     } catch (error) {
-      console.error("Error fetching stores:", error);
+      console.error("Error fetching products:", error);
     }
   };
 
   useEffect(() => {
-    fetchStores();
+    fetchProducts();
   }, []);
 
   return (
     <>
       <div className="max-w-[1200px] gap-2 grid grid-cols-12 grid-rows-2 px-12 py-12 mx-auto">
-        {storesList.map((store) => (
-          <StoreListElement key={store._id} item={store} />
+        {productsList.map((product) => (
+          <StoreListElement key={product._id} item={product} />
         ))}
         <Link to="/register">Register AAAA</Link>
       </div>
