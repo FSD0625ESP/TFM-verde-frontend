@@ -15,83 +15,148 @@ import {
     DropdownTrigger,
     DropdownMenu,
     DropdownItem,
+    Input,
 } from "@heroui/react";
-import logo from "../../assets/logo.png";
+import Logo from "../../assets/logo_white.svg?react";
 import { AuthContext } from "../../contexts/AuthContext";
-import { User as UserIcon, Store, ShoppingBag, LogOut } from "lucide-react";
+import { UserPlus, Store, ShoppingBag, LogOut, LogIn, Search, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Buscador from "../Buscador/Buscador";
 
 
 export default function App() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const [userLocation, setUserLocation] = React.useState(null);
     const { user, logout } = React.useContext(AuthContext);
     const navigate = useNavigate();
-
     const location = useLocation();
-
-    React.useEffect(() => {
-        setUserLocation(location.pathname);
-        console.log("Current location:", location.pathname);
-    }, [location]);
 
     const menuItems = [
         {
             label: "Inicio",
             href: "/",
+            icon: null,
+            loginRequired: false,
+            mobileOnly: false,
         },
         {
             label: "Tiendas",
             href: "/stores",
+            icon: null,
+            loginRequired: false,
+            mobileOnly: false,
         },
         {
             label: "Productos",
             href: "/products",
+            icon: null,
+            loginRequired: false,
+            mobileOnly: false,
+        },
+        {
+            label: "Mi tienda",
+            href: "/my-store",
+            icon: Store,
+            loginRequired: true,
+            mobileOnly: false,
+        },
+        {
+            label: "Carrito",
+            href: "/cart",
+            icon: ShoppingBag,
+            loginRequired: false,
+            mobileOnly: false,
+        },
+        {
+            label: "Registro",
+            href: "/register",
+            icon: UserPlus,
+            loginRequired: false,
+            mobileOnly: false,
+            showOnlyWhenLoggedOut: true,
+        },
+        {
+            label: "Login",
+            href: "/login",
+            icon: LogIn,
+            loginRequired: false,
+            mobileOnly: false,
+            showOnlyWhenLoggedOut: true,
         },
     ];
 
     return (
-        <Navbar onMenuOpenChange={setIsMenuOpen} className="bg-primary-500" maxWidth="2xl" classNames={{
+        <Navbar onMenuOpenChange={setIsMenuOpen} isMenuOpen={isMenuOpen} className="bg-primary-500 h-20" maxWidth="2xl" classNames={{
             wrapper: "container mx-auto ", // o "max-w-7xl mx-auto px-4"
-        }} >
+        }}  >
             <NavbarContent className="">
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                    className="sm:hidden"
+                    className="max-[830px]:block hidden"
                 />
                 <NavbarBrand>
-                    <img src={logo} className="w-20 h-auto" alt="Acme Logo" />
+                    {/* <img src={logo} className="w-20 h-auto" alt="Acme Logo" /> */}
+                    <Logo className="w-18 p-1 h-auto text-white drop-shadow-md hover:drop-shadow-2xl hover:w-19 transition-all cursor-pointer" onClick={() => {
+                        navigate("/");
+                        setIsMenuOpen(false);
+                    }} />
                 </NavbarBrand>
             </NavbarContent>
 
-            <NavbarContent className="hidden sm:flex gap-4 mx-auto" justify="center">
-                <NavbarItem isActive={userLocation === "/"}>
-                    <HeroLink as={Link} to="/" aria-current="page" className={`text-white text-xl font-bold ${userLocation === "/" ? "text-shadow-md text-secondary" : ""}`}>
-                        INICIO
-                    </HeroLink>
+            <NavbarContent className="hidden min-[830px]:flex gap-4 items-center" justify="start">
+                <NavbarItem className="hidden min-[830px]:block">
+                    <Buscador />
                 </NavbarItem>
-                <NavbarItem isActive={userLocation === "/stores"} >
-                    <HeroLink as={Link} to="/stores" aria-current="page" className={`text-white text-xl font-bold ${userLocation === "/stores" ? "text-shadow-md text-secondary" : ""}`}>
-                        TIENDAS
-                    </HeroLink>
-                </NavbarItem>
-                <NavbarItem isActive={userLocation === "/products"}>
-                    <HeroLink as={Link} to="/products" aria-current="page" className={`text-white text-xl font-bold ${userLocation === "/products" ? "text-shadow-md text-secondary" : ""}`}>
-                        PRODUCTOS
-                    </HeroLink>
-                </NavbarItem>
-            </NavbarContent>
-            <NavbarContent justify="end">
-                {user ? (
+
+                {/* Links sin icono (texto simple) */}
+                {menuItems
+                    .filter(item => !item.icon && (!item.loginRequired || user) && (!item.showOnlyWhenLoggedOut || !user))
+                    .map((menuItem) => (
+                        <NavbarItem key={menuItem.href} isActive={location.pathname === menuItem.href}>
+                            <HeroLink
+                                as={Link}
+                                to={menuItem.href}
+                                aria-current="page"
+                                className={`text-black text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
+                                    ${location.pathname === menuItem.href ? "font-bold text-white" : ""}
+                                `}
+                            >
+                                {menuItem.label}
+                            </HeroLink>
+                        </NavbarItem>
+                    ))}
+
+                {/* Links con icono (icono arriba, texto abajo) */}
+                {menuItems
+                    .filter(item => item.icon && (!item.loginRequired || user) && (!item.showOnlyWhenLoggedOut || !user))
+                    .map((menuItem) => (
+                        <NavbarItem key={menuItem.href} isActive={location.pathname === menuItem.href}>
+                            <HeroLink
+                                as={Link}
+                                to={menuItem.href}
+                                aria-current="page"
+                                className={`flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200
+                                    ${location.pathname === menuItem.href ? "font-bold text-white" : ""}
+                                `}
+                            >
+                                <menuItem.icon size={24} strokeWidth={1.5} className="drop-shadow" />
+                                <span className="text-xs font-medium text-shadow-sm">{menuItem.label}</span>
+                            </HeroLink>
+                        </NavbarItem>
+                    ))}
+                {user && (
                     <Dropdown placement="bottom-end">
                         <DropdownTrigger>
                             <Avatar
-                                isBordered
+
+                                classNames={{
+                                    base: "bg-secondary-500 hover:bg-secondary-600 transition-colors",
+                                    icon: "text-white",
+                                }}
                                 as="button"
-                                className="transition-transform"
+                                className="transition-transform hover:scale-105"
                                 size="md"
-                                src={user.profileImage || undefined}
-                                name={`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User'}
+                                icon={!user.profileImage ? <User /> : undefined}
+                                src={user.profileImage}
                             />
                         </DropdownTrigger>
                         <DropdownMenu
@@ -103,7 +168,7 @@ export default function App() {
                                 if (key === "orders") return navigate("/orders");
                             }}
                         >
-                            <DropdownItem key="profile" startContent={<UserIcon size={18} />}>
+                            <DropdownItem key="profile" startContent={<UserPlus size={18} />}>
                                 Perfil
                             </DropdownItem>
                             <DropdownItem key="store" startContent={<Store size={18} />}>
@@ -117,48 +182,58 @@ export default function App() {
                             </DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
-                ) : (
-                    <>
-                        <NavbarItem className="hidden lg:flex">
-                            <Button as={Link} to="/login" color="default">
-                                Login
-                            </Button>
-                        </NavbarItem>
-                        <NavbarItem>
-                            <Button as={Link} to="/register" color="secondary">
-                                Sign Up
-                            </Button>
-                        </NavbarItem>
-                    </>
                 )}
             </NavbarContent>
-            <NavbarMenu>
-                {menuItems.map((item, index) => (
-                    <NavbarMenuItem key={`nav-menu-item-${index}`}>
-                        <HeroLink
-                            as={Link}
-                            to={`${item.href.toLowerCase().replace(/\s+/g, '-')}`}
-                            className={`w-full ${index === 2 ? "text-primary-500" :
-                                index === menuItems.length - 1 ? "text-danger-500" :
-                                    "text-foreground"
-                                }`}
-                        >
-                            {item.label}
-                        </HeroLink>
-                    </NavbarMenuItem>
-                ))}
+
+            <NavbarMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} className="pt-8">
+                {/* Buscador en móvil */}
+                <NavbarMenuItem className="min-[831px]:hidden">
+                    <Buscador mobile />
+                </NavbarMenuItem>
+
+                {/* Items del menú en móvil */}
+                {menuItems
+                    .filter(item => (!item.loginRequired || user) && (!item.showOnlyWhenLoggedOut || !user))
+                    .map((item, index) => (
+                        <NavbarMenuItem key={`nav-menu-item-${index}`}>
+                            <HeroLink
+                                as={Link}
+                                to={item.href}
+                                onPress={() => setIsMenuOpen(false)}
+                                className={`w-full flex items-center gap-3 py-2 transition-colors ${location.pathname === item.href ? "text-primary-500 font-bold" : "text-foreground"
+                                    }`}
+                            >
+                                {item.icon && <item.icon size={20} />}
+                                {item.label}
+                            </HeroLink>
+                        </NavbarMenuItem>
+                    ))}
+
+                {/* Botones de autenticación en móvil */}
                 {user ? (
-                    <NavbarMenuItem>
-                        <Button fullWidth color="danger" onPress={logout}>Logout</Button>
-                    </NavbarMenuItem>
+                    <>
+                        <NavbarMenuItem className="pt-2">
+                            <div className="w-full h-px bg-gray-200"></div>
+                        </NavbarMenuItem>
+                        <NavbarMenuItem>
+                            <Button
+                                fullWidth
+                                color="danger"
+                                onPress={() => {
+                                    logout();
+                                    setIsMenuOpen(false);
+                                }}
+                                variant="flat"
+                            >
+                                <LogOut size={22} className="mr-2" />
+                                Cerrar Sesión
+                            </Button>
+                        </NavbarMenuItem>
+                    </>
                 ) : (
                     <>
-                        <NavbarMenuItem>
-                            <Button as={Link} to="/login" fullWidth color="default">Login</Button>
-                        </NavbarMenuItem>
-                        <NavbarMenuItem>
-                            <Button as={Link} to="/register" fullWidth color="secondary">Sign Up</Button>
-                        </NavbarMenuItem>
+
+
                     </>
                 )}
             </NavbarMenu>

@@ -13,6 +13,7 @@ export default function Login({ switchForm }) {
   const { user, login } = React.useContext(AuthContext);
   const [action, setAction] = useState(null);
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (event) => {

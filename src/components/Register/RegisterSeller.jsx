@@ -96,6 +96,7 @@ const Register = () => {
         }
     };
 
+    // para los inputs color blanco
     const inputStyleProps = {
         variant: "flat",
         classNames: {

@@ -8,17 +8,24 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import Buscador from "./components/Buscador/Buscador.jsx";
+import { AuthContext } from "./contexts/AuthContext.jsx";
+import { useContext } from "react";
 
 function App() {
+  const { user } = useContext(AuthContext);
+
+  const isUserLoggedIn = () => {
+    return user !== null;
+  };
+
   return (
     <BrowserRouter>
       <Header />
-      <main style={{ minHeight: "80vh" }}>
-        <Buscador />
+      <main style={{ minHeight: "80vh" }} className="bg-gray-100">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={isUserLoggedIn() ? <Home /> : <LoginPage />} />
+          <Route path="/register" element={isUserLoggedIn() ? <Home /> : <RegisterPage />} />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/products" element={<ProductsPage />} />
         </Routes>

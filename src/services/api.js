@@ -29,7 +29,7 @@ const getUser = async () => {
 };
 
 const logoutUser = async () => {
-  const response = await api.post("/users/logout");
+  const response = await api.patch("/users/logout");
   return response.data;
 };
 
