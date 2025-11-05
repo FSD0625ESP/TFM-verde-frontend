@@ -50,15 +50,12 @@ const Home = () => {
 
   return (
     <>
-      <div>
-        {user ? (
-          <p>Welcome, {user.firstName}!</p>
-        ) : (
-          <p>Please log in to access more features.</p>
-        )}
-      </div>
       <div className="w-full">
-        <Slider items={storesList} numSlides={1} />
+        {storesList && storesList.length > 0 ? (
+          <Slider items={storesList} type="store" numSlides={1} />
+        ) : (
+          <p>no hay tiendas</p>
+        )}
       </div>
 
       <div className="w-full bg-primary">
@@ -101,7 +98,11 @@ const Home = () => {
       </div>
       <div className="w-full bg-primary">
         <div className="max-w-[1536px] px-8 py-8 mx-auto">
-          <Slider items={offerProductsList} numSlides={4} type="product" />
+          {offerProductsList && offerProductsList.length > 0 ? (
+            <Slider items={offerProductsList} numSlides={4} type="product" />
+          ) : (
+            <p>no hay productos</p>
+          )}
         </div>
       </div>
       <div className="w-full max-w-[1536px] gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">

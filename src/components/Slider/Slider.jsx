@@ -14,6 +14,7 @@ import "./Slider.css";
 import { Card, CardHeader, CardFooter, Image, Button } from "@heroui/react";
 
 export default function Slider({ items, type, numSlides }) {
+  console.log("slider", items);
   return (
     <>
       {numSlides === 1 && (
