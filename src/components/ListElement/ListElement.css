@@ -1,0 +1,74 @@
+.element-card {
+  box-sizing: border-box;
+  background: white;
+  contain: paint;
+  overflow: hidden;
+  background-color: transparent;
+  box-shadow: 1px 4px 5px 2px rgba(0, 0, 0, 0);
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.element-card:hover {
+  /*transform: scale(1.03);*/
+  box-shadow: 1px 4px 5px 2px rgba(0, 0, 0, 0.5);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+.element-card:hover .element-img {
+  transform: scale(1.2) translateY(-10px);
+  transition: transform 0.5s ease-out;
+}
+.element-card:hover .element-footer {
+  background-color: rgba(255, 255, 255, 0.8);
+  transition: background-color 0.3s ease-out;
+}
+
+.slider-card {
+  box-shadow: none;
+}
+
+.card-title {
+  color: white;
+}
+
+.card-tag {
+  padding: 0.3rem 0.6rem;
+  border-radius: 3px 10px 3px 10px;
+}
+
+.element-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease-out;
+}
+
+.img-overlay {
+  position: absolute;
+  z-index: 5;
+  top: -2%;
+  left: -2%;
+  width: 104%;
+  height: 104%;
+  background: linear-gradient(
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(255, 255, 255, 0) 90%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  pointer-events: none;
+  filter: blur(10px);
+}
+
+.store-logo {
+  position: absolute;
+  z-index: 10;
+  top: 10px;
+  right: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 2px solid white;
+  background-color: white;
+}

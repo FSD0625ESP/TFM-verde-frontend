@@ -37,4 +37,34 @@ const getAllStores = async () => {
   return response.data;
 };
 
-export { loginUser, registerUser, getUser, logoutUser, getAllStores };
+const getAllProducts = async () => {
+  const response = await api.get("/products/all");
+  return response.data;
+};
+
+const getAllFeaturedProducts = async () => {
+  const response = await api.get("/products/featured");
+  return response.data;
+};
+
+const getAllOfferProducts = async () => {
+  const response = await api.get("/products/offer");
+  return response.data;
+};
+
+const getAllCategories = async () => {
+  const response = await api.get("/categories/all");
+  return response.data;
+};
+
+export {
+  loginUser,
+  registerUser,
+  getUser,
+  logoutUser,
+  getAllStores,
+  getAllProducts,
+  getAllFeaturedProducts,
+  getAllOfferProducts,
+  getAllCategories,
+};
