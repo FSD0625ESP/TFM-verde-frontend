@@ -1,90 +1,190 @@
 import Register from "../components/Register/Register";
+import RegisterSeller from "../components/Register/RegisterSeller";
 import { useState } from "react";
+import compradorIlustration from "./../assets/comprador_ilustration.png";
+import sellerIlustration from "./../assets/seller_ilustration.png";
 import RegisterIlustration from "./../assets/register_ilustration.png";
+import UserSellerIlustration from "./../assets/user_seller_ilustration.png";
 import { Button, Card } from "@heroui/react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowBigLeftDash, Handshake, User } from "lucide-react";
-
+import { motion as Motion, AnimatePresence } from "framer-motion";
+import { ArrowBigLeftDash, Store, ShoppingCart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function RegisterPage() {
     const [registerType, setRegisterType] = useState("");
+    const [clicked, setClicked] = useState("");
+
+    const fadeMotion = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+        exit: (custom) => ({
+            opacity: 0,
+            y: -30,
+            transition: { duration: 0.4, delay: custom === "delayed" ? 0.2 : 0 },
+        }),
+    };
+
+    const handleSelect = (type) => {
+        setClicked(type);
+        setTimeout(() => setRegisterType(type), 200);
+    };
+
+    const handleBack = () => {
+        setClicked("");
+        setRegisterType("");
+    };
 
     return (
-        <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-screen">
-            <h1 className="text-2xl font-bold text-primary uppercase">
-                Regístrate
-            </h1>
-            <div className=" flex flex-col md:flex-row items-center justify-center bg-white p-8">
-                {/* Columna izquierda */}
-                <div className="md:w-1/2 flex flex-col items-center text-center space-y-4">
-                    <img
-                        src={RegisterIlustration}
-                        alt="Registro ilustración"
-                        className="w-80 h-auto"
-                    />
-                </div>
+        <div className="container relative mx-auto p-4 flex flex-col items-center justify-center min-h-screen">
+            <Motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="w-full max-w-6xl"
+            >
+                <Card className="w-full overflow-hidden rounded-[2rem] shadow-lg border-0">
+                    <div className={`grid grid-cols-1 ${registerType === "company" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+                        {/* Columna izquierda (ilustraciones / buyer side) */}
+                        <div className={`order-2 md:order-1 p-8 md:p-12 flex flex-col items-center text-center justify-center gap-6 ${registerType === "company" ? "md:col-span-1" : ""}`}>
+                            <AnimatePresence mode="wait" custom={clicked === "company" ? "delayed" : undefined}>
+                                {registerType === "" ? (
+                                    <Motion.div
+                                        key="buyer-option"
+                                        variants={fadeMotion}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="exit"
+                                        custom={clicked === "company" ? "delayed" : undefined}
+                                        className={`w-full flex flex-col items-center transition-transform ${clicked === "user" ? "scale-105" : ""}`}
+                                    >
+                                        <div className="w-full max-w-md mx-auto">
+                                            <Motion.img
+                                                src={compradorIlustration}
+                                                alt="Comprar"
+                                                className="w-64 mx-auto mb-6 drop-shadow-sm"
+                                                initial={{ scale: 0.95, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ duration: 0.5 }}
+                                            />
+                                            <h3 className="text-xl font-semibold text-primary-700 mb-3">¿Quieres comprar?</h3>
+                                            <p className="text-gray-500 mb-6">Accede a productos únicos de artesanos y crea tu cuenta de comprador.</p>
+                                            <Button
+                                                color="primary"
+                                                className={`text-white text-lg py-6 px-8 rounded-2xl w-full transition-all duration-300 ${clicked === "user" ? "ring-4 ring-primary shadow-lg scale-105" : "hover:scale-105"}`}
+                                                onClick={() => handleSelect("user")}
+                                            >
+                                                <ShoppingCart className="mr-2" /> Quiero comprar
+                                            </Button>
+                                        </div>
+                                    </Motion.div>
+                                ) : registerType === "user" ? (
+                                    <Motion.div
+                                        key="register-ilustration"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="w-full flex justify-center"
+                                    >
+                                        <img src={RegisterIlustration} alt="Registro comprador" className="w-3/4 max-w-sm drop-shadow-md" />
+                                    </Motion.div>
+                                ) : registerType === "company" ? (
+                                    <Motion.div
+                                        key="seller-ilustration"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="w-full flex justify-center items-center"
+                                    >
+                                        <img src={UserSellerIlustration} alt="Registro vendedor" className="w-3/4 max-w-sm drop-shadow-md" />
+                                    </Motion.div>
+                                ) : null}
+                            </AnimatePresence>
+                        </div>
 
-                {/* Columna derecha */}
-                <div className="md:w-1/2 relative">
-                    <AnimatePresence mode="wait">
-                        {registerType === "user" ? (
-                            <motion.div
-                                key="register-form"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                            >
-                                <Card
-                                    shadow="lg"
-                                    className="w-full max-w-md bg-primary-200 rounded-[2rem] p-8 pt-12 mt-8 md:mt-0 md:ml-8"
-                                >
-                                    <Button className="absolute opacity-50 top-3 left-4 rounded-full p-0 w-7 h-7 min-w-0" color="secondary" onClick={() => setRegisterType("")}>
-                                        <ArrowBigLeftDash />
-                                    </Button>
-                                    <Register />
-                                </Card>
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="register-buttons"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                                className="flex flex-col items-center space-y-4 mt-8 md:mt-0 md:ml-8"
-                            >
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="w-full"
-                                >
-                                    <Button
-                                        className="w-full text-white text-lg py-6 rounded-2xl"
-                                        color="primary"
-                                        onClick={() => setRegisterType("user")}
+                        {/* Columna derecha (seller / formularios) */}
+                        <div className={`order-1 md:order-2 relative p-8 md:p-12 bg-teal-100 flex flex-col items-center ${registerType === "company" ? "md:col-span-2 p-0" : ""}`}>
+                            <AnimatePresence mode="wait" custom={clicked === "user" ? "delayed" : undefined}>
+                                {registerType === "" ? (
+                                    <Motion.div
+                                        key="seller-option"
+                                        variants={fadeMotion}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="exit"
+                                        custom={clicked === "user" ? "delayed" : undefined}
+                                        className={`w-full flex flex-col items-center transition-transform ${clicked === "company" ? "scale-105" : ""}`}
                                     >
-                                        <User className="mr-2" />  Usuario
-                                    </Button>
-                                </motion.div>
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="w-full"
-                                >
-                                    <Button
-                                        className="w-full  text-white text-lg py-6 rounded-2xl"
-                                        color="secondary"
-                                        onClick={() => setRegisterType("company")}
+                                        <div className="w-full max-w-md mx-auto text-center">
+                                            <Motion.img
+                                                src={sellerIlustration}
+                                                alt="Vender"
+                                                className="h-64 mx-auto mb-6 drop-shadow-sm"
+                                                initial={{ scale: 0.95, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ duration: 0.5 }}
+                                            />
+                                            <h3 className="text-xl font-semibold text-secondary-700 mb-3">¿Quieres vender?</h3>
+                                            <p className="text-gray-500 mb-6">Comparte tus creaciones con el mundo creando una cuenta de vendedor.</p>
+                                            <Button
+                                                color="secondary"
+                                                className={`text-white text-lg py-6 px-8 rounded-2xl w-full transition-all duration-300 ${clicked === "company" ? "ring-4 ring-secondary shadow-lg scale-105" : "hover:scale-105"}`}
+                                                onClick={() => handleSelect("company")}
+                                            >
+                                                <Store className="mr-2" /> Quiero vender
+                                            </Button>
+                                        </div>
+                                    </Motion.div>
+                                ) : registerType === "user" ? (
+                                    <Motion.div
+                                        key="register-user"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="w-full flex justify-center"
                                     >
-                                        <Handshake className="mr-2" />  Vendedor
-                                    </Button>
-                                </motion.div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div>
-        </div >
+                                        <button
+                                            type="button"
+                                            onClick={handleBack}
+                                            className="absolute top-4  cursor-pointer left-5 inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:underline focus:outline-none"
+                                        >
+                                            <ArrowBigLeftDash className="w-4 h-4 cursor-pointer" /> Volver
+                                        </button>
+                                        <Register />
+                                    </Motion.div>
+                                ) : registerType === "company" ? (
+                                    <Motion.div
+                                        key="register-seller"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="w-full flex justify-center"
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={handleBack}
+                                            className="absolute top-4  cursor-pointer left-5 inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:underline focus:outline-none"
+                                        >
+                                            <ArrowBigLeftDash className="w-4 h-4" /> Volver
+                                        </button>
+                                        <RegisterSeller />
+                                    </Motion.div>
+                                ) : null}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                </Card>
+            </Motion.div>
+
+            <Motion.p className="mt-6 text-sm text-gray-500">
+                ¿Ya tienes una cuenta?{" "}
+                <span className="underline">
+                    <Link to="/login">Iniciar sesión</Link>
+                </span>
+            </Motion.p>
+        </div>
     );
 }
