@@ -50,13 +50,21 @@ const registerStore = async (storeData) => {
 };
 
 // Login con Google: enviar idToken (credential) al backend
-export const loginWithGoogle = async (idToken) => {
+const loginWithGoogle = async (idToken) => {
   const response = await api.post("/users/google", { idToken });
   localStorage.setItem("user", JSON.stringify(response.data.user));
   return response.data;
 };
 
-export const forgotPassword = async (token, newPassword) => {
+const generateForgotPasswordToken = async (email) => {
+  const response = await api.post("/users/generate-forgot-password-token", {
+    email,
+  });
+  return response.data;
+}
+
+
+const forgotPassword = async (token, newPassword) => {
   const response = await api.post("/users/forgot-password", {
     token,
     newPassword,
@@ -64,9 +72,9 @@ export const forgotPassword = async (token, newPassword) => {
   return response.data;
 };
 
-export const verifyForgotPasswordToken = async (email) => {
+const verifyForgotPasswordToken = async (token) => {
   const response = await api.post("/users/verify-forgot-password-token", {
-    email,
+    token,
   });
   return response.data;
 };
@@ -91,6 +99,22 @@ const getAllCategories = async () => {
   return response.data;
 };
 
+
+const searchProduct = async ({ page = 1, text = "", categories, offer = false, min = 0, max = 1000 } = {}) => {
+  console.log("categories", categories);
+  const response = await api.post("/products/search", {
+    page,
+    text,
+    categories,
+    offer,
+    min,
+    max
+
+  });
+  return response.data;
+};
+
+
 export {
   loginUser,
   registerUser,
@@ -102,4 +126,9 @@ export {
   getAllFeaturedProducts,
   getAllOfferProducts,
   getAllCategories,
+  generateForgotPasswordToken,
+  forgotPassword,
+  verifyForgotPasswordToken,
+  loginWithGoogle,
+  searchProduct
 };

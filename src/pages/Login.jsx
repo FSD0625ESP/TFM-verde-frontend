@@ -5,12 +5,36 @@ import { Link } from "react-router-dom";
 import { Card } from "@heroui/react";
 import LoginIlustration from "../assets/login_ilustration.png";
 import ForgotPassword from "../components/Login/ForgotPassword";
+import { AuthContext } from "../contexts/AuthContext";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function LoginPage() {
     // hacer switch entre login y forgot password
     const [switchForm, setSwitchForm] = React.useState("login");
-    const forgotFormSwitch = () => setSwitchForm("forgot");
-    const backToLogin = () => setSwitchForm("login");
+    const { token } = useParams();
+
+    // Si hay token en la URL, mostramos el formulario de "forgot".
+    React.useEffect(() => {
+        if (token) {
+            setSwitchForm("forgot");
+        }
+    }, [token]);
+
+    const navigate = useNavigate();
+    const { user } = React.useContext(AuthContext);
+    const forgotFormSwitch = () => {
+        navigate("/login/forgotPassword", { replace: true });
+        setSwitchForm("forgot");
+    }
+    const backToLogin = () => {
+        navigate("/login", { replace: true });
+        setSwitchForm("login");
+    };
+
+    // Evitar realizar la navegación durante el render — hacerlo en un efecto.
+    React.useEffect(() => {
+        if (user) navigate("/");
+    }, [user, navigate]);
 
     return (
         <div className="container mx-auto p-4 min-h-screen flex items-center justify-center ">
@@ -45,7 +69,7 @@ export default function LoginPage() {
                             {/* Renderizar solo uno de los formularios y animar la transición */}
                             <AnimatePresence mode="wait">
                                 {switchForm === "forgot" ? (
-                                    <ForgotPassword key="forgot" backToLogin={backToLogin} />
+                                    <ForgotPassword key="forgot" backToLogin={backToLogin} token={token} />
                                 ) : (
                                     <Login key="login" switchForm={forgotFormSwitch} />
                                 )}

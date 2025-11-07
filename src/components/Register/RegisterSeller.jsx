@@ -19,7 +19,10 @@ const registerSchema = z
         firstName: z.string().min(2, "El nombre es obligatorio"),
         lastName: z.string().min(2, "Los apellidos son obligatorios"),
         email: z.string().email("Email no válido"),
-        password: z.string().min(6, "Mínimo 6 caracteres"),
+        password: z
+            .string()
+            .min(6, "Mínimo 6 caracteres")
+            .regex(/(?=.*[A-Z])(?=.*\d)/, "La contraseña debe contener al menos una mayúscula y un número"),
         verifyPassword: z.string(),
         storeName: z.string().min(3, "El nombre de la tienda es obligatorio"),
         description: z.string().min(10, "Describe un poco más tu tienda"),

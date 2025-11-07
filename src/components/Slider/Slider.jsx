@@ -14,7 +14,6 @@ import "./Slider.css";
 import { Card, CardHeader, CardFooter, Image, Button } from "@heroui/react";
 
 export default function Slider({ items, type, numSlides }) {
-  console.log("slider", items);
   return (
     <>
       {numSlides === 1 && (
@@ -48,9 +47,8 @@ export default function Slider({ items, type, numSlides }) {
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
-                  backgroundImage: `url(${
-                    type === "store" ? i.image : i.images[0]
-                  })`,
+                  backgroundImage: `url(${type === "store" ? i.image : i.images[0]
+                    })`,
                 }}
               >
                 <div className="slide-content">

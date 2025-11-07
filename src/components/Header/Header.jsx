@@ -27,6 +27,7 @@ import Buscador from "../Buscador/Buscador";
 export default function App() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const { user, logout } = React.useContext(AuthContext);
+    console.log("👤 User in Header:", user);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -85,7 +86,7 @@ export default function App() {
     ];
 
     return (
-        <Navbar onMenuOpenChange={setIsMenuOpen} isMenuOpen={isMenuOpen} className="bg-primary-500 h-20" maxWidth="2xl" classNames={{
+        <Navbar onMenuOpenChange={setIsMenuOpen} isMenuOpen={isMenuOpen} className="bg-primary-500 h-20 shadow-sm" maxWidth="2xl" classNames={{
             wrapper: "container mx-auto ", // o "max-w-7xl mx-auto px-4"
         }}  >
             <NavbarContent className="">

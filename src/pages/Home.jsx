@@ -11,8 +11,9 @@ import {
 
 const Home = () => {
   const { user } = React.useContext(AuthContext);
-
   const [storesList, setStoresList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const fetchStores = async () => {
     try {
       const data = await getAllStores();
@@ -46,15 +47,30 @@ const Home = () => {
     fetchStores();
     fetchFeaturedProducts();
     fetchOfferProducts();
+    setLoading(false);
   }, []);
 
   return (
     <>
       <div className="w-full">
-        {storesList && storesList.length > 0 ? (
+        {/* {storesList && storesList.length > 0 ? (
           <Slider items={storesList} type="store" numSlides={1} />
         ) : (
           <p>no hay tiendas</p>
+        )} */}
+        {loading ? (
+          // skeleton loader
+          <div className="flex items-center justify-center w-full">
+            <div className="animate-pulse bg-secondary h-100 w-full flex items-center justify-center">
+              <svg class="w-10 h-10 text-gray-200 dark:text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                <path d="M18 0H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.376 10.481A1 1 0 0 1 16 15H4a1 1 0 0 1-.895-1.447l3.5-7A1 1 0 0 1 7.468 6a.965.965 0 0 1 .9.5l2.775 4.757 1.546-1.887a1 1 0 0 1 1.618.1l2.541 4a1 1 0 0 1 .028 1.011Z" />
+              </svg>
+            </div>
+          </div>
+        ) : storesList && storesList.length > 0 ? (
+          <Slider items={storesList} type="store" numSlides={1} />
+        ) : (
+          <p>Aún no hay tiendas disponibles</p>
         )}
       </div>
 
@@ -92,16 +108,47 @@ const Home = () => {
             productos de alta calidad.
           </p>
         </div>
-        {storesList.map((store) => (
-          <ListElement key={store._id} item={store} type="store" />
-        ))}
+        {loading ? (
+          // skeleton loader
+          <>{[...Array(7)].map((_, index) => (
+            <div className="animate-pulse col-span-3 bg-secondary rounded-lg h-48 w-full mx-2">
+              <div className="h-32 bg-gray-300 rounded-t-lg"></div>
+              <div className="p-4">
+                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}</>
+        ) : storesList && storesList.length > 0 ? (
+          storesList.map((store) => (
+            <ListElement key={store._id} type="store" item={store} />
+          ))
+        ) : (
+          <p>No hay tiendas disponibles</p>
+        )}
       </div>
       <div className="w-full bg-primary">
         <div className="max-w-[1536px] px-8 py-8 mx-auto">
-          {offerProductsList && offerProductsList.length > 0 ? (
+          <h2 className="text-3xl font-semibold mb-4 text-white">
+            Productos en Oferta
+          </h2>
+          {loading ? (
+            // skeleton loader
+            <div className="grid grid-cols-4 items-center justify-center">
+              {[...Array(4)].map((_, index) => (
+                <div className="animate-pulse bg-secondary rounded-lg h-48 mx-2">
+                  <div className="h-32 bg-gray-300 rounded-t-lg"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : offerProductsList && offerProductsList.length > 0 ? (
             <Slider items={offerProductsList} numSlides={4} type="product" />
           ) : (
-            <p>no hay productos</p>
+            <p className="text-white">No hay productos en oferta</p>
           )}
         </div>
       </div>
@@ -112,9 +159,27 @@ const Home = () => {
             Explore nuestra diversa gama de productos destacados.
           </p>
         </div>
-        {featuredProductsList.map((product) => (
+        {/* {featuredProductsList.map((product) => (
           <ListElement key={product._id} type="product" item={product} />
-        ))}
+        ))} */}
+        {loading ? (
+          // skeleton loader
+          <>{[...Array(7)].map((_, index) => (
+            <div className="animate-pulse col-span-3 bg-secondary rounded-lg h-48 w-full mx-2">
+              <div className="h-32 bg-gray-300 rounded-t-lg"></div>
+              <div className="p-4">
+                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+              </div>
+            </div>
+          ))}</>
+        ) : featuredProductsList && featuredProductsList.length > 0 ? (
+          featuredProductsList.map((product) => (
+            <ListElement key={product._id} type="product" item={product} />
+          ))
+        ) : (
+          <p>No hay productos destacados disponibles</p>
+        )}
       </div>
     </>
   );

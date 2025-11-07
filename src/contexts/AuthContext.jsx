@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { loginUser, getUser, logoutUser } from "../services/api";
+import { loginUser, getUser, logoutUser, loginWithGoogle } from "../services/api";
 import React from "react";
 export const AuthContext = React.createContext();
 
@@ -28,6 +28,18 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+
+    const loginWithGoogleContext = async (idToken) => {
+        try {
+            const data = await loginWithGoogle(idToken);
+            console.log("✅ Login with Google exitoso:", data);
+            setUser({ ...data.user });
+            localStorage.setItem("user", JSON.stringify(data.user));
+        } catch (error) {
+            console.error("Login with Google error:", error);
+        }
+    };
+
     const login = async (email, password) => {
         try {
             const data = await loginUser(email, password);
@@ -35,6 +47,7 @@ export const AuthProvider = ({ children }) => {
                 console.error("❌ No hay user en la respuesta:", data);
                 return;
             }
+            console.log("✅ Login exitoso:", data);
             setUser({ ...data.user });
             localStorage.setItem("user", JSON.stringify(data.user));
         } catch (error) {
@@ -52,7 +65,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, loginWithGoogleContext }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,23 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import Slider from "../components/Slider/Slider";
 import ListElement from "../components/ListElement/ListElement";
 import {
-  getAllProducts,
   getAllFeaturedProducts,
   getAllCategories,
+  searchProduct
 } from "../services/api";
+import { addToast } from "@heroui/react";
+import { Slider as PriceSlider } from "@heroui/react";
+
 
 export default function ProductsPage() {
   const [productsList, setProductsList] = useState([]);
-  const fetchProducts = async () => {
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const loaderRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offer, setOffer] = useState(false);
+  // const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [min, setMin] = useState(0);
+  const [max, setMax] = useState(1000);
+
+  const loadMore = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    console.log("Loading more products...");
     try {
-      const data = await getAllProducts();
-      setProductsList(data);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
+      const data = await searchProduct(page, "", selectedCategories, offer); // <-- la API debe aceptar page
+      if (data.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      setProductsList(prev => [...prev, ...data]);
+      setPage(prev => prev + 1);
+    } finally {
+      setLoading(false);
     }
   };
+
 
   const [featuredProductsList, setFeaturedProductsList] = useState([]);
   const fetchFeaturedProducts = async () => {
@@ -40,32 +62,48 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    // fetchProducts();
     fetchFeaturedProducts();
     fetchCategories();
     console.log("useEffect launched");
   }, []);
 
-  const filterByCategory = (category) => {
-    const filteredProducts = productsList.filter((product) =>
-      product.categories.includes(category)
+  useEffect(() => {
+    if (!loaderRef.current) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" }
     );
-    console.log(category, filteredProducts);
-    setProductsList(filteredProducts);
+
+    observer.observe(loaderRef.current);
+
+    return () => observer.disconnect();
+  }, [loaderRef.current, hasMore]);
+
+
+  const handleCategoryToggle = (category) => {
+    setSelectedCategories(
+      selectedCategories.includes(category)
+        ? selectedCategories.filter(cat => cat !== category)
+        : [...selectedCategories, category]
+    );
   };
 
-  const filterByOffer = (isOffer) => {
-    const filteredProducts = productsList.filter(
-      (product) => product.oferta === isOffer
-    );
-    setProductsList(filteredProducts);
-  };
 
-  const filterByPrice = (min, max) => {
-    const filteredProducts = productsList.filter(
-      (product) => product.price >= min && product.price <= max
-    );
-    setProductsList(filteredProducts);
+  const handleFilters = () => {
+    setPage(1);
+    searchProduct(selectedCategories, offer, min, max).then((data) => {
+      setProductsList(data);
+    }).catch((error) => {
+      addToast({
+        type: "error",
+        message: "Error en la busqueda de productos",
+        description: error
+      })
+    });
   };
 
   return (
@@ -92,8 +130,8 @@ export default function ProductsPage() {
               {categoriesList.map((category) => (
                 <button
                   key={category._id}
-                  className="bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2"
-                  onClick={() => filterByCategory(category._id)}
+                  className={`bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2 ${selectedCategories.includes(category._id) ? 'bg-secondary/60' : ''}`}
+                  onClick={() => handleCategoryToggle(category._id)}
                 >
                   {category.name}
                 </button>
@@ -104,16 +142,10 @@ export default function ProductsPage() {
             <h2 className="text-2xl font-semibold">Filtrar por oferta</h2>
             <div className="flex flex-col flex-wrap gap-2">
               <button
-                className="bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2"
-                onClick={() => filterByOffer(true)}
+                className={`bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2 ${offer ? 'bg-secondary/60' : ''}`}
+                onClick={() => setOffer(!offer)}
               >
-                En oferta
-              </button>
-              <button
-                className="bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2"
-                onClick={() => filterByOffer(false)}
-              >
-                Sin oferta
+                Ofertas
               </button>
             </div>
           </div>
@@ -122,34 +154,38 @@ export default function ProductsPage() {
               Filtrar por rango de precio
             </h2>
             <div className="flex flex-col flex-wrap gap-2">
+              <PriceSlider
+                className="max-w-md"
+                defaultValue={[100, 500]}
+                formatOptions={{ style: "currency", currency: "EUR" }}
+                label=""
+                maxValue={1000}
+                minValue={0}
+                step={50}
+                onChange={(values) => {
+                  console.log(values);
+                  setMin(values[0]);
+                  setMax(values[1]);
+                }}
+              />
+            </div>
+            <div>
               <button
                 className="bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2"
-                onClick={() => filterByPrice(0, 70)}
+                onClick={() => handleFilters()}
               >
-                Hasta 70€
-              </button>
-              <button
-                className="bg-primary/30 hover:bg-secondary/40 rounded-lg px-4 py-2"
-                onClick={() => filterByPrice(70, 120)}
-              >
-                Entre 70 y 120€
-              </button>
-              <button
-                className="bg-primary/10 hover:bg-primary/20 rounded-lg px-4 py-2"
-                onClick={() => filterByPrice(120, Infinity)}
-              >
-                Más de 120€
+                Aplicar filtros
               </button>
             </div>
           </div>
         </aside>
-        <div className="col-span-12 sm:col-span-6 md:col-span-8 lg:col-span-9 gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-6 sm-grid-cols-12 md:grid-cols-8 lg:grid-cols-9">
+        <div className="col-span-12 sm:col-span-6 md:col-span-8 lg:col-span-9 gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-6 sm-grid-cols-12 md:grid-cols-8 lg:grid-cols-9" >
           {productsList.map((product) => (
             <ListElement key={product._id} item={product} type="product" />
           ))}
         </div>
+        <div ref={loaderRef} className="col-span-full h-1"></div>
       </div>
-      <Link to="/register">Register AAAA</Link>
     </>
   );
 }

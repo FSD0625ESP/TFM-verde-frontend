@@ -24,7 +24,9 @@ function App() {
       <main style={{ minHeight: "80vh" }} className="bg-gray-100">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={isUserLoggedIn() ? <Home /> : <LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/forgotPassword" element={<LoginPage />} />
+          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
           <Route path="/register" element={isUserLoggedIn() ? <Home /> : <RegisterPage />} />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/products" element={<ProductsPage />} />

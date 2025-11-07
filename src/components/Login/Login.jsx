@@ -2,7 +2,6 @@ import "./Login.css";
 import { Form, Input, Button } from "@heroui/react";
 import { GoogleLogin } from "@react-oauth/google";
 import { addToast } from "@heroui/react";
-import { loginWithGoogle } from "../../services/api";
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { AuthContext } from "../../contexts/AuthContext";
@@ -10,7 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function Login({ switchForm }) {
-  const { user, login } = React.useContext(AuthContext);
+  const { user, login, loginWithGoogleContext } = React.useContext(AuthContext);
   const [action, setAction] = useState(null);
   const navigate = useNavigate();
 
@@ -110,7 +109,7 @@ export default function Login({ switchForm }) {
               text="continue_with"
               onSuccess={async (credentialResponse) => {
                 try {
-                  await loginWithGoogle(credentialResponse.credential);
+                  await loginWithGoogleContext(credentialResponse.credential);
                   navigate("/");
                   addToast({
                     title: "Login con Google exitoso",
