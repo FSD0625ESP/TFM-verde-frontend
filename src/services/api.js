@@ -61,8 +61,7 @@ const generateForgotPasswordToken = async (email) => {
     email,
   });
   return response.data;
-}
-
+};
 
 const forgotPassword = async (token, newPassword) => {
   const response = await api.post("/users/forgot-password", {
@@ -94,26 +93,44 @@ const getAllOfferProducts = async () => {
   return response.data;
 };
 
+const getProductById = async (id) => {
+  const response = await api.get(`/products/${id}`);
+  return response.data;
+};
+
+const searchProducts = async (
+  page = 1,
+  text = "",
+  categories = [],
+  offer = false,
+  min = 0,
+  max = 500,
+  signal = undefined // AbortSignal opcional para cancelar la petición
+) => {
+  // Enviar los parámetros como query params usando la opción `params` de axios
+  const params = {
+    page,
+    text,
+    categories: Array.isArray(categories) ? categories.join(",") : categories,
+    offer,
+    min,
+    max,
+  };
+
+  console.log(
+    "[Frontend] Sending search params:",
+    JSON.stringify(params, null, 2)
+  );
+  // Pasar signal a axios (soporta AbortController desde axios v0.22+ / 1.x)
+  const response = await api.get("/products/search", { params, signal });
+  console.log("[Frontend] Found products: ", response.data);
+  return response.data;
+};
+
 const getAllCategories = async () => {
   const response = await api.get("/categories/all");
   return response.data;
 };
-
-
-const searchProduct = async ({ page = 1, text = "", categories, offer = false, min = 0, max = 1000 } = {}) => {
-  console.log("categories", categories);
-  const response = await api.post("/products/search", {
-    page,
-    text,
-    categories,
-    offer,
-    min,
-    max
-
-  });
-  return response.data;
-};
-
 
 export {
   loginUser,
@@ -125,10 +142,11 @@ export {
   getAllProducts,
   getAllFeaturedProducts,
   getAllOfferProducts,
+  getProductById,
+  searchProducts,
   getAllCategories,
   generateForgotPasswordToken,
   forgotPassword,
   verifyForgotPasswordToken,
   loginWithGoogle,
-  searchProduct
 };

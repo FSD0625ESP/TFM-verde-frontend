@@ -43,15 +43,17 @@ const ListElement = ({ item, type }) => {
               </span>
             </p>
           </div>
-          <Button
-            className="text-tiny text-white"
-            color="primary"
-            radius="sm"
-            size="md"
-            shadow="sm"
-          >
-            VER
-          </Button>
+          <a href={`/product-detail/${item._id}`}>
+            <Button
+              className="text-tiny text-white"
+              color="primary"
+              radius="sm"
+              size="md"
+              shadow="sm"
+            >
+              VER
+            </Button>
+          </a>
         </CardFooter>
       </Card>
     </>

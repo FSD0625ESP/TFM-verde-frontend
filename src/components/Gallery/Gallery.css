@@ -1,0 +1,64 @@
+#gallery {
+  .swiper {
+    width: 100%;
+    height: auto;
+  }
+
+  .swiper-wrapper {
+    align-items: center;
+  }
+
+  .swiper-zoom-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .swiper-button-prev,
+  .swiper-button-next {
+    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 0.6rem 0;
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    box-shadow: 1px 3px 3px 1px rgba(0, 0, 0, 0.4);
+    font-weight: bold;
+  }
+  .swiper-button-prev {
+    transform: translateX(6px);
+  }
+  .swiper-button-next {
+    transform: translateX(-6px);
+  }
+
+  .swiper-pagination-bullet-active {
+    background-color: var(--primary-color);
+  }
+
+  .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .swiper-slide img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .mySwiper .swiper-slide:not(.swiper-slide-zoomed) {
+    cursor: zoom-in;
+  }
+
+  .myThumbsSwiper .swiper-slide img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    opacity: 50%;
+  }
+
+  .myThumbsSwiper .swiper-slide-thumb-active img {
+    opacity: 100%;
+  }
+}

@@ -4,6 +4,7 @@ import RegisterPage from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import StoresPage from "./pages/StoresPage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
+import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
@@ -21,15 +22,19 @@ function App() {
   return (
     <BrowserRouter>
       <Header />
-      <main style={{ minHeight: "80vh" }} className="bg-gray-100">
+      <main className="flex flex-col justify-center flex-1 bg-gray-100">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login/forgotPassword" element={<LoginPage />} />
           <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
-          <Route path="/register" element={isUserLoggedIn() ? <Home /> : <RegisterPage />} />
+          <Route
+            path="/register"
+            element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
+          />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/products" element={<ProductsPage />} />
+          <Route path="/product-detail/:id" element={<ProductDetailPage />} />
         </Routes>
       </main>
       <Footer />
