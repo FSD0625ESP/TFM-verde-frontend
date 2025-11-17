@@ -35,8 +35,10 @@ export const AuthProvider = ({ children }) => {
             console.log("✅ Login with Google exitoso:", data);
             setUser({ ...data.user });
             localStorage.setItem("user", JSON.stringify(data.user));
+            return data;
         } catch (error) {
             console.error("Login with Google error:", error);
+            throw error; // Re-lanzar el error para que el componente lo maneje
         }
     };
 
@@ -45,13 +47,15 @@ export const AuthProvider = ({ children }) => {
             const data = await loginUser(email, password);
             if (!data || !data.user) {
                 console.error("❌ No hay user en la respuesta:", data);
-                return;
+                throw new Error(data?.msg || "Error en el inicio de sesión");
             }
             console.log("✅ Login exitoso:", data);
             setUser({ ...data.user });
             localStorage.setItem("user", JSON.stringify(data.user));
+            return data;
         } catch (error) {
             console.error("Login error:", error);
+            throw error; // Re-lanzar el error para que el componente lo maneje
         }
     };
     const logout = () => {

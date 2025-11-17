@@ -5,10 +5,11 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App";
 import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SocketProvider } from "./contexts/SocketContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <AuthProvider>
+  <AuthProvider>
+    <SocketProvider>
       <GoogleOAuthProvider
         clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}
       >
@@ -17,6 +18,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <App />
         </HeroUIProvider>
       </GoogleOAuthProvider>
-    </AuthProvider>
-  </React.StrictMode>
+    </SocketProvider>
+  </AuthProvider>
 );

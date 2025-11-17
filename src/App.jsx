@@ -9,15 +9,60 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import Buscador from "./components/Buscador/Buscador.jsx";
+import ChatToggler from "./components/Chat/ChatToggler.jsx";
+import ChatsDropdown from "./components/Chat/ChatsDropdown.jsx";
+import ChatContainer from "./components/Chat/ChatContainer.jsx";
 import { AuthContext } from "./contexts/AuthContext.jsx";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 
 function App() {
   const { user } = useContext(AuthContext);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [totalUnread, setTotalUnread] = useState(0);
 
   const isUserLoggedIn = () => {
     return user !== null;
   };
+
+  const handleToggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+    if (isChatOpen) {
+      setSelectedChat(null); // Cerrar chat abierto al cerrar el panel
+    }
+  };
+
+  const handleSelectChat = (chat) => {
+    setSelectedChat(chat);
+    // Reducir el contador de no leídos cuando se abre un chat
+    setTotalUnread(prev => Math.max(0, prev - (chat.unreadCount || 0)));
+  };
+
+  const handleCloseChat = () => {
+    setSelectedChat(null);
+    setIsChatOpen(false);
+  };
+
+  const handleBackToList = () => {
+    setSelectedChat(null);
+  };
+
+  // Callback para que ChatsDropdown actualice el total de no leídos
+  const handleUnreadUpdate = (count) => {
+    setTotalUnread(count);
+  };
+
+  // Escuchar eventos de creación de chat desde StartChatButton
+  useEffect(() => {
+    const handleOpenChat = (event) => {
+      const chatData = event.detail;
+      setIsChatOpen(true);
+      setSelectedChat(chatData);
+    };
+
+    window.addEventListener('openChat', handleOpenChat);
+    return () => window.removeEventListener('openChat', handleOpenChat);
+  }, []);
 
   return (
     <BrowserRouter>
@@ -38,6 +83,33 @@ function App() {
         </Routes>
       </main>
       <Footer />
+
+      {/* Sistema de Chat - Solo visible cuando el usuario está logueado */}
+      {isUserLoggedIn() && (
+        <>
+          <ChatToggler
+            isOpen={isChatOpen || selectedChat !== null}
+            onToggle={handleToggleChat}
+            unreadCount={totalUnread}
+          />
+
+          {!selectedChat && (
+            <ChatsDropdown
+              isOpen={isChatOpen}
+              onSelectChat={handleSelectChat}
+              onUnreadUpdate={handleUnreadUpdate}
+            />
+          )}
+
+          {selectedChat && (
+            <ChatContainer
+              chat={selectedChat}
+              onClose={handleCloseChat}
+              onBack={handleBackToList}
+            />
+          )}
+        </>
+      )}
     </BrowserRouter>
   );
 }

@@ -3,7 +3,7 @@ import { Form, Input, Button } from "@heroui/react";
 import { GoogleLogin } from "@react-oauth/google";
 import { addToast } from "@heroui/react";
 import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, TriangleAlert } from "lucide-react";
 import { AuthContext } from "../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -11,23 +11,39 @@ import { motion } from "framer-motion";
 export default function Login({ switchForm }) {
   const { user, login, loginWithGoogleContext } = React.useContext(AuthContext);
   const [action, setAction] = useState(null);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    setError(""); // Limpiar error previo
     const formData = new FormData(event.target);
     const email = formData.get("email");
     const password = formData.get("password");
     try {
-      const data = await login(email, password);
-      console.log("Login successful:", data);
+      await login(email, password);
+      console.log("Login successful");
       setAction("login successful");
+      addToast({
+        title: "Inicio de sesión exitoso",
+        description: "Bienvenido de vuelta",
+        color: "success",
+        duration: 3000,
+      });
       navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
       setAction("login failed");
+      const errorMessage = error.response?.data?.msg || error.message || "Usuario o contraseña incorrectos";
+      setError(errorMessage);
+      addToast({
+        title: "Error de autenticación",
+        description: errorMessage,
+        color: "danger",
+        duration: 5000,
+      });
     }
   };
 
@@ -44,6 +60,17 @@ export default function Login({ switchForm }) {
         onReset={() => setAction("reset")}
         onSubmit={(e) => handleLogin(e)}
       >
+        {/* Mensaje de error */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-danger-50 border w-full border-danger-200 text-danger-700 px-4 py-3 rounded-lg text-sm"
+          >
+            <p className="font-medium flex items-center gap-2"><TriangleAlert className="text-amber-400" /> {error}</p>
+          </motion.div>
+        )}
         <Input
           isRequired
           label="Email"
@@ -76,6 +103,8 @@ export default function Login({ switchForm }) {
             }
           />
         </div>
+
+
 
         <div
           className="flex gap-2"

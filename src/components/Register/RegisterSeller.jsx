@@ -5,63 +5,118 @@ import {
     Checkbox,
     Textarea,
 } from "@heroui/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { registerUser, registerStore } from "../../services/api";
 import { addToast } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import { User, Store, CreditCard } from "lucide-react";
 
-// ✅ Esquema de validación con Zod
-const registerSchema = z
-    .object({
-        firstName: z.string().min(2, "El nombre es obligatorio"),
-        lastName: z.string().min(2, "Los apellidos son obligatorios"),
-        email: z.string().email("Email no válido"),
-        password: z
-            .string()
-            .min(6, "Mínimo 6 caracteres")
-            .regex(/(?=.*[A-Z])(?=.*\d)/, "La contraseña debe contener al menos una mayúscula y un número"),
-        verifyPassword: z.string(),
-        storeName: z.string().min(3, "El nombre de la tienda es obligatorio"),
-        description: z.string().min(10, "Describe un poco más tu tienda"),
-        billingName: z.string().optional(),
-        billingAddress: z.string().optional(),
-        billingPhone: z.string().optional(),
-        billingEmail: z.string().optional(),
-        instagram: z.string().url("Debe ser un enlace válido").optional(),
-        facebook: z.string().url("Debe ser un enlace válido").optional(),
-        web: z.string().url("Debe ser un enlace válido").optional(),
-        agree: z.boolean().refine((v) => v === true, {
-            message: "Debes aceptar los términos",
-        }),
-    })
-    .refine((data) => data.password === data.verifyPassword, {
-        message: "Las contraseñas no coinciden",
-        path: ["verifyPassword"],
-    });
-
 const Register = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
-        resolver: zodResolver(registerSchema),
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        verifyPassword: "",
+        storeName: "",
+        description: "",
+        billingName: "",
+        billingAddress: "",
+        billingPhone: "",
+        billingEmail: "",
+        agree: false,
     });
 
-    const onSubmit = async (data) => {
+    const validateFirstName = (value) => {
+        if (!value) {
+            return "El nombre es obligatorio";
+        }
+        if (value.length < 2) {
+            return "El nombre debe tener al menos 2 caracteres";
+        }
+        return true;
+    };
+
+    const validateLastName = (value) => {
+        if (!value) {
+            return "Los apellidos son obligatorios";
+        }
+        if (value.length < 2) {
+            return "Los apellidos deben tener al menos 2 caracteres";
+        }
+        return true;
+    };
+
+    const validatePassword = (value) => {
+        if (!value) {
+            return "La contraseña es obligatoria";
+        }
+        if (value.length < 6) {
+            return "Mínimo 6 caracteres";
+        }
+        if (!/(?=.*[A-Z])(?=.*\d)/.test(value)) {
+            return "La contraseña debe contener al menos una mayúscula y un número";
+        }
+        return true;
+    };
+
+    const validateVerifyPassword = (value) => {
+        if (!value) {
+            return "Debes repetir la contraseña";
+        }
+        if (value !== formData.password) {
+            return "Las contraseñas no coinciden";
+        }
+        return true;
+    };
+
+    const validateStoreName = (value) => {
+        if (!value) {
+            return "El nombre de la tienda es obligatorio";
+        }
+        if (value.length < 3) {
+            return "El nombre debe tener al menos 3 caracteres";
+        }
+        return true;
+    };
+
+    const validateDescription = (value) => {
+        if (!value) {
+            return "La descripción es obligatoria";
+        }
+        if (value.length < 10) {
+            return "Describe un poco más tu tienda (mínimo 10 caracteres)";
+        }
+        return true;
+    };
+
+    const handleChange = (field) => (e) => {
+        const value = field === "agree" ? e.target.checked : e.target.value;
+        setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!formData.agree) {
+            addToast({
+                title: "Error de validación",
+                description: "Debes aceptar los términos y condiciones",
+                color: "danger",
+                duration: 4000,
+            });
+            return;
+        }
+
         setLoading(true);
         try {
             // 1️⃣ Registro del usuario
             const userRes = await registerUser(
-                data.firstName,
-                data.lastName,
-                data.email,
-                data.password,
+                formData.firstName,
+                formData.lastName,
+                formData.email,
+                formData.password,
                 "seller"
             );
             console.log("Usuario registrado:", userRes);
@@ -69,13 +124,13 @@ const Register = () => {
             // 2️⃣ Registro de la tienda (relacionada al usuario)
             await registerStore({
                 ownerId: userRes.user._id,
-                name: data.storeName,
-                description: data.description,
+                name: formData.storeName,
+                description: formData.description,
                 billingInfo: {
-                    name: data.billingName,
-                    address: data.billingAddress,
-                    phone: data.billingPhone,
-                    email: data.billingEmail,
+                    name: formData.billingName,
+                    address: formData.billingAddress,
+                    phone: formData.billingPhone,
+                    email: formData.billingEmail,
                 }
             });
 
@@ -109,7 +164,7 @@ const Register = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 w-full">
+        <form onSubmit={onSubmit} className="space-y-8 w-full">
             <div className="flex flex-col md:flex-row gap-10">
                 {/* 🧍 Datos del usuario */}
                 <div className="flex flex-col gap-5 md:w-1/2 w-full border-b-2 md:border-b-0 md:border-r-2 border-gray-200 pb-6 md:pb-0 md:pr-8">
@@ -120,18 +175,18 @@ const Register = () => {
                     <Input
                         label="Nombre"
                         placeholder="Tu nombre"
-                        {...register("firstName")}
-                        isInvalid={!!errors.firstName}
-                        errorMessage={errors.firstName?.message}
+                        value={formData.firstName}
+                        onChange={handleChange("firstName")}
+                        validate={validateFirstName}
                         isRequired
                         {...inputStyleProps}
                     />
                     <Input
                         label="Apellidos"
                         placeholder="Tus apellidos"
-                        {...register("lastName")}
-                        isInvalid={!!errors.lastName}
-                        errorMessage={errors.lastName?.message}
+                        value={formData.lastName}
+                        onChange={handleChange("lastName")}
+                        validate={validateLastName}
                         isRequired
                         {...inputStyleProps}
                     />
@@ -139,9 +194,8 @@ const Register = () => {
                         label="Email"
                         type="email"
                         placeholder="example@correo.com"
-                        {...register("email")}
-                        isInvalid={!!errors.email}
-                        errorMessage={errors.email?.message}
+                        value={formData.email}
+                        onChange={handleChange("email")}
                         isRequired
                         {...inputStyleProps}
                     />
@@ -149,9 +203,9 @@ const Register = () => {
                         label="Contraseña"
                         type="password"
                         placeholder="Mínimo 6 caracteres"
-                        {...register("password")}
-                        isInvalid={!!errors.password}
-                        errorMessage={errors.password?.message}
+                        value={formData.password}
+                        onChange={handleChange("password")}
+                        validate={validatePassword}
                         isRequired
                         {...inputStyleProps}
                     />
@@ -159,9 +213,9 @@ const Register = () => {
                         label="Confirmar contraseña"
                         type="password"
                         placeholder="Repite la contraseña"
-                        {...register("verifyPassword")}
-                        isInvalid={!!errors.verifyPassword}
-                        errorMessage={errors.verifyPassword?.message}
+                        value={formData.verifyPassword}
+                        onChange={handleChange("verifyPassword")}
+                        validate={validateVerifyPassword}
                         isRequired
                         {...inputStyleProps}
                     />
@@ -176,18 +230,18 @@ const Register = () => {
                     <Input
                         label="Nombre de la tienda"
                         placeholder="Ej: Artesanías Meraki"
-                        {...register("storeName")}
-                        isInvalid={!!errors.storeName}
-                        errorMessage={errors.storeName?.message}
+                        value={formData.storeName}
+                        onChange={handleChange("storeName")}
+                        validate={validateStoreName}
                         isRequired
                         {...inputStyleProps}
                     />
                     <Textarea
                         label="Descripción"
                         placeholder="Cuéntanos sobre tu tienda..."
-                        {...register("description")}
-                        isInvalid={!!errors.description}
-                        errorMessage={errors.description?.message}
+                        value={formData.description}
+                        onChange={handleChange("description")}
+                        validate={validateDescription}
                         isRequired
                         variant="flat"
                         classNames={{
@@ -200,18 +254,45 @@ const Register = () => {
                         <CreditCard className="w-5 h-5 mr-2" />
                         Información de facturación
                     </h4>
-                    <Input label="Nombre" {...register("billingName")} placeholder="Nombre de facturación" {...inputStyleProps} />
-                    <Input label="Dirección" {...register("billingAddress")} placeholder="Dirección fiscal" {...inputStyleProps} />
-                    <Input label="Teléfono" {...register("billingPhone")} placeholder="Teléfono de contacto" {...inputStyleProps} />
-                    <Input label="Email" type="email" {...register("billingEmail")} placeholder="Email de facturación" {...inputStyleProps} />
-
-
+                    <Input
+                        label="Nombre"
+                        placeholder="Nombre de facturación"
+                        value={formData.billingName}
+                        onChange={handleChange("billingName")}
+                        {...inputStyleProps}
+                    />
+                    <Input
+                        label="Dirección"
+                        placeholder="Dirección fiscal"
+                        value={formData.billingAddress}
+                        onChange={handleChange("billingAddress")}
+                        {...inputStyleProps}
+                    />
+                    <Input
+                        label="Teléfono"
+                        placeholder="Teléfono de contacto"
+                        value={formData.billingPhone}
+                        onChange={handleChange("billingPhone")}
+                        {...inputStyleProps}
+                    />
+                    <Input
+                        label="Email"
+                        type="email"
+                        placeholder="Email de facturación"
+                        value={formData.billingEmail}
+                        onChange={handleChange("billingEmail")}
+                        {...inputStyleProps}
+                    />
                 </div>
             </div>
 
             {/* ✅ Checkbox de términos */}
             <div className="mt-4">
-                <Checkbox {...register("agree")} color="primary">
+                <Checkbox
+                    isSelected={formData.agree}
+                    onChange={handleChange("agree")}
+                    color="primary"
+                >
                     <span className="text-sm text-gray-700">
                         Al suscribirte, estás de acuerdo con los{" "}
                         <a
@@ -222,9 +303,6 @@ const Register = () => {
                         </a>
                     </span>
                 </Checkbox>
-                {errors.agree && (
-                    <p className="text-sm text-danger mt-1">{errors.agree.message}</p>
-                )}
             </div>
 
             {/* 🧩 Botón */}
