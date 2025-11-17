@@ -7,9 +7,11 @@ import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext.jsx";
 
+import { SocketProvider } from "./contexts/SocketContext";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <AuthProvider>
+  <AuthProvider>
+    <SocketProvider>
       <CartProvider>
         <GoogleOAuthProvider
           clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}
@@ -20,6 +22,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </HeroUIProvider>
         </GoogleOAuthProvider>
       </CartProvider>
-    </AuthProvider>
-  </React.StrictMode>
+    </SocketProvider>
+  </AuthProvider>
 );

@@ -9,8 +9,11 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import Buscador from "./components/Buscador/Buscador.jsx";
+import ChatToggler from "./components/Chat/ChatToggler.jsx";
+import ChatsDropdown from "./components/Chat/ChatsDropdown.jsx";
+import ChatContainer from "./components/Chat/ChatContainer.jsx";
 import { AuthContext } from "./contexts/AuthContext.jsx";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import Contacto from "./pages/ConocenosPage/Contacto.jsx";
 import QuienesSomos from "./pages/ConocenosPage/QuienesSomos.jsx";
 import AvisoPrivacidad from "./pages/LegalPage/AvisoPrivacidad.jsx";
@@ -27,15 +30,58 @@ import ResultadosPage from "./pages/ResultadosPage.jsx";
 import CartPage from "./pages/EmptyCartPage.jsx";
 import FullCartPage from "./pages/FullCartPage.jsx";
 
+
 import Profile from "./pages/Profile";
-import Orders from "./pages/Orders";
+// import Orders from "./pages/Orders";
 
 function App() {
   const { user } = useContext(AuthContext);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [totalUnread, setTotalUnread] = useState(0);
 
   const isUserLoggedIn = () => {
     return user !== null;
   };
+
+  const handleToggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+    if (isChatOpen) {
+      setSelectedChat(null); // Cerrar chat abierto al cerrar el panel
+    }
+  };
+
+  const handleSelectChat = (chat) => {
+    setSelectedChat(chat);
+    // Reducir el contador de no leídos cuando se abre un chat
+    setTotalUnread(prev => Math.max(0, prev - (chat.unreadCount || 0)));
+  };
+
+  const handleCloseChat = () => {
+    setSelectedChat(null);
+    setIsChatOpen(false);
+  };
+
+  const handleBackToList = () => {
+    setSelectedChat(null);
+  };
+
+  // Callback para que ChatsDropdown actualice el total de no leídos
+  const handleUnreadUpdate = (count) => {
+    setTotalUnread(count);
+  };
+
+  // Escuchar eventos de creación de chat desde StartChatButton
+  useEffect(() => {
+    const handleOpenChat = (event) => {
+      const chatData = event.detail;
+      setIsChatOpen(true);
+      setSelectedChat(chatData);
+    };
+
+    window.addEventListener('openChat', handleOpenChat);
+    return () => window.removeEventListener('openChat', handleOpenChat);
+  }, []);
 
   return (
     <BrowserRouter>
@@ -46,6 +92,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login/forgotPassword" element={<LoginPage />} />
           <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
+          <Route
+            path="/login/forgotPassword/:token"
+            element={<LoginPage />}
+          />
           <Route
             path="/register"
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
@@ -73,6 +123,47 @@ function App() {
         </Routes>
       </main>
       <Footer />
+          <Route path="/legal" element={<Legal />} />
+          <Route path="/abrir-tienda" element={<AbrirTienda />} />
+          <Route path="/venta-particulares" element={<VentaParticulares />} />
+          <Route
+            path="/venta-profesionales"
+            element={<VentaProfesionales />}
+          />
+          {/* <Route path="/cart" element={<CartPage />} /> */}
+          {/* <Route path="/full-cart" element={<FullCartPage />} /> */}
+          <Route path="/profile" element={<Profile />} />
+          {/* <Route path="/orders" element={<Orders />} /> */}
+        </Routes>
+      </main>
+      <Footer />
+
+      {/* Sistema de Chat - Solo visible cuando el usuario está logueado */}
+      {isUserLoggedIn() && (
+        <>
+          <ChatToggler
+            isOpen={isChatOpen || selectedChat !== null}
+            onToggle={handleToggleChat}
+            unreadCount={totalUnread}
+          />
+
+          {!selectedChat && (
+            <ChatsDropdown
+              isOpen={isChatOpen}
+              onSelectChat={handleSelectChat}
+              onUnreadUpdate={handleUnreadUpdate}
+            />
+          )}
+
+          {selectedChat && (
+            <ChatContainer
+              chat={selectedChat}
+              onClose={handleCloseChat}
+              onBack={handleBackToList}
+            />
+          )}
+        </>
+      )}
     </BrowserRouter>
   );
 }

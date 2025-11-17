@@ -8,6 +8,7 @@ import {
   getAllFeaturedProducts,
   getAllOfferProducts,
 } from "../services/api";
+import ChatDebugButtons from "../components/Chat/ChatDebugButtons";
 
 const Home = () => {
   const { user } = React.useContext(AuthContext);
@@ -52,6 +53,7 @@ const Home = () => {
 
   return (
     <>
+      <ChatDebugButtons />
       <div className="w-full">
         {/* {storesList && storesList.length > 0 ? (
           <Slider items={storesList} type="store" numSlides={1} />
