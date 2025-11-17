@@ -1,48 +1,96 @@
 import React, { useState } from "react";
-import { Input, Button, Checkbox, Card } from "@heroui/react";
+import { Input, Button, Checkbox } from "@heroui/react";
 import { registerUser, loginWithGoogle } from "../../services/api";
 import { GoogleLogin } from "@react-oauth/google";
 import { addToast } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 const Register = () => {
     const navigate = useNavigate();
     const [isVisible, setIsVisible] = useState(false);
     const [isVisible2, setIsVisible2] = useState(false);
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        verifyPassword: "",
+        agree: false,
+    });
 
     const toggleVisibility = () => setIsVisible(!isVisible);
     const toggleVisibility2 = () => setIsVisible2(!isVisible2);
 
-    // Zod schema with password policy: min 6, at least one uppercase and one number
-    const schema = z
-        .object({
-            firstName: z.string().min(2, "El nombre es obligatorio"),
-            lastName: z.string().min(2, "Los apellidos son obligatorios"),
-            email: z.string().email("Email no válido"),
-            password: z
-                .string()
-                .min(6, "Mínimo 6 caracteres")
-                .regex(/(?=.*[A-Z])(?=.*\d)/, "La contraseña debe contener al menos una mayúscula y un número"),
-            verifyPassword: z.string(),
-            agree: z.boolean().refine((v) => v === true, { message: "Debes aceptar los términos" }),
-        })
-        .refine((data) => data.password === data.verifyPassword, {
-            message: "Las contraseñas no coinciden",
-            path: ["verifyPassword"],
-        });
+    const validateFirstName = (value) => {
+        if (!value) {
+            return "El nombre es obligatorio";
+        }
+        if (value.length < 2) {
+            return "El nombre debe tener al menos 2 caracteres";
+        }
+        return true;
+    };
 
-    const { register, handleSubmit, control, formState: { errors } } = useForm({
-        resolver: zodResolver(schema),
-        defaultValues: { agree: false },
-    });
+    const validateLastName = (value) => {
+        if (!value) {
+            return "Los apellidos son obligatorios";
+        }
+        if (value.length < 2) {
+            return "Los apellidos deben tener al menos 2 caracteres";
+        }
+        return true;
+    };
 
-    const onSubmit = async (data) => {
+    const validatePassword = (value) => {
+        if (!value) {
+            return "La contraseña es obligatoria";
+        }
+        if (value.length < 6) {
+            return "Mínimo 6 caracteres";
+        }
+        if (!/(?=.*[A-Z])(?=.*\d)/.test(value)) {
+            return "La contraseña debe contener al menos una mayúscula y un número";
+        }
+        return true;
+    };
+
+    const validateVerifyPassword = (value) => {
+        if (!value) {
+            return "Debes repetir la contraseña";
+        }
+        if (value !== formData.password) {
+            return "Las contraseñas no coinciden";
+        }
+        return true;
+    };
+
+    const handleChange = (field) => (e) => {
+        const value = field === "agree" ? e.target.checked : e.target.value;
+        setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!formData.agree) {
+            addToast({
+                title: "Error de validación",
+                description: "Debes aceptar los términos y condiciones",
+                color: "danger",
+                duration: 4000,
+            });
+            return;
+        }
+
         try {
-            const response = await registerUser(data.firstName, data.lastName, data.email, data.password, "customer");
+            const response = await registerUser(
+                formData.firstName,
+                formData.lastName,
+                formData.email,
+                formData.password,
+                "customer"
+            );
             navigate("/");
             addToast({
                 title: "Registro exitoso",
@@ -69,42 +117,42 @@ const Register = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
             <Input
                 label="Nombre"
                 placeholder="Escribe aquí tu nombre"
-                {...register("firstName")}
+                value={formData.firstName}
+                onChange={handleChange("firstName")}
+                validate={validateFirstName}
                 isRequired
-                isInvalid={!!errors.firstName}
-                errorMessage={errors.firstName?.message}
                 {...inputStyleProps}
             />
             <Input
                 label="Apellidos"
-                placeholder="Escribe aquí tu nombre"
-                {...register("lastName")}
-                isInvalid={!!errors.lastName}
-                errorMessage={errors.lastName?.message}
+                placeholder="Escribe aquí tus apellidos"
+                value={formData.lastName}
+                onChange={handleChange("lastName")}
+                validate={validateLastName}
+                isRequired
                 {...inputStyleProps}
             />
             <Input
                 label="Email"
                 placeholder="example@correo.com"
                 type="email"
-                {...register("email")}
+                value={formData.email}
+                onChange={handleChange("email")}
                 isRequired
-                isInvalid={!!errors.email}
-                errorMessage={errors.email?.message}
                 {...inputStyleProps}
             />
             <Input
                 label="Password"
                 placeholder="Enter password"
                 type={isVisible ? "text" : "password"}
-                {...register("password")}
+                value={formData.password}
+                onChange={handleChange("password")}
+                validate={validatePassword}
                 isRequired
-                isInvalid={!!errors.password}
-                errorMessage={errors.password?.message}
                 endContent={
                     <button
                         type="button"
@@ -120,10 +168,10 @@ const Register = () => {
                 label="Confirma tu password"
                 placeholder="Enter password"
                 type={isVisible2 ? "text" : "password"}
-                {...register("verifyPassword")}
+                value={formData.verifyPassword}
+                onChange={handleChange("verifyPassword")}
+                validate={validateVerifyPassword}
                 isRequired
-                isInvalid={!!errors.verifyPassword}
-                errorMessage={errors.verifyPassword?.message}
                 endContent={
                     <button
                         type="button"
@@ -136,26 +184,21 @@ const Register = () => {
                 {...inputStyleProps}
             />
             <div className="pt-2">
-                <Controller
-                    name="agree"
-                    control={control}
-                    render={({ field }) => (
-                        <Checkbox {...field} isSelected={field.value} color="primary">
-                            <span className="text-sm text-gray-700">
-                                Al suscribirte, estás de acuerdo con los{" "}
-                                <a
-                                    href="#"
-                                    className="underline text-secondary hover:text-primary-600"
-                                >
-                                    Términos de uso y Políticas de Privacidad
-                                </a>
-                            </span>
-                        </Checkbox>
-                    )}
-                />
-                {errors.agree && (
-                    <p className="text-sm text-danger mt-1">{errors.agree.message}</p>
-                )}
+                <Checkbox
+                    isSelected={formData.agree}
+                    onChange={handleChange("agree")}
+                    color="primary"
+                >
+                    <span className="text-sm text-gray-700">
+                        Al suscribirte, estás de acuerdo con los{" "}
+                        <a
+                            href="#"
+                            className="underline text-secondary hover:text-primary-600"
+                        >
+                            Términos de uso y Políticas de Privacidad
+                        </a>
+                    </span>
+                </Checkbox>
             </div>
 
             <Button

@@ -139,6 +139,33 @@ const getStoreReviewsById = async (id) => {
 
 const getProductReviewsById = async (id) => {
   const response = await api.get(`/reviews/product/${id}`);
+// Obtener todos los chats del usuario autenticado
+const getUserChats = async () => {
+  const response = await api.get("/chats");
+  return response.data;
+};
+
+// Obtener un chat específico por ID
+const getChatById = async (chatId) => {
+  const response = await api.get(`/chats/${chatId}`);
+  return response.data;
+};
+
+// Obtener o crear un chat con una tienda
+const getOrCreateChat = async (storeId) => {
+  const response = await api.get(`/chats/store/${storeId}`);
+  return response.data;
+};
+
+// Enviar un mensaje en un chat
+const sendMessage = async (chatId, text) => {
+  const response = await api.post(`/chats/${chatId}/messages`, { text });
+  return response.data;
+};
+
+// Eliminar un chat
+const deleteChat = async (chatId) => {
+  const response = await api.delete(`/chats/${chatId}`);
   return response.data;
 };
 
@@ -161,4 +188,9 @@ export {
   forgotPassword,
   verifyForgotPasswordToken,
   loginWithGoogle,
+  getUserChats,
+  getChatById,
+  getOrCreateChat,
+  sendMessage,
+  deleteChat,
 };
