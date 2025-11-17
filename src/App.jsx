@@ -33,8 +33,13 @@ function App() {
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
           />
           <Route path="/stores" element={<StoresPage />} />
+          <Route path="/store/:storeName/:id" element={<ProductDetailPage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/product-detail/:id" element={<ProductDetailPage />} />
+          <Route
+            path="/product/:storeName/:productName/:id"
+            element={<ProductDetailPage />}
+          />
+          {/* <Route path="/product-detail/:id" element={<ProductDetailPage />}  */}
         </Routes>
       </main>
       <Footer />

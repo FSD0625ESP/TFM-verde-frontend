@@ -43,17 +43,31 @@ const ListElement = ({ item, type }) => {
               </span>
             </p>
           </div>
-          <a href={`/product-detail/${item._id}`}>
-            <Button
-              className="text-tiny text-white"
-              color="primary"
-              radius="sm"
-              size="md"
-              shadow="sm"
-            >
-              VER
-            </Button>
-          </a>
+          {type === "product" ? (
+            <a href={`/product/${item.storeId.slug}/${item.slug}/${item._id}`}>
+              <Button
+                className="text-tiny text-white"
+                color="primary"
+                radius="sm"
+                size="md"
+                shadow="sm"
+              >
+                VER
+              </Button>
+            </a>
+          ) : (
+            <a href={`/store/${item.slug}/${item._id}`}>
+              <Button
+                className="text-tiny text-white"
+                color="primary"
+                radius="sm"
+                size="md"
+                shadow="sm"
+              >
+                VER
+              </Button>
+            </a>
+          )}
         </CardFooter>
       </Card>
     </>

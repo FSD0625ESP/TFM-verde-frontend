@@ -94,7 +94,7 @@ const getAllOfferProducts = async () => {
 };
 
 const getProductById = async (id) => {
-  const response = await api.get(`/products/${id}`);
+  const response = await api.get(`/products/product/${id}`);
   return response.data;
 };
 
@@ -132,6 +132,16 @@ const getAllCategories = async () => {
   return response.data;
 };
 
+const getStoreReviewsById = async (id) => {
+  const response = await api.get(`/reviews/store/${id}`);
+  return response.data;
+};
+
+const getProductReviewsById = async (id) => {
+  const response = await api.get(`/reviews/product/${id}`);
+  return response.data;
+};
+
 export {
   loginUser,
   registerUser,
@@ -145,6 +155,8 @@ export {
   getProductById,
   searchProducts,
   getAllCategories,
+  getStoreReviewsById,
+  getProductReviewsById,
   generateForgotPasswordToken,
   forgotPassword,
   verifyForgotPasswordToken,

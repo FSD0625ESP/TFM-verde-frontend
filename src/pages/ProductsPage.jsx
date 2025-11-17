@@ -218,7 +218,7 @@ export default function ProductsPage() {
         </div>
       </div>
       <div className=" max-w-[1536px] gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
-        <aside className="sticky top-[98px] self-start col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 flex flex-col justify-start bg-primary/40 p-4 rounded-lg">
+        <aside className="sticky top-[100px] self-start col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 flex flex-col justify-start bg-primary/40 p-4 rounded-lg">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-semibold">Filtrar por categoría</h2>
             <div className="flex flex-col flex-wrap gap-2">
