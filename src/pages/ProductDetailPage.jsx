@@ -1,23 +1,30 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Slider from "../components/Slider/Slider";
 import Gallery from "../components/Gallery/Gallery";
-import { Button, Accordion, AccordionItem } from "@heroui/react";
+import {
+  Button,
+  Accordion,
+  AccordionItem,
+  Textarea,
+  addToast,
+} from "@heroui/react";
 import ListElement from "../components/ListElement/ListElement";
 import Rating from "../components/Rating/Rating";
 import { format, parseISO } from "date-fns";
-import { ShoppingBag, User, UserPlus } from "lucide-react";
+import { ShoppingBag, User } from "lucide-react";
 import {
   getProductById,
   getAllProducts,
   //getAllFeaturedProducts,
   getAllCategories,
   getProductReviewsById,
+  addProductReview,
 } from "../services/api";
 
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import "./accordion.css";
+
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
@@ -27,6 +34,14 @@ export default function ProductDetailPage() {
   const [productReviews, setProductReviews] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
+
+  const { user } = useContext(AuthContext);
+  console.log("user id", user?._id);
+
+  function round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+  }
 
   const fetchProduct = async () => {
     try {
@@ -45,7 +60,10 @@ export default function ProductDetailPage() {
       console.log("productReviews", data);
       setTotalReviews(data.length);
       setAverageRating(
-        data.reduce((acc, review) => acc + review.rating, 0) / data.length
+        round(
+          data.reduce((acc, review) => acc + review.rating, 0) / data.length,
+          1
+        )
       );
     } catch (error) {
       console.error("Error al obtener las reviews del producto:", error);
@@ -93,107 +111,90 @@ export default function ProductDetailPage() {
     console.log("useEffect launched");
   }, []);
 
-  /*  Formulario de reseñas  */
-
-  const schema = z.object({
-    rating: z.number().min(1).max(5),
-    comment: z.string().min(1).max(1000),
+  const [rating, setRating] = useState(0);
+  const [formData, setFormData] = useState({
+    userId: user?._id,
+    productId: product?._id,
+    ratingValue: 0,
+    comment: "",
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
-  });
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      userId: user?._id,
+      productId: product?._id,
+    }));
+  }, [user, product]);
 
-  // Zod schema with password policy: min 6, at least one uppercase and one number
-  const schema = z
-    .object({
-      firstName: z.string().min(2, "El nombre es obligatorio"),
-      lastName: z.string().min(2, "Los apellidos son obligatorios"),
-      email: z.string().email("Email no válido"),
-      password: z
-        .string()
-        .min(6, "Mínimo 6 caracteres")
-        .regex(
-          /(?=.*[A-Z])(?=.*\d)/,
-          "La contraseña debe contener al menos una mayúscula y un número"
-        ),
-      verifyPassword: z.string(),
-      agree: z
-        .boolean()
-        .refine((v) => v === true, { message: "Debes aceptar los términos" }),
-    })
-    .refine((data) => data.password === data.verifyPassword, {
-      message: "Las contraseñas no coinciden",
-      path: ["verifyPassword"],
-    });
+  const validateComment = (value) => {
+    console.log("comment", value);
+    if (!value) {
+      return "Debes escribir una valoración";
+    }
+    return true;
+  };
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: { agree: false },
-  });
+  const handleInputChange = (field) => (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.ratingValue || formData.ratingValue === 0) {
+      console.log("es obligatorio seleccionar un valor");
+      document.querySelector(".rating-error").style.display = "block";
+      return;
+    } else {
+      document.querySelector(".rating-error").style.display = "none";
+    }
+
     try {
-      const response = await registerUser(
-        data.firstName,
-        data.lastName,
-        data.email,
-        data.password,
-        "customer"
-      );
-      navigate("/");
+      // envío de datos al backend
+      await addProductReview({
+        userId: formData.userId,
+        productId: formData.productId,
+        rating: formData.ratingValue,
+        comment: formData.comment,
+      });
+
       addToast({
-        title: "Registro exitoso",
-        description: response.msg || "Usuario registrado correctamente.",
+        title: "Valoración enviada con éxito",
+        description: "Gracias por valorar este producto.",
         color: "success",
         duration: 5000,
       });
+      fetchProductReviews();
     } catch (error) {
+      console.error(error);
       addToast({
-        title: "Error de registro",
-        description: error.response?.data?.msg || "Error de registro.",
+        title: "Error al enviar la valoración",
+        description:
+          error.response?.data?.msg || "Por favor, inténtalo de nuevo",
         color: "danger",
         duration: 5000,
       });
     }
   };
 
-  const inputStyleProps = {
-    variant: "flat",
-    classNames: {
-      inputWrapper:
-        "bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white",
-      input: "bg-white",
-    },
-  };
-
   return (
     <>
-      <section className="max-w-[1536px] px-8 py-8 mx-auto">
+      <section className="max-w-[1536px] grid px-8 py-8 mx-auto">
         {product && (
-          <div className="flex flex-row gap-4 position-relative">
-            <div className="gallery sticky top-[100px] max-w-1/2 bg-primary/10 p-3 rounded-lg">
+          /*<div className=" flex flex-row flex-grow flex-1 gap-4 items-start position-relative">*/
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 items-start gap-4 position-relative">
+            <div className="gallery md:sticky md:top-[100px] bg-primary/10 p-3 rounded-lg">
               {product.images && <Gallery images={product.images} />}
             </div>
 
             <div className="w-full flex flex-col p-3">
-              <div className="flex flex-row items-center gap-2">
+              <div className="w-full flex flex-row gap-2">
                 {averageRating > 0 && (
                   <Rating
-                    initialValue={averageRating ? Math.round(averageRating) : 0}
+                    initialValue={averageRating ? averageRating : 0}
                     readonly
-                    onRatingChange={(value) =>
-                      console.log("Nueva valoración:", value)
-                    }
                     size="lg"
                   />
                 )}
@@ -203,6 +204,13 @@ export default function ProductDetailPage() {
                     <a
                       href="#reviews"
                       className="underline hover:text-primary duration-300"
+                      onClick={() => {
+                        const accordionItem =
+                          document.querySelector("#accordion-item-2");
+                        if (accordionItem) {
+                          accordionItem.onPress;
+                        }
+                      }}
                     >
                       {totalReviews} reseñas
                     </a>
@@ -214,18 +222,25 @@ export default function ProductDetailPage() {
               </div>
               <div className="flex flex-row items-center gap-2 py-2">
                 {product.storeId && (
-                  <span className="text-sm text-gray-600">
-                    {product.storeId.name}
-                  </span>
+                  <Link
+                    to={`/store/${product.storeId.slug}/${product.storeId._id}`}
+                    className="text-sm text-gray-600 underline hover:text-primary duration-300"
+                  >
+                    <h3 className="text-sm text-gray-600 hover:text-primary duration-300">
+                      {product.storeId.name}
+                    </h3>
+                  </Link>
                 )}
               </div>
               <p className="text-base text-gray-600">{product.description}</p>
-              <div className="flex flex-row items-center gap-2 py-2">
-                <span className="text-sm text-black font-semibold">
+              <div className="flex flex-row items-end gap-2 py-2">
+                <span className="text-sm text-black font-semibold text-xl">
                   {product.price}$
                 </span>
                 <span className="text-sm text-gray-600">
-                  unidades: {product.stock}
+                  {product.stock > 0
+                    ? ` (en stock: ${product.stock}u)`
+                    : "Agotado"}
                 </span>
               </div>
               <div className="flex flex-row items-center gap-2 py-2">
@@ -234,7 +249,6 @@ export default function ProductDetailPage() {
                   <ShoppingBag className="mr-2" />
                 </Button>
               </div>
-
               <div className="w-full">
                 <Accordion
                   motionProps={{
@@ -282,7 +296,7 @@ export default function ProductDetailPage() {
                     title="Descripción del producto"
                     className="pt-6"
                   >
-                    <p>
+                    <p className="pb-4">
                       Lorem ipsum dolor sit, amet consectetur adipisicing elit.
                       Incidunt eveniet expedita voluptatem facere unde itaque
                       odit commodi praesentium? Amet sed suscipit culpa in
@@ -290,6 +304,7 @@ export default function ProductDetailPage() {
                     </p>
                   </AccordionItem>
                   <AccordionItem
+                    id="accordion-item-2"
                     key="2"
                     aria-label="Valoraciones y reseñas"
                     title="Valoraciones y reseñas"
@@ -331,8 +346,9 @@ export default function ProductDetailPage() {
                     key="3"
                     aria-label="Condiciones de envío"
                     title="Condiciones de envío"
+                    className="border-b-1 border-gray-300"
                   >
-                    <p>
+                    <p className="pb-4">
                       Lorem ipsum dolor sit, amet consectetur adipisicing elit.
                       Incidunt eveniet expedita voluptatem facere unde itaque
                       odit commodi praesentium? Amet sed suscipit culpa in
@@ -341,76 +357,52 @@ export default function ProductDetailPage() {
                   </AccordionItem>
                 </Accordion>
               </div>
-
-              <div className="w-full">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <Input
-                    label="Nombre"
-                    placeholder="Escribe aquí tu nombre"
-                    {...register("firstName")}
-                    isRequired
-                    isInvalid={!!errors.firstName}
-                    errorMessage={errors.firstName?.message}
-                    {...inputStyleProps}
-                  />
-                  <Input
-                    label="Apellidos"
-                    placeholder="Escribe aquí tu nombre"
-                    {...register("lastName")}
-                    isInvalid={!!errors.lastName}
-                    errorMessage={errors.lastName?.message}
-                    {...inputStyleProps}
-                  />
-                  <Input
-                    label="Email"
-                    placeholder="example@correo.com"
-                    type="email"
-                    {...register("email")}
-                    isRequired
-                    isInvalid={!!errors.email}
-                    errorMessage={errors.email?.message}
-                    {...inputStyleProps}
-                  />
-                  <Input
-                    label="Password"
-                    placeholder="Enter password"
-                    type={isVisible ? "text" : "password"}
-                    {...register("password")}
-                    isRequired
-                    isInvalid={!!errors.password}
-                    errorMessage={errors.password?.message}
-                    endContent={
-                      <button
-                        type="button"
-                        onClick={toggleVisibility}
-                        className="focus:outline-none text-default-400"
-                      >
-                        {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    }
-                    {...inputStyleProps}
-                  />
-                  <Input
-                    label="Confirma tu password"
-                    placeholder="Enter password"
-                    type={isVisible2 ? "text" : "password"}
-                    {...register("verifyPassword")}
-                    isRequired
-                    isInvalid={!!errors.verifyPassword}
-                    errorMessage={errors.verifyPassword?.message}
-                    endContent={
-                      <button
-                        type="button"
-                        onClick={toggleVisibility2}
-                        className="focus:outline-none text-default-400"
-                      >
-                        {isVisible2 ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    }
-                    {...inputStyleProps}
-                  />
-                </form>
-              </div>
+              {user && (
+                <div className="w-full pt-8">
+                  <form onSubmit={onSubmit} className="space-y-4 w-full">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-5">
+                      Valora este producto
+                    </h3>
+                    <Rating
+                      initialValue={0}
+                      onRatingChange={(value) => {
+                        setRating(value);
+                        setFormData((prev) => ({
+                          ...prev,
+                          ratingValue: value,
+                        }));
+                      }}
+                      size="lg"
+                    />
+                    <p className="rating-error text-tiny text-danger mb-5 -mt-3 hidden">
+                      Es obligatorio seleccionar una puntuación
+                    </p>
+                    <Textarea
+                      label="Valoración"
+                      placeholder="Escribe tu valoración..."
+                      value={formData.comment}
+                      onChange={handleInputChange("comment")}
+                      validate={validateComment}
+                      isRequired
+                      variant="flat"
+                      classNames={{
+                        inputWrapper:
+                          "bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white",
+                        input: "bg-white",
+                      }}
+                    />
+                    <Button
+                      type="submit"
+                      color="primary"
+                      radius="lg"
+                      size="lg"
+                      className="w-full"
+                    >
+                      Enviar
+                    </Button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         )}

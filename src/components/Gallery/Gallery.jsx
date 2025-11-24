@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -13,7 +13,6 @@ import "swiper/css/thumbs";
 // import required modules
 import { Navigation, Thumbs, FreeMode, Zoom } from "swiper/modules";
 import "./Gallery.css";
-import { useState } from "react";
 
 export default function Gallery({ images }) {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -61,7 +60,7 @@ export default function Gallery({ images }) {
           console.log("img", img);
           return (
             <SwiperSlide>
-              <img key={idx} src={img} />
+              <img key={`thumb-${idx}`} alt={`Thumbnail ${idx}`} src={img} />
             </SwiperSlide>
           );
         })}

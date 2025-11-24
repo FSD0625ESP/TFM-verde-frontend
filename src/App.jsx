@@ -3,6 +3,7 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import StoresPage from "./pages/StoresPage.jsx";
+import StoreDetailPage from "./pages/StoreDetailPage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
 import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -27,6 +28,7 @@ import AbrirTienda from "./pages/Vendedores/AbrirTienda.jsx";
 import VentaParticulares from "./pages/Vendedores/VentaParticulares.jsx";
 import VentaProfesionales from "./pages/Vendedores/VentaProfesionales.jsx";
 import ResultadosPage from "./pages/ResultadosPage.jsx";
+import StoreAdminPage from "./pages/StoreAdminPage.jsx";
 // import CartPage from "./pages/EmptyCartPage.jsx";
 // import FullCartPage from "./pages/FullCartPage.jsx";
 // import { CartProvider } from "./contexts/CartContext.jsx";
@@ -96,14 +98,13 @@ function App() {
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
           />
           <Route path="/stores" element={<StoresPage />} />
-          <Route path="/store/:storeName/:id" element={<ProductDetailPage />} />
+          <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route
             path="/product/:storeName/:productName/:id"
             element={<ProductDetailPage />}
           />
-          {/* <Route path="/product-detail/:id" element={<ProductDetailPage />}  */}
-          <Route path="/product-detail/:id" element={<ProductDetailPage />} />
+          <Route path="/store-admin/:id" element={<StoreAdminPage />} />
           <Route path="/resultados" element={<ResultadosPage />} />
           <Route path="/contact" element={<Contacto />} />
           <Route path="/quienes-somos" element={<QuienesSomos />} />
