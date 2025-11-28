@@ -63,18 +63,6 @@ export default function FileUploader({ images, setImages }) {
         labelIdle='Arrastra imágenes o <span class="filepond--label-action">explora</span>'
         allowFileSizeValidation={true}
         maxFileSize="5MB"
-        server={{
-          process: {
-            url: "http://localhost:5173/api/uploads/product/image",
-            method: "POST",
-            withCredentials: false,
-            onload: (res) => {
-              const data = JSON.parse(res);
-              return data.url; // <--- Cloudinary URL
-            },
-          },
-          revert: null,
-        }}
       />
     </div>
   );

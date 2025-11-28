@@ -37,8 +37,8 @@ export default function Gallery({ images }) {
           console.log("img", img);
           return (
             <SwiperSlide>
-              <div key={idx} className="swiper-zoom-container">
-                <img src={img} />
+              <div key={idx} className="swiper-zoom-container ">
+                <img src={img} className="rounded-lg" />
               </div>
             </SwiperSlide>
           );
@@ -60,7 +60,7 @@ export default function Gallery({ images }) {
           console.log("img", img);
           return (
             <SwiperSlide>
-              <img key={`thumb-${idx}`} alt={`Thumbnail ${idx}`} src={img} />
+              <img key={`thumb-${idx}`} alt={`Thumbnail ${idx}`} src={img} className="rounded-lg" />
             </SwiperSlide>
           );
         })}

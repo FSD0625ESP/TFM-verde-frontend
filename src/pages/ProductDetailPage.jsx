@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Slider from "../components/Slider/Slider";
 import Gallery from "../components/Gallery/Gallery";
@@ -29,6 +29,7 @@ import { AuthContext } from "../contexts/AuthContext";
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
   const { id: productId } = useParams();
+  const ratingRef = useRef(null);
 
   const [product, setProduct] = useState({});
   const [productReviews, setProductReviews] = useState([]);
@@ -36,7 +37,6 @@ export default function ProductDetailPage() {
   const [averageRating, setAverageRating] = useState(0);
 
   const { user } = useContext(AuthContext);
-  console.log("user id", user?._id);
 
   function round(value, precision) {
     var multiplier = Math.pow(10, precision || 0);
@@ -47,7 +47,6 @@ export default function ProductDetailPage() {
     try {
       const data = await getProductById(productId);
       setProduct(data);
-      console.log("product", data);
     } catch (error) {
       console.error("Error al obtener el producto:", error);
     }
@@ -57,8 +56,11 @@ export default function ProductDetailPage() {
     try {
       const data = await getProductReviewsById(productId);
       setProductReviews(data);
-      console.log("productReviews", data);
       setTotalReviews(data.length);
+      if (data.length === 0) {
+        setAverageRating(0);
+        return;
+      }
       setAverageRating(
         round(
           data.reduce((acc, review) => acc + review.rating, 0) / data.length,
@@ -178,7 +180,7 @@ export default function ProductDetailPage() {
       });
     }
   };
-
+  console.log("Average rating:", averageRating);
   return (
     <>
       <section className="max-w-[1536px] grid px-8 py-8 mx-auto">
@@ -200,16 +202,15 @@ export default function ProductDetailPage() {
                 )}
                 {averageRating && (
                   <span className="text-sm text-gray-600">
-                    ({averageRating}) -{" "}
+                    Valoraciones: ({averageRating}) -{" "}
                     <a
                       href="#reviews"
                       className="underline hover:text-primary duration-300"
                       onClick={() => {
-                        const accordionItem =
-                          document.querySelector("#accordion-item-2");
-                        if (accordionItem) {
-                          accordionItem.onPress;
-                        }
+                        // abrir el desplegable si no esta abierto de las reseñas
+                        ratingRef.current?.scrollIntoView({ behavior: "smooth" });
+                        // simular click en el accordion si no esta abierto sabiendo que current es null
+                        ratingRef.current?.click()
                       }}
                     >
                       {totalReviews} reseñas
@@ -307,6 +308,7 @@ export default function ProductDetailPage() {
                     id="accordion-item-2"
                     key="2"
                     aria-label="Valoraciones y reseñas"
+                    ref={ratingRef}
                     title="Valoraciones y reseñas"
                   >
                     <div

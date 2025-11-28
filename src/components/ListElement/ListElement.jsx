@@ -17,11 +17,20 @@ const ListElement = ({ item, type }) => {
 
   const isProduct = type === "product";
 
+  console.log("Navigating to product", item);
   const handleClick = () => {
     if (isProduct) {
-      navigate(`/product-detail/${item._id}`);
+      console.log("Navigating to product detail", item);
+      const storeName = item.storeId?.slug;
+      const productName = item.slug
+      navigate(
+        `/product/${encodeURIComponent(storeName)}/${encodeURIComponent(
+          productName
+        )}/${item._id}`
+      );
     } else {
-      navigate(`/stores/${item._id}`);
+      const storeName = item.slug || "tienda";
+      navigate(`/store/${encodeURIComponent(storeName)}/${item._id}`);
     }
   };
 

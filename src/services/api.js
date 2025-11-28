@@ -242,9 +242,10 @@ const contactFormSend = async (formData) => {
 
 
 
-const uploadProductImage = async (imageFile) => {
+const uploadProductImage = async (imageFile, productId) => {
   const formData = new FormData();
   formData.append("image", imageFile);
+  formData.append("productId", productId);
   const response = await api.post(`/uploads/product/image`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -252,6 +253,12 @@ const uploadProductImage = async (imageFile) => {
   });
   return response.data;
 };
+
+const createProduct = async (productData) => {
+  const response = await api.post("/products/add", productData);
+  return response.data;
+}
+
 
 export {
   loginUser,
@@ -285,4 +292,5 @@ export {
   deleteChat,
   contactFormSend,
   uploadProductImage,
+  createProduct,
 };

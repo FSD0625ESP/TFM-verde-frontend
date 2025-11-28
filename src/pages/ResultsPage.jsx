@@ -100,7 +100,7 @@ export default function ResultadosPage() {
       const results = await searchProducts(
         productsPage,
         searchFromURL,
-        productCategories,
+        productCategories, [],
         false,
         priceRange[0],
         priceRange[1],

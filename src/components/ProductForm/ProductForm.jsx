@@ -18,23 +18,13 @@ import {
 } from "@heroui/react";
 
 import FileUploader from "../FileUploader/FileUploader";
-import axios from "axios";
-
+import { uploadProductImage, createProduct } from "../../services/api";
 import slugify from "slugify";
-import { longFormatters } from "date-fns";
 
-/*
- ProductForm.jsx
- Props:
-        - product: objeto opcional (coincide con el esquema mongoose proporcionado)
-        - onSubmit: función async(payload)
-        - categories: array de { value, label } para seleccionar (multiple)
-        - submitLabel: texto botón
-*/
+
 
 export default function ProductForm({
   product = null,
-  onSubmit,
   allCategories = [],
   submitLabel = "Guardar producto",
 }) {
@@ -122,17 +112,14 @@ export default function ProductForm({
     return true;
   };
 
-  const handleCategoriesChange = (e) => {
-    console.log("selected category", e.target.value);
-    setField("categories", e.target.value);
-  };
+
 
   const validateCategories = (v) => {
     if (!v || v.length === 0) return "Selecciona al menos una categoría";
     return true;
   };
 
-  const validateImages = (v) => {
+  const validateImages = () => {
     if (productImages.length === 0) return "Selecciona al menos una imagen";
     return true;
   };
@@ -143,25 +130,25 @@ export default function ProductForm({
     const value = typeof v === "string" ? v : v.target?.value;
     setField("title", value);
     // auto-generate slug only if slug is empty or matches previous generated
-    if (!form.slug || form.slug === generateSlug(form.title)) {
+    if (!formData.slug || formData.slug === generateSlug(formData.title)) {
       setField("slug", generateSlug(value));
     }
   };
 
   const validateFormBeforeSubmit = () => {
     // run the small validation set, show toasts for issues
-    const titleOk = validateTitle(form.title) === true;
-    const descOk = validateDescription(form.description) === true;
-    const longDescOk = validateLongDescription(form.longDescription) === true;
-    const categoriesOk = validateCategories(form.categories) === true;
-    const priceOk = validatePrice(form.price) === true;
-    const stockOk = validateStock(form.stock) === true;
+    const titleOk = validateTitle(formData.title) === true;
+    const descOk = validateDescription(formData.description) === true;
+    const longDescOk = validateLongDescription(formData.longDescription) === true;
+    const categoriesOk = validateCategories(formData.categories) === true;
+    const priceOk = validatePrice(formData.price) === true;
+    const stockOk = validateStock(formData.stock) === true;
     const imagesOk = validateImages(productImages) === true;
 
     if (!titleOk) {
       addToast({
         title: "Validación",
-        description: validateTitle(form.title),
+        description: validateTitle(formData.title),
         color: "danger",
       });
       return false;
@@ -169,7 +156,7 @@ export default function ProductForm({
     if (!descOk) {
       addToast({
         title: "Validación",
-        description: validateDescription(form.description),
+        description: validateDescription(formData.description),
         color: "danger",
       });
       return false;
@@ -177,7 +164,7 @@ export default function ProductForm({
     if (!longDescOk) {
       addToast({
         title: "Validación",
-        description: validateLongDescription(form.longDescription),
+        description: validateLongDescription(formData.longDescription),
         color: "danger",
       });
       return false;
@@ -185,7 +172,7 @@ export default function ProductForm({
     if (!categoriesOk) {
       addToast({
         title: "Validación",
-        description: validateCategories(form.categories),
+        description: validateCategories(formData.categories),
         color: "danger",
       });
       return false;
@@ -193,7 +180,7 @@ export default function ProductForm({
     if (!priceOk) {
       addToast({
         title: "Validación",
-        description: validatePrice(form.price),
+        description: validatePrice(formData.price),
         color: "danger",
       });
       return false;
@@ -201,7 +188,7 @@ export default function ProductForm({
     if (!stockOk) {
       addToast({
         title: "Validación",
-        description: validateStock(form.stock),
+        description: validateStock(formData.stock),
         color: "danger",
       });
       return false;
@@ -228,33 +215,25 @@ export default function ProductForm({
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     if (!validateFormBeforeSubmit()) return;
-
     let payload = {
       title: formData.title,
       description: formData.description,
       longDescription: formData.longDescription,
       price: Number(formData.price),
       status: formData.status,
-      nuevo: !!formData.nuevo,
       oferta: !!formData.oferta,
       destacado: !!formData.destacado,
       stock: Number(formData.stock),
-      categories: formData.categories,
-      // storeId / deletedAt / timestamps handled server-side
+      categories: formData.categories.split(',').map(cat => cat.trim()),
       active: !!formData.active,
     };
-
-    // Solo guardamos las URLs definitivas de Cloudinary
-    const imageUrls = productImages.map((img) => img.url).filter(Boolean);
-
-    payload = {
-      ...payload,
-      images: imageUrls,
-    };
+    console.log("FORMDATA", payload)
 
     try {
       setSubmitting(true);
-      console.log("ProductForm handleSubmit payload", payload);
+      const productData = await createProduct(payload);
+      console.log("Producto creado:", productData);
+      await uploadImages(productData.productId);
       //await onSubmit(payload);
     } catch (err) {
       console.error(err);
@@ -267,6 +246,47 @@ export default function ProductForm({
       setSubmitting(false);
     }
   };
+  const uploadImages = async (productId) => {
+    try {
+      if (!productId) throw new Error("ID de producto no válido");
+
+      // Filtramos solo los que tengan un File real
+      const files = productImages
+        .map((img) => img.file)
+        .filter((f) => f instanceof File);
+
+      if (!files.length) {
+        addToast({
+          title: "Imágenes",
+          description: "No hay nuevas imágenes para subir",
+          color: "warning",
+        });
+        return;
+      }
+
+      for (const file of files) {
+        await uploadProductImage(file, productId);
+      }
+
+      addToast({
+        title: "Éxito",
+        description: "Producto creado y imágenes subidas correctamente",
+        color: "success",
+      });
+    } catch (err) {
+      console.error(err);
+      addToast({
+        title: "Error",
+        description: err?.message || "Error al subir imágenes",
+        color: "danger",
+      });
+    }
+  };
+
+
+
+
+
 
   const inputStyleProps = {
     variant: "flat",
@@ -342,8 +362,12 @@ export default function ProductForm({
             label="Categoría"
             placeholder="Seleccionar categoría"
             value={formData.categories}
-            onChange={handleCategoriesChange}
+            onChange={(e) => {
+              setField("categories", e.target.value)
+              console.log("Selected categories:", e.target.value);
+            }}
             className="mt-2"
+            selectionMode="multiple"
             validate={validateCategories}
             isRequired
           >
@@ -355,25 +379,22 @@ export default function ProductForm({
           </Select>
           <Select
             label="Estado"
-            placeholder="Producto en venta o exhibición"
+            placeholder="Estado del producto en la tienda"
             value={formData.status}
-            onChange={(e) => setField("status", e.target.value)}
+            onChange={(e) => {
+              setField("status", e.target.value)
+            }}
             className="mt-2"
             isRequired
           >
-            <SelectItem value="onSale">En venta</SelectItem>
-            <SelectItem value="exhibition">Exhibición</SelectItem>
+            <SelectItem key="onSale" value="onSale">En venta</SelectItem>
+            <SelectItem key="exhibition" value="exhibition">Exhibición</SelectItem>
+            <SelectItem key="disabled" value="disabled">Deshabilitado</SelectItem>
           </Select>
         </div>
 
         <div className="flex flex-col gap-4 mt-4">
           <div className="block font-medium">Características del producto</div>
-          <Checkbox
-            isSelected={!!formData.nuevo}
-            onChange={(e) => setField("nuevo", e.target.checked)}
-          >
-            Nuevo
-          </Checkbox>
           <Checkbox
             isSelected={!!formData.oferta}
             onChange={(e) => setField("oferta", e.target.checked)}
