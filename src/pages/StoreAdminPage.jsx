@@ -11,27 +11,30 @@ import {
 import Rating from "../components/Rating/Rating";
 import { ChevronLeft, ChevronRight, Menu, ChevronDown } from "lucide-react";
 
-import { getStoreById } from "../services/api";
+import { getAllCategories } from "../services/api";
 
 import { AuthContext } from "../contexts/AuthContext";
 import ProductForm from "../components/ProductForm/ProductForm";
+//import DropZoneWithPreviews from "../components/DropZone/DropZone";
 
 export default function StoreAdminPage() {
   //obtenemos la id del producto de la url
-  const { id: storeId } = useParams();
+  //const { id: storeId } = useParams();
 
-  const [store, setStore] = useState({});
-  const [categoriesList, setCategoriesList] = useState([]);
+  //const [store, setStore] = useState({});
+  const [allCategoriesList, setAllCategoriesList] = useState([]);
+  const [storeCategoriesList, setStoreCategoriesList] = useState([]);
   const [areCategoriesFiltered, setAreCategoriesFiltered] = useState(false);
 
-  const { user } = useContext(AuthContext);
+  const { user, sellerStore } = useContext(AuthContext);
   console.log("user id", user?._id);
+  console.log("store id", sellerStore?._id);
 
   function round(value, precision) {
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
   }
-
+  /* 
   const fetchStore = async () => {
     try {
       const data = await getStoreById(storeId);
@@ -41,33 +44,37 @@ export default function StoreAdminPage() {
       console.error("Error al obtener la tienda:", error);
     }
   };
+   */
 
   const fetchCategories = async () => {
     try {
       const allCategories = await getAllCategories();
-      const categoriesFromStore = store?.categories || [];
-      const filteredCategories = allCategories.filter((category) =>
-        categoriesFromStore.includes(category._id)
-      );
-      setCategoriesList(filteredCategories);
-      setAreCategoriesFiltered(true);
+      setAllCategoriesList(allCategories);
+      if (sellerStore && sellerStore.categories) {
+        const filteredCategories = allCategories.filter((category) =>
+          sellerStore.categories.includes(category._id)
+        );
+        setStoreCategoriesList(filteredCategories);
+        setAreCategoriesFiltered(true);
+        console.log("allCategories", allCategories);
+      }
     } catch (error) {
       console.error("Error al obtener las categorías:", error);
     }
   };
-  console.log("categoriesList", categoriesList);
+  console.log("allCategories", allCategoriesList);
 
   useEffect(() => {
-    fetchStore();
+    fetchCategories();
     console.log("useEffect launched");
   }, []);
 
   // Se ejecuta cuando store cambia y ya tiene datos
   useEffect(() => {
-    if (store && store.categories) {
+    if (sellerStore && sellerStore.categories) {
       fetchCategories();
     }
-  }, [store]);
+  }, [sellerStore]);
 
   const [collapsed, setCollapsed] = useState(false);
   const [openSection, setOpenSection] = useState(null);
@@ -77,10 +84,10 @@ export default function StoreAdminPage() {
   };
 
   return (
-    <div className="w-full min-h-[73vh] flex basis-1 flex-1 overflow-hidden bg-gray-100">
+    <div className="w-full min-h-screen flex basis-1 overflow-hidden bg-gray-100">
       {/* Sidebar */}
       <aside
-        className={`bg-secondary/80 shadow-lg sticky top-[100px] h-full transition-all duration-300 flex flex-col ${
+        className={`bg-secondary/80 shadow-lg sticky top-[100px] h-full transition-all duration-300 flex flex-col overflow-x-hidden ${
           collapsed ? "w-16" : "w-64"
         }`}
       >
@@ -89,9 +96,9 @@ export default function StoreAdminPage() {
             <>
               <Image
                 removeWrapper
-                alt={store.name}
-                className="h-8 w-auto"
-                src={store.logo}
+                alt={sellerStore.name}
+                className="h-8 w-auto border-2 border-white rounded-md"
+                src={sellerStore.logo}
               />
               <h1 className="text-xl font-semibold">Dashboard</h1>
             </>
@@ -183,18 +190,20 @@ export default function StoreAdminPage() {
           >
             <Menu />
           </Button>
-          <h2 className="text-2xl font-semibold">{store.name}</h2>
+          <h2 className="text-2xl font-semibold">{sellerStore.name}</h2>
         </header>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          <div className="bg-white shadow rounded-xl p-6">
+          <div className="bg-white shadow rounded-xl p-6 bg-gray-20">
             <h3 className="text-xl font-semibold mb-4">
               Añadir Nuevo Producto
             </h3>
             <p className="text-gray-700">
               Rellena el siguiente formulario para añadir un nuevo producto
             </p>
-            <ProductForm />
+            {allCategoriesList && allCategoriesList.length > 0 && (
+              <ProductForm allCategories={allCategoriesList} />
+            )}
           </div>
         </div>
       </main>

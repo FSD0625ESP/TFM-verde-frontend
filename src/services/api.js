@@ -49,6 +49,11 @@ const getStoreById = async (id) => {
   return response.data;
 };
 
+const getStoreBySellerId = async (id) => {
+  const response = await api.get(`/stores/store/seller/${id}`);
+  return response.data;
+};
+
 const registerStore = async (storeData) => {
   const response = await api.post("/stores/register", storeData);
   return response.data;
@@ -204,6 +209,17 @@ const deleteChat = async (chatId) => {
   return response.data;
 };
 
+const uploadProductImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  const response = await api.post(`/uploads/product/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
 export {
   loginUser,
   registerUser,
@@ -211,6 +227,7 @@ export {
   logoutUser,
   getAllStores,
   getStoreById,
+  getStoreBySellerId,
   registerStore,
   getAllProducts,
   getAllProductsByStoreId,
@@ -232,4 +249,5 @@ export {
   getOrCreateChat,
   sendMessage,
   deleteChat,
+  uploadProductImage,
 };

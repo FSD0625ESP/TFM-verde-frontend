@@ -104,7 +104,16 @@ function App() {
             path="/product/:storeName/:productName/:id"
             element={<ProductDetailPage />}
           />
-          <Route path="/store-admin/:id" element={<StoreAdminPage />} />
+          <Route
+            path="/store-admin/"
+            element={
+              isUserLoggedIn() && user.role === "seller" ? (
+                <StoreAdminPage />
+              ) : (
+                <LoginPage />
+              )
+            }
+          />
           <Route path="/resultados" element={<ResultadosPage />} />
           <Route path="/contact" element={<Contacto />} />
           <Route path="/quienes-somos" element={<QuienesSomos />} />

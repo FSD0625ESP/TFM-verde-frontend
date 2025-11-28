@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Camera,
   Save,
@@ -17,6 +17,12 @@ import {
   addToast,
 } from "@heroui/react";
 
+import FileUploader from "../FileUploader/FileUploader";
+import axios from "axios";
+
+import slugify from "slugify";
+import { longFormatters } from "date-fns";
+
 /*
  ProductForm.jsx
  Props:
@@ -24,22 +30,16 @@ import {
         - onSubmit: función async(payload)
         - categories: array de { value, label } para seleccionar (multiple)
         - submitLabel: texto botón
- Configurar CLOUDINARY_CLOUD_NAME y CLOUDINARY_UPLOAD_PRESET abajo
 */
-
-const CLOUDINARY_CLOUD_NAME = "dewtxnagu";
-const CLOUDINARY_UPLOAD_PRESET = "<tfm-meraki>";
-const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 export default function ProductForm({
   product = null,
   onSubmit,
-  categories = [],
+  allCategories = [],
   submitLabel = "Guardar producto",
 }) {
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     title: "",
-    slug: "",
     description: "",
     price: "",
     stock: "",
@@ -51,15 +51,13 @@ export default function ProductForm({
     active: true,
   });
 
-  // images: [{ file?, preview, url?, uploading?, id }]
-  const [images, setImages] = useState([]);
+  const [productImages, setProductImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!product) return;
-    setForm({
+    setFormData({
       title: product.title ?? "",
-      slug: product.slug ?? "",
       description: product.description ?? "",
       price: product.price != null ? String(product.price) : "",
       stock: product.stock != null ? String(product.stock) : "",
@@ -72,42 +70,45 @@ export default function ProductForm({
         : [],
       active: product.deletedAt ? false : true,
     });
-
+    /* 
     if (Array.isArray(product.images)) {
-      setImages(
+      setProductImages(
         product.images.map((url, i) => ({
           id: `existing-${i}`,
+          file: null,
+          url: null,
           preview: url,
-          url,
           uploading: false,
         }))
       );
     }
+     */
   }, [product]);
 
-  const setField = (k, v) => setForm((s) => ({ ...s, [k]: v }));
+  const setField = (k, v) => setFormData((s) => ({ ...s, [k]: v }));
 
-  const generateSlug = (text) =>
-    text
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "")
-      .replace(/--+/g, "-");
+  const generateSlug = (text) => {
+    if (!text) return "";
 
+    return slugify(text, {
+      lower: true, // convierte a minúsculas
+      strict: true, // elimina caracteres especiales
+      locale: "es", // soporte para tildes y ñ
+      trim: true,
+    });
+  };
   /* validation helpers for heroui Input.validate prop */
   const validateTitle = (v) => {
-    if (!v || v.trim().length < 2) return "Título requerido (mín 2 caracteres)";
-    return true;
-  };
-  const validateSlug = (v) => {
-    if (!v || v.trim().length < 2) return "Slug requerido";
+    if (!v || v.trim().length < 1) return "Título requerido";
     return true;
   };
   const validateDescription = (v) => {
-    if (!v || v.trim().length < 3)
-      return "Descripción requerida (mín 3 caracteres)";
+    if (!v || v.trim().length < 1) return "Descripción requerida";
+    return true;
+  };
+
+  const validateLongDescription = (v) => {
+    if (!v || v.trim().length < 1) return "Descripción detallada requerida";
     return true;
   };
   const validatePrice = (v) => {
@@ -121,72 +122,19 @@ export default function ProductForm({
     return true;
   };
 
-  const uploadToCloudinary = async (file) => {
-    if (!CLOUDINARY_UPLOAD_PRESET || CLOUDINARY_CLOUD_NAME.includes("<")) {
-      throw new Error(
-        "Configura CLOUDINARY_CLOUD_NAME y CLOUDINARY_UPLOAD_PRESET"
-      );
-    }
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-    const res = await fetch(CLOUDINARY_UPLOAD_URL, {
-      method: "POST",
-      body: fd,
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Cloudinary upload error: ${text}`);
-    }
-    const data = await res.json();
-    return data.secure_url || data.url;
-  };
-
-  const handleFiles = async (fileList) => {
-    const files = Array.from(fileList || []);
-    if (files.length === 0) return;
-    const added = files.map((file, i) => {
-      const preview = URL.createObjectURL(file);
-      return {
-        file,
-        preview,
-        uploading: true,
-        url: null,
-        id: `local-${Date.now()}-${i}`,
-      };
-    });
-    setImages((prev) => [...prev, ...added]);
-
-    for (const item of added) {
-      try {
-        const uploadedUrl = await uploadToCloudinary(item.file);
-        setImages((prev) =>
-          prev.map((p) =>
-            p.id === item.id ? { ...p, uploading: false, url: uploadedUrl } : p
-          )
-        );
-      } catch (err) {
-        console.error("Upload failed", err);
-        addToast({
-          title: "Error al subir imagen",
-          description: err.message || "No se pudo subir la imagen",
-          color: "danger",
-        });
-        setImages((prev) =>
-          prev.map((p) => (p.id === item.id ? { ...p, uploading: false } : p))
-        );
-      }
-    }
-  };
-
-  const removeImage = (id) => {
-    setImages((prev) => prev.filter((p) => p.id !== id));
-  };
-
   const handleCategoriesChange = (e) => {
-    const opts = Array.from(e.target.selectedOptions || []);
-    const vals = opts.map((o) => o.value);
-    setField("categories", vals);
+    console.log("selected category", e.target.value);
+    setField("categories", e.target.value);
+  };
+
+  const validateCategories = (v) => {
+    if (!v || v.length === 0) return "Selecciona al menos una categoría";
+    return true;
+  };
+
+  const validateImages = (v) => {
+    if (productImages.length === 0) return "Selecciona al menos una imagen";
+    return true;
   };
 
   const handleTitleChange = (v) => {
@@ -203,10 +151,12 @@ export default function ProductForm({
   const validateFormBeforeSubmit = () => {
     // run the small validation set, show toasts for issues
     const titleOk = validateTitle(form.title) === true;
-    const slugOk = validateSlug(form.slug) === true;
     const descOk = validateDescription(form.description) === true;
+    const longDescOk = validateLongDescription(form.longDescription) === true;
+    const categoriesOk = validateCategories(form.categories) === true;
+    const priceOk = validatePrice(form.price) === true;
     const stockOk = validateStock(form.stock) === true;
-    const imagesOk = images.some((i) => i.url);
+    const imagesOk = validateImages(productImages) === true;
 
     if (!titleOk) {
       addToast({
@@ -216,18 +166,34 @@ export default function ProductForm({
       });
       return false;
     }
-    if (!slugOk) {
-      addToast({
-        title: "Validación",
-        description: validateSlug(form.slug),
-        color: "danger",
-      });
-      return false;
-    }
     if (!descOk) {
       addToast({
         title: "Validación",
         description: validateDescription(form.description),
+        color: "danger",
+      });
+      return false;
+    }
+    if (!longDescOk) {
+      addToast({
+        title: "Validación",
+        description: validateLongDescription(form.longDescription),
+        color: "danger",
+      });
+      return false;
+    }
+    if (!categoriesOk) {
+      addToast({
+        title: "Validación",
+        description: validateCategories(form.categories),
+        color: "danger",
+      });
+      return false;
+    }
+    if (!priceOk) {
+      addToast({
+        title: "Validación",
+        description: validatePrice(form.price),
         color: "danger",
       });
       return false;
@@ -248,7 +214,7 @@ export default function ProductForm({
       });
       return false;
     }
-    if (images.some((i) => i.uploading)) {
+    if (productImages.some((i) => i.uploading)) {
       addToast({
         title: "Subida de imágenes",
         description: "Espera a que terminen las subidas",
@@ -263,25 +229,33 @@ export default function ProductForm({
     ev.preventDefault();
     if (!validateFormBeforeSubmit()) return;
 
-    const payload = {
-      title: form.title,
-      slug: form.slug,
-      description: form.description,
-      price: form.price !== "" ? Number(form.price) : undefined,
-      images: images.filter((i) => i.url).map((i) => i.url),
-      status: form.status,
-      nuevo: !!form.nuevo,
-      oferta: !!form.oferta,
-      destacado: !!form.destacado,
-      stock: Number(form.stock),
-      categories: form.categories,
+    let payload = {
+      title: formData.title,
+      description: formData.description,
+      longDescription: formData.longDescription,
+      price: Number(formData.price),
+      status: formData.status,
+      nuevo: !!formData.nuevo,
+      oferta: !!formData.oferta,
+      destacado: !!formData.destacado,
+      stock: Number(formData.stock),
+      categories: formData.categories,
       // storeId / deletedAt / timestamps handled server-side
-      active: !!form.active,
+      active: !!formData.active,
+    };
+
+    // Solo guardamos las URLs definitivas de Cloudinary
+    const imageUrls = productImages.map((img) => img.url).filter(Boolean);
+
+    payload = {
+      ...payload,
+      images: imageUrls,
     };
 
     try {
       setSubmitting(true);
-      await onSubmit(payload);
+      console.log("ProductForm handleSubmit payload", payload);
+      //await onSubmit(payload);
     } catch (err) {
       console.error(err);
       addToast({
@@ -298,221 +272,129 @@ export default function ProductForm({
     variant: "flat",
     classNames: {
       inputWrapper:
-        "bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white",
+        "border border-gray-200 bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white",
       input: "bg-white",
     },
   };
 
   return (
-    <form onSubmit={handleSubmit} className="product-form space-y-4">
-      <Input
-        label="Título"
-        placeholder="Título del producto"
-        value={form.title}
-        onChange={handleTitleChange}
-        validate={validateTitle}
-        isRequired
-        icon={<ImageIcon size={16} />}
-        {...inputStyleProps}
-      />
-
-      <Input
-        label="Slug"
-        placeholder="slug-del-producto"
-        value={form.slug}
-        onChange={(e) => setField("slug", e.target.value)}
-        validate={validateSlug}
-        isRequired
-        icon={<LinkIcon size={14} />}
-        {...inputStyleProps}
-      />
-
-      <Textarea
-        label="Descripción"
-        placeholder="Descripción completa"
-        value={form.description}
-        onChange={(e) => setField("description", e.target.value)}
-        validate={validateDescription}
-        isRequired
-        {...inputStyleProps}
-      />
-
-      <div className="two-cols">
-        <Input
-          label="Precio"
-          placeholder="0.00"
-          type="number"
-          step="0.01"
-          value={form.price}
-          onChange={(e) => setField("price", e.target.value)}
-          validate={validatePrice}
-          icon={<Camera size={16} />}
-          {...inputStyleProps}
-        />
-
-        <Input
-          label="Stock"
-          placeholder="Cantidad"
-          type="number"
-          value={form.stock}
-          onChange={(e) => setField("stock", e.target.value)}
-          validate={validateStock}
-          isRequired
-          {...inputStyleProps}
-        />
-      </div>
-
-      <div className="two-cols">
-        <div>
-          Categorías
+    <form onSubmit={handleSubmit} className="product-form space-y-4 ">
+      <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+        <div className="flex flex-col gap-4 mt-4 mb-6">
+          <div>
+            <Checkbox
+              isSelected={!!formData.active}
+              onChange={(e) => setField("active", e.target.checked)}
+              color="primary"
+            >
+              Activo
+            </Checkbox>
+          </div>
+          <Input
+            label="Nombre"
+            placeholder="Nombre del producto"
+            value={formData.title}
+            onChange={handleTitleChange}
+            validate={validateTitle}
+            isRequired
+            {...inputStyleProps}
+          />
+          <Textarea
+            label="Descripción"
+            placeholder="Descripción breve"
+            value={formData.description}
+            onChange={(e) => setField("description", e.target.value)}
+            validate={validateDescription}
+            isRequired
+            {...inputStyleProps}
+          />
+          <Textarea
+            label="Descripción Detallada"
+            placeholder="Descripción completa"
+            value={formData.longDescription}
+            onChange={(e) => setField("longDescription", e.target.value)}
+            validate={validateLongDescription}
+            isRequired
+            {...inputStyleProps}
+          />
+          <Input
+            label="Precio"
+            placeholder="0.00"
+            type="number"
+            step="0.01"
+            value={formData.price}
+            onChange={(e) => setField("price", e.target.value)}
+            validate={validatePrice}
+            isRequired
+            {...inputStyleProps}
+          />
+          <Input
+            label="Stock"
+            placeholder="Cantidad"
+            type="number"
+            value={formData.stock}
+            onChange={(e) => setField("stock", e.target.value)}
+            validate={validateStock}
+            isRequired
+            {...inputStyleProps}
+          />
           <Select
-            multiple
-            value={form.categories}
+            label="Categoría"
+            placeholder="Seleccionar categoría"
+            value={formData.categories}
             onChange={handleCategoriesChange}
-            size={Math.min(6, Math.max(2, categories.length))}
             className="mt-2"
+            validate={validateCategories}
+            isRequired
           >
-            {categories.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
+            {allCategories.map((c) => (
+              <SelectItem key={c._id} value={c._id}>
+                {c.name}
               </SelectItem>
             ))}
           </Select>
-        </div>
-
-        <div>
           <Select
             label="Estado"
-            value={form.status}
+            placeholder="Producto en venta o exhibición"
+            value={formData.status}
             onChange={(e) => setField("status", e.target.value)}
             className="mt-2"
+            isRequired
           >
             <SelectItem value="onSale">En venta</SelectItem>
             <SelectItem value="exhibition">Exhibición</SelectItem>
           </Select>
+        </div>
 
-          <div className="flex gap-2 mt-3">
-            <Checkbox
-              isSelected={!!form.nuevo}
-              onChange={(e) => setField("nuevo", e.target.checked)}
-            >
-              Nuevo
-            </Checkbox>
-            <Checkbox
-              isSelected={!!form.oferta}
-              onChange={(e) => setField("oferta", e.target.checked)}
-            >
-              Oferta
-            </Checkbox>
-            <Checkbox
-              isSelected={!!form.destacado}
-              onChange={(e) => setField("destacado", e.target.checked)}
-            >
-              Destacado
-            </Checkbox>
-          </div>
+        <div className="flex flex-col gap-4 mt-4">
+          <div className="block font-medium">Características del producto</div>
+          <Checkbox
+            isSelected={!!formData.nuevo}
+            onChange={(e) => setField("nuevo", e.target.checked)}
+          >
+            Nuevo
+          </Checkbox>
+          <Checkbox
+            isSelected={!!formData.oferta}
+            onChange={(e) => setField("oferta", e.target.checked)}
+          >
+            Oferta
+          </Checkbox>
+          <Checkbox
+            isSelected={!!formData.destacado}
+            onChange={(e) => setField("destacado", e.target.checked)}
+          >
+            Destacado
+          </Checkbox>
+          <FileUploader images={productImages} setImages={setProductImages} />
         </div>
       </div>
 
-      {/* <div className="images-uploader">
-        Imágenes
-        <div className="mt-2">
-          <Input onChange={(e) => handleFiles(e.target.files)} multiple>
-            <Button type="button" icon={<Plus size={14} />}>
-              Subir imágenes
-            </Button>
-          </Input>
-
-          <Input
-          label="Stock"
-          placeholder="Cantidad"
-          type="file"
-          value={form.stock}
-          onChange={(e) => setField("stock", e.target.value)}
-          validate={validateStock}
-          isRequired
-          {...inputStyleProps}
-        />
-
-          <div className="thumbnails mt-3">
-            {images.map((img) => (
-              <div key={img.id} className="thumb">
-                <img src={img.url || img.preview} alt="preview" />
-                <div className="thumb-actions">
-                  {img.uploading ? <small>Subiendo...</small> : null}
-                  <Button
-                    variant="ghost"
-                    onClick={() => removeImage(img.id)}
-                    icon={<Trash2 size={14} />}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div> */}
-
-      <div>
-        <Checkbox
-          isSelected={!!form.active}
-          onChange={(e) => setField("active", e.target.checked)}
-          color="primary"
-        >
-          Activo
-        </Checkbox>
-      </div>
-
-      <div className="actions">
+      <div className="actions w-full flex justify-center">
         <Button type="submit" disabled={submitting} icon={<Save size={14} />}>
           {submitting ? "Guardando..." : submitLabel}
         </Button>
       </div>
-
-      <style jsx>{`
-        .product-form .two-cols {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-        }
-        .images-uploader .thumbnails {
-          display: flex;
-          gap: 0.5rem;
-          margin-top: 0.5rem;
-          flex-wrap: wrap;
-        }
-        .thumb {
-          position: relative;
-          width: 96px;
-          height: 96px;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #fafafa;
-        }
-        .thumb img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .thumb-actions {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          display: flex;
-          gap: 4px;
-          background: rgba(255, 255, 255, 0.6);
-          padding: 4px;
-          border-radius: 6px;
-          align-items: center;
-        }
-        .actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-      `}</style>
     </form>
   );
 }
