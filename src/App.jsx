@@ -29,14 +29,13 @@ import VentaParticulares from "./pages/Vendedores/VentaParticulares.jsx";
 import VentaProfesionales from "./pages/Vendedores/VentaProfesionales.jsx";
 import ResultadosPage from "./pages/ResultsPage.jsx";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
-// import CartPage from "./pages/EmptyCartPage.jsx";
-// import FullCartPage from "./pages/FullCartPage.jsx";
-// import { CartProvider } from "./contexts/CartContext.jsx";
 import CartPage from "./pages/EmptyCartPage.jsx";
 import FullCartPage from "./pages/FullCartPage.jsx";
+import { CartProvider } from "./contexts/CartContext.jsx";
+import Legal from "./pages/LegalPage/Legal.jsx";
 
 import Profile from "./pages/Profile";
-// import Orders from "./pages/Orders";
+import Orders from "./pages/Orders";
 
 function App() {
   const { user } = useContext(AuthContext);
