@@ -3,6 +3,7 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import StoresPage from "./pages/StoresPage.jsx";
+import StoreDetailPage from "./pages/StoreDetailPage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
 import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -19,7 +20,7 @@ import QuienesSomos from "./pages/ConocenosPage/QuienesSomos.jsx";
 import AvisoPrivacidad from "./pages/LegalPage/AvisoPrivacidad.jsx";
 import CondicionesUso from "./pages/LegalPage/CondicionesUso.jsx";
 import Cookies from "./pages/LegalPage/Cookies.jsx";
-import Legal from "./pages/LegalPage/Legal.jsx";
+
 import HazteVolunt from "./pages/Colabora/HazteVolunt.jsx";
 import Donaciones from "./pages/Colabora/Donaciones.jsx";
 import Empleo from "./pages/Colabora/Empleo.jsx";
@@ -27,9 +28,13 @@ import AbrirTienda from "./pages/Vendedores/AbrirTienda.jsx";
 import VentaParticulares from "./pages/Vendedores/VentaParticulares.jsx";
 import VentaProfesionales from "./pages/Vendedores/VentaProfesionales.jsx";
 import ResultadosPage from "./pages/ResultsPage.jsx";
+import StoreAdminPage from "./pages/StoreAdminPage.jsx";
 // import CartPage from "./pages/EmptyCartPage.jsx";
 // import FullCartPage from "./pages/FullCartPage.jsx";
 // import { CartProvider } from "./contexts/CartContext.jsx";
+import CartPage from "./pages/EmptyCartPage.jsx";
+import FullCartPage from "./pages/FullCartPage.jsx";
+
 import Profile from "./pages/Profile";
 // import Orders from "./pages/Orders";
 
@@ -53,7 +58,7 @@ function App() {
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
     // Reducir el contador de no leídos cuando se abre un chat
-    setTotalUnread(prev => Math.max(0, prev - (chat.unreadCount || 0)));
+    setTotalUnread((prev) => Math.max(0, prev - (chat.unreadCount || 0)));
   };
 
   const handleCloseChat = () => {
@@ -78,8 +83,8 @@ function App() {
       setSelectedChat(chatData);
     };
 
-    window.addEventListener('openChat', handleOpenChat);
-    return () => window.removeEventListener('openChat', handleOpenChat);
+    window.addEventListener("openChat", handleOpenChat);
+    return () => window.removeEventListener("openChat", handleOpenChat);
   }, []);
 
   return (
@@ -90,10 +95,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login/forgotPassword" element={<LoginPage />} />
-          <Route
-            path="/login/forgotPassword/:token"
-            element={<LoginPage />}
-          />
+          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
+          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
           <Route
             path="/register"
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
@@ -101,8 +104,22 @@ function App() {
           <Route path="/register/seller" element={<RegisterPage seller={true} />} />
           <Route path="/register/default" element={<RegisterPage default={true} />} />
           <Route path="/stores" element={<StoresPage />} />
+          <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/product-detail/:id" element={<ProductDetailPage />} />
+          <Route
+            path="/product/:storeName/:productName/:id"
+            element={<ProductDetailPage />}
+          />
+          <Route
+            path="/store-admin/"
+            element={
+              isUserLoggedIn() && user.role === "seller" ? (
+                <StoreAdminPage />
+              ) : (
+                <LoginPage />
+              )
+            }
+          />
           <Route path="/resultados" element={<ResultadosPage />} />
           <Route path="/contact" element={<Contacto />} />
           <Route path="/quienes-somos" element={<QuienesSomos />} />
@@ -112,13 +129,18 @@ function App() {
           <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
           <Route path="/condiciones-uso" element={<CondicionesUso />} />
           <Route path="/cookies" element={<Cookies />} />
+
+          <Route path="/abrir-tienda" element={<AbrirTienda />} />
+          <Route path="/venta-particulares" element={<VentaParticulares />} />
+          <Route path="/venta-profesionales" element={<VentaProfesionales />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/full-cart" element={<FullCartPage />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/abrir-tienda" element={<AbrirTienda />} />
           <Route path="/venta-particulares" element={<VentaParticulares />} />
-          <Route
-            path="/venta-profesionales"
-            element={<VentaProfesionales />}
-          />
+          <Route path="/venta-profesionales" element={<VentaProfesionales />} />
           {/* <Route path="/cart" element={<CartPage />} /> */}
           {/* <Route path="/full-cart" element={<FullCartPage />} /> */}
           <Route path="/profile" element={<Profile />} />

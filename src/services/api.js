@@ -44,6 +44,16 @@ const getAllStores = async () => {
   return response.data;
 };
 
+const getStoreById = async (id) => {
+  const response = await api.get(`/stores/store/${id}`);
+  return response.data;
+};
+
+const getStoreBySellerId = async (id) => {
+  const response = await api.get(`/stores/store/seller/${id}`);
+  return response.data;
+};
+
 const registerStore = async (storeData) => {
   const response = await api.post("/stores/register", storeData);
   return response.data;
@@ -83,6 +93,11 @@ const getAllProducts = async () => {
   return response.data;
 };
 
+const getAllProductsByStoreId = async (id) => {
+  const response = await api.get(`/products/store/${id}`);
+  return response.data;
+};
+
 const getAllFeaturedProducts = async () => {
   const response = await api.get("/products/featured");
   return response.data;
@@ -94,7 +109,7 @@ const getAllOfferProducts = async () => {
 };
 
 const getProductById = async (id) => {
-  const response = await api.get(`/products/${id}`);
+  const response = await api.get(`/products/product/${id}`);
   return response.data;
 };
 
@@ -102,6 +117,7 @@ const searchProducts = async (
   page = 1,
   text = "",
   categories = [],
+  stores = [],
   offer = false,
   min = 0,
   max = 500,
@@ -112,6 +128,7 @@ const searchProducts = async (
     page,
     text,
     categories: Array.isArray(categories) ? categories.join(",") : categories,
+    stores: Array.isArray(stores) ? stores.join(",") : stores,
     offer,
     min,
     max,
@@ -134,6 +151,36 @@ const searchProducts = async (
 
 const getAllCategories = async () => {
   const response = await api.get("/categories/all");
+  return response.data;
+};
+
+const getStoreReviewsById = async (id) => {
+  const response = await api.get(`/reviews/store/${id}`);
+  return response.data;
+};
+
+const getProductReviewsById = async (id) => {
+  const response = await api.get(`/reviews/product/${id}`);
+  return response.data;
+};
+
+const addStoreReview = async ({ userId, storeId, rating, comment }) => {
+  const response = await api.post(`/reviews/add/store/`, {
+    userId,
+    storeId,
+    rating,
+    comment,
+  });
+  return response.data;
+};
+
+const addProductReview = async ({ userId, productId, rating, comment }) => {
+  const response = await api.post(`/reviews/add/product/`, {
+    userId,
+    productId,
+    rating,
+    comment,
+  });
   return response.data;
 };
 
@@ -195,20 +242,38 @@ const contactFormSend = async (formData) => {
 
 
 
+const uploadProductImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  const response = await api.post(`/uploads/product/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
 export {
   loginUser,
   registerUser,
   getUser,
   logoutUser,
   getAllStores,
+  getStoreById,
+  getStoreBySellerId,
   registerStore,
   searchStores,
   getAllProducts,
+  getAllProductsByStoreId,
   getAllFeaturedProducts,
   getAllOfferProducts,
   getProductById,
   searchProducts,
   getAllCategories,
+  getStoreReviewsById,
+  getProductReviewsById,
+  addStoreReview,
+  addProductReview,
   generateForgotPasswordToken,
   changePassword,
   verifyForgotPasswordToken,
@@ -219,4 +284,5 @@ export {
   sendMessage,
   deleteChat,
   contactFormSend,
+  uploadProductImage,
 };

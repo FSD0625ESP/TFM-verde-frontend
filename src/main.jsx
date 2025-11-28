@@ -5,19 +5,23 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App";
 import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext.jsx";
+
 import { SocketProvider } from "./contexts/SocketContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <SocketProvider>
-      <GoogleOAuthProvider
-        clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}
-      >
-        <HeroUIProvider>
-          <ToastProvider placement="top-right" />
-          <App />
-        </HeroUIProvider>
-      </GoogleOAuthProvider>
+      <CartProvider>
+        <GoogleOAuthProvider
+          clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}
+        >
+          <HeroUIProvider>
+            <ToastProvider placement="top-right" />
+            <App />
+          </HeroUIProvider>
+        </GoogleOAuthProvider>
+      </CartProvider>
     </SocketProvider>
   </AuthProvider>
 );

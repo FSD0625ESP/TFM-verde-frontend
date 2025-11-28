@@ -232,13 +232,15 @@ const ListElement = ({ item, type }) => {
         )}
 
         {/* Dueño (si existe, como en ResultsPage) */}
-        {item.ownerId && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 border-t pt-2">
-            <span className="truncate">
-              por {item.ownerId?.firstName} {item.ownerId?.lastName}
-            </span>
-          </div>
-        )}
+        {
+          item.ownerId && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 border-t pt-2">
+              <span className="truncate">
+                por {item.ownerId?.firstName} {item.ownerId?.lastName}
+              </span>
+            </div>
+          )
+        }
 
         <Button
           fullWidth
@@ -252,8 +254,8 @@ const ListElement = ({ item, type }) => {
         >
           Visitar tienda
         </Button>
-      </CardBody>
-    </Card>
+      </CardBody >
+    </Card >
   );
 };
 

@@ -43,7 +43,6 @@ export default function StoresPage() {
           ))}
         </div>
       </div>
-      <Link to="/register">Register AAAA</Link>
     </>
   );
 }
