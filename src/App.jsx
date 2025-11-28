@@ -20,7 +20,7 @@ import QuienesSomos from "./pages/ConocenosPage/QuienesSomos.jsx";
 import AvisoPrivacidad from "./pages/LegalPage/AvisoPrivacidad.jsx";
 import CondicionesUso from "./pages/LegalPage/CondicionesUso.jsx";
 import Cookies from "./pages/LegalPage/Cookies.jsx";
-import Legal from "./pages/LegalPage/Legal.jsx";
+
 import HazteVolunt from "./pages/Colabora/HazteVolunt.jsx";
 import Donaciones from "./pages/Colabora/Donaciones.jsx";
 import Empleo from "./pages/Colabora/Empleo.jsx";
@@ -32,6 +32,9 @@ import StoreAdminPage from "./pages/StoreAdminPage.jsx";
 // import CartPage from "./pages/EmptyCartPage.jsx";
 // import FullCartPage from "./pages/FullCartPage.jsx";
 // import { CartProvider } from "./contexts/CartContext.jsx";
+import CartPage from "./pages/EmptyCartPage.jsx";
+import FullCartPage from "./pages/FullCartPage.jsx";
+
 import Profile from "./pages/Profile";
 // import Orders from "./pages/Orders";
 
@@ -93,6 +96,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login/forgotPassword" element={<LoginPage />} />
           <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
+          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
           <Route
             path="/register"
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
@@ -123,6 +127,14 @@ function App() {
           <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
           <Route path="/condiciones-uso" element={<CondicionesUso />} />
           <Route path="/cookies" element={<Cookies />} />
+
+          <Route path="/abrir-tienda" element={<AbrirTienda />} />
+          <Route path="/venta-particulares" element={<VentaParticulares />} />
+          <Route path="/venta-profesionales" element={<VentaProfesionales />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/full-cart" element={<FullCartPage />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/abrir-tienda" element={<AbrirTienda />} />
           <Route path="/venta-particulares" element={<VentaParticulares />} />
