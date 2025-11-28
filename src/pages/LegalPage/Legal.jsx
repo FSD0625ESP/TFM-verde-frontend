@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function Legal() {
   return (
-    <div className="min-h-screen bg-[#26A69A] text-white flex flex-col items-center justify-center text-center px-6">
+    <div className=" text-white flex flex-col items-center justify-center text-center px-6">
       <h1 className="text-4xl font-bold mb-4">Información Legal</h1>
       <p className="text-lg max-w-2xl mb-8">
         Consulta nuestras condiciones de uso, política de privacidad y aviso de
@@ -15,7 +15,7 @@ export default function Legal() {
           as={Link}
           to="/condiciones-uso"
           color="primary"
-          className="bg-white text-[#26A69A]"
+          className="bg-white text-primary"
         >
           Condiciones de uso
         </Button>
@@ -23,7 +23,7 @@ export default function Legal() {
           as={Link}
           to="/aviso-privacidad"
           color="primary"
-          className="bg-white text-[#26A69A]"
+          className="bg-white text-primary"
         >
           Aviso de privacidad
         </Button>
@@ -31,7 +31,7 @@ export default function Legal() {
           as={Link}
           to="/cookies"
           color="primary"
-          className="bg-white text-[#26A69A]"
+          className="bg-white text-primary"
         >
           Cookies
         </Button>

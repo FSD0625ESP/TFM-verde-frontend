@@ -1,62 +1,259 @@
 import React from "react";
 import "./ListElement.css";
-import { Card, CardHeader, CardFooter, Image, Button } from "@heroui/react";
+import { Card, CardBody, Image, Button, Chip, Badge, Tooltip } from "@heroui/react";
+import { MapPin, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+// type: "product" | "store"
+// Para productos conserva:
+//  - Badge "New" arriba izquierda
+//  - Logo de la tienda arriba derecha
+//  - Navegación a /product-detail/:id
+// Para tiendas:
+//  - Usa el diseño de tarjetas de tiendas de Resultados
 
 const ListElement = ({ item, type }) => {
-  return (
-    <>
+  const navigate = useNavigate();
+
+  const isProduct = type === "product";
+
+  const handleClick = () => {
+    if (isProduct) {
+      navigate(`/product-detail/${item._id}`);
+    } else {
+      navigate(`/stores/${item._id}`);
+    }
+  };
+
+
+  if (isProduct) {
+    const now = new Date();
+    const createdAt = new Date(item.createdAt);
+    const diffTime = Math.abs(now - createdAt);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    let isNew = diffDays <= 10; // Consider a product new if it was created within the last 30 days
+    console.log("isNew", isNew);
+
+    return (
       <Card
-        isFooterBlurred
-        className="element-card w-full h-[300px] col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3"
+        className="element-card col-span-6 sm:col-span-4 md:col-span-3 shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+        onClick={handleClick}
       >
-        <CardHeader className="absolute z-10 top-1 flex-col items-start">
-          <h4 className="card-title text-black font-medium text-2xl pb-2">
-            {item.name}
-          </h4>
-          <p className="card-tag text-tiny text-white bg-primary uppercase font-bold">
-            New
-          </p>
-        </CardHeader>
-        {type === "product" && (
-          <div className="store-logo">
-            <Image
-              removeWrapper
-              alt={item.storeId.name}
-              className="w-full h-full object-cover"
-              src={item.storeId.logo}
+        {/* Imagen principal */}
+        <div className="relative h-48 overflow-hidden bg-gray-100">
+          <Image
+            src={item.images?.[0] || "/placeholder.png"}
+            alt={item.title || item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            radius="none"
+          />
+
+          {isNew && (<>
+            <p className="card-tag text-xs text-white bg-danger uppercase font-bold absolute z-10 top-2 left-2">
+              New
+            </p>
+          </>)}
+
+          {item.storeId?.logo && (
+            <div className="store-logo">
+              <Image
+                removeWrapper
+                alt={item.storeId?.name}
+                className="w-full h-full object-cover"
+                src={item.storeId.logo}
+              />
+            </div>
+          )}
+
+          {/* Badges oferta/destacado si existen */}
+          {item.oferta && (
+            <Badge
+              content="OFERTA"
+              color="danger"
+              className="absolute top-2 right-2"
             />
+          )}
+          {item.destacado && (
+            <Badge
+              content="⭐ DESTACADO"
+              className="absolute bottom-2 left-2 bg-yellow-500"
+            />
+          )}
+        </div>
+
+        <CardBody className="p-4 space-y-2">
+          <h4 className="font-semibold text-gray-800 line-clamp-2">
+            {item.title || item.name}
+          </h4>
+
+          {/* Descripción con tooltip para ver el texto completo */}
+          <Tooltip content={item.description} color="foreground" placement="top" delay={300}>
+            <p className="text-sm text-gray-600 line-clamp-2 cursor-help">
+              {item.description}
+            </p>
+          </Tooltip>
+
+          {/* Categorías del producto (si existen) */}
+          {item.categories && item.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1 py-1">
+              {item.categories.slice(0, 2).map((cat) => (
+                <Chip
+                  key={cat._id || cat.name}
+                  size="sm"
+                  variant="flat"
+                  color="primary"
+                >
+                  {cat.name}
+                </Chip>
+              ))}
+              {item.categories.length > 2 && (
+                <Tooltip color="foreground"
+                  content={
+                    <div className="flex flex-col gap-1">
+                      {item.categories.slice(2).map((cat) => (
+                        <span key={cat._id || cat.name}>{cat.name}</span>
+                      ))}
+                    </div>
+                  }
+                  placement="top"
+                  delay={300}
+                >
+                  <Chip size="sm" variant="flat" className="cursor-help">
+                    +{item.categories.length - 2}
+                  </Chip>
+                </Tooltip>
+              )}
+            </div>
+          )}
+
+          {/* Tienda */}
+          {item.storeId && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <MapPin size={14} />
+              <span className="truncate">{item.storeId?.name}</span>
+            </div>
+          )}
+
+          {/* Precio + botón */}
+          <div className="flex items-center justify-between pt-2 border-t">
+            {item.price && (
+              <span className="text-lg font-bold text-primary-600">
+                €{Number(item.price).toFixed(2)}
+              </span>
+            )}
+            <Button
+              size="sm"
+              color="primary"
+              className="bg-primary text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClick();
+              }}
+            >
+              Ver
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
+
+  // Tarjeta de tienda (diseño ResultsPage)
+  return (
+    <Card
+      className="element-card col-span-6 sm:col-span-4 md:col-span-3 shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+      onClick={handleClick}
+    >
+      {/* Imagen / logo principal */}
+      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
+        {item.image ? (
+          <Image
+            src={item.image}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            radius="none"
+          />
+        ) : item.logo ? (
+          <Image
+            src={item.logo}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            radius="none"
+          />
+        ) : (
+          <Home size={64} className="text-gray-300" />
+        )}
+      </div>
+
+      <CardBody className="p-4 space-y-2">
+        <h4 className="font-semibold text-gray-800 line-clamp-2">
+          {item.name}
+        </h4>
+
+        {/* Descripción con tooltip para ver el texto completo */}
+        <Tooltip content={item.description} color="foreground" placement="top" delay={300}>
+          <p className="text-sm text-gray-600 line-clamp-2 cursor-help">
+            {item.description}
+          </p>
+        </Tooltip>
+
+        {/* Categorías (si existen, como en ResultsPage) */}
+        {item.categories && item.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1 py-2">
+            {item.categories.slice(0, 2).map((cat) => (
+              <Chip
+                key={cat._id || cat.name}
+                size="sm"
+                variant="flat"
+                color="primary"
+              >
+                {cat.name}
+              </Chip>
+            ))}
+            {item.categories.length > 2 && (
+              <Tooltip
+                color="foreground"
+                content={
+                  <div className="flex flex-col gap-1">
+                    {item.categories.slice(2).map((cat) => (
+                      <span key={cat._id || cat.name}>{cat.name}</span>
+                    ))}
+                  </div>
+                }
+                placement="top"
+                delay={300}
+              >
+                <Chip size="sm" variant="flat" className="cursor-help">
+                  +{item.categories.length - 2}
+                </Chip>
+              </Tooltip>
+            )}
           </div>
         )}
-        <div className="img-overlay"></div>
-        <Image
-          removeWrapper
-          alt="Card example background"
-          className="element-img z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-          src={`${type === "store" ? item.image : item.images[0]}`}
-        />
-        <CardFooter className="element-footer absolute bg-white/60 bottom-0 border-t-1 border-zinc-100/50 z-10 justify-between overflow-hidden">
-          <div style={{ paddingRight: "1rem" }}>
-            <p className="element-description text-black/100 text-tiny">
-              {item.description}
-              <span className="font-bold">
-                {type === "product" ? ` - ${item.price}€` : null}
-              </span>
-            </p>
+
+        {/* Dueño (si existe, como en ResultsPage) */}
+        {item.ownerId && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 border-t pt-2">
+            <span className="truncate">
+              por {item.ownerId?.firstName} {item.ownerId?.lastName}
+            </span>
           </div>
-          <a href={`/product-detail/${item._id}`}>
-            <Button
-              className="text-tiny text-white"
-              color="primary"
-              radius="sm"
-              size="md"
-              shadow="sm"
-            >
-              VER
-            </Button>
-          </a>
-        </CardFooter>
-      </Card>
-    </>
+        )}
+
+        <Button
+          fullWidth
+          size="sm"
+          color="primary"
+          className="mt-2 bg-primary text-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick();
+          }}
+        >
+          Visitar tienda
+        </Button>
+      </CardBody>
+    </Card>
   );
 };
 

@@ -4,7 +4,7 @@ import { Gift, Heart, Globe } from "lucide-react";
 
 export default function Donaciones() {
   return (
-    <div className="min-h-screen bg-[#f6fffd] text-gray-800">
+    <div className="bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       {/* Título + descripción */}
       <div className="text-center max-w-3xl mx-auto pt-16 px-6 mb-10">
         <h1 className="text-4xl font-bold mb-4 text-black">Donaciones</h1>
@@ -20,8 +20,8 @@ export default function Donaciones() {
         <div className="flex flex-col gap-6">
           <Card shadow="sm">
             <CardBody className="flex flex-col items-center text-center">
-              <Gift size={36} className="text-[#26A69A] mb-3" />
-              <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+              <Gift size={36} className="text-primary mb-3" />
+              <h3 className="font-semibold text-xl text-primary mb-2">
                 Transparencia
               </h3>
               <p>
@@ -33,8 +33,8 @@ export default function Donaciones() {
 
           <Card shadow="sm">
             <CardBody className="flex flex-col items-center text-center">
-              <Heart size={36} className="text-[#26A69A] mb-3" />
-              <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+              <Heart size={36} className="text-primary mb-3" />
+              <h3 className="font-semibold text-xl text-primary mb-2">
                 Impacto social
               </h3>
               <p>
@@ -46,8 +46,8 @@ export default function Donaciones() {
 
           <Card shadow="sm">
             <CardBody className="flex flex-col items-center text-center">
-              <Globe size={36} className="text-[#26A69A] mb-3" />
-              <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+              <Globe size={36} className="text-primary mb-3" />
+              <h3 className="font-semibold text-xl text-primary mb-2">
                 Proyectos globales
               </h3>
               <p>
@@ -61,7 +61,7 @@ export default function Donaciones() {
         {/* Formulario de donación */}
         <Card shadow="sm">
           <CardBody>
-            <h2 className="text-2xl font-semibold text-[#26A69A] mb-6">
+            <h2 className="text-2xl font-semibold text-primary mb-6">
               Realiza tu donación
             </h2>
 
@@ -92,7 +92,7 @@ export default function Donaciones() {
               <Button
                 type="submit"
                 color="success"
-                className="bg-[#26A69A] text-white"
+                className="bg-primary text-white"
               >
                 Donar 💚
               </Button>

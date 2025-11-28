@@ -66,7 +66,7 @@ const StartChatButton = ({ storeId, storeName, variant = "flat", size = "md", cl
             onClick={handleStartChat}
             className={className}
         >
-            Contactar vendedor
+            Contactar con {storeName}
         </Button>
     );
 };

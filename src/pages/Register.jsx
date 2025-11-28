@@ -1,6 +1,6 @@
 import Register from "../components/Register/Register";
 import RegisterSeller from "../components/Register/RegisterSeller";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import compradorIlustration from "./../assets/comprador_ilustration.png";
 import sellerIlustration from "./../assets/seller_ilustration.png";
 import RegisterIlustration from "./../assets/register_ilustration.png";
@@ -8,11 +8,26 @@ import UserSellerIlustration from "./../assets/user_seller_ilustration.png";
 import { Button, Card } from "@heroui/react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ArrowBigLeftDash, Store, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function RegisterPage() {
-  const [registerType, setRegisterType] = useState("");
-  const [clicked, setClicked] = useState("");
+export default function RegisterPage({ seller = false, default: isDefault = false }) {
+  // Determinar el tipo inicial basado en las props de la ruta
+  const getInitialType = () => {
+    if (seller) return "company";
+    if (isDefault) return "user";
+    return "";
+  };
+
+  const [registerType, setRegisterType] = useState(getInitialType);
+  const [clicked, setClicked] = useState(getInitialType() ? getInitialType() : "");
+  const navigate = useNavigate();
+
+  // Actualizar el estado cuando cambien las props (navegación entre rutas)
+  useEffect(() => {
+    const newType = getInitialType();
+    setRegisterType(newType);
+    setClicked(newType || "");
+  }, [seller, isDefault]);
 
   const fadeMotion = {
     hidden: { opacity: 0, y: 30 },
@@ -30,12 +45,22 @@ export default function RegisterPage() {
 
   const handleSelect = (type) => {
     setClicked(type);
-    setTimeout(() => setRegisterType(type), 200);
+    setTimeout(() => {
+      setRegisterType(type);
+      // Actualizar la URL según el tipo seleccionado
+      if (type === "company") {
+        navigate("/register/seller", { replace: true });
+      } else if (type === "user") {
+        navigate("/register/default", { replace: true });
+      }
+    }, 200);
   };
 
   const handleBack = () => {
     setClicked("");
     setRegisterType("");
+    // Navegar a la ruta base de registro
+    navigate("/register", { replace: true });
   };
 
   return (
@@ -48,15 +73,13 @@ export default function RegisterPage() {
       >
         <Card className="w-full overflow-hidden rounded-[2rem] shadow-lg border-0">
           <div
-            className={`grid grid-cols-1 ${
-              registerType === "company" ? "md:grid-cols-3" : "md:grid-cols-2"
-            }`}
+            className={`grid grid-cols-1 ${registerType === "company" ? "md:grid-cols-3" : "md:grid-cols-2"
+              }`}
           >
             {/* Columna izquierda (ilustraciones / buyer side) */}
             <div
-              className={`order-2 md:order-1 p-8 md:p-12 flex flex-col items-center text-center justify-center gap-6 ${
-                registerType === "company" ? "md:col-span-1" : ""
-              }`}
+              className={`order-2 md:order-1 p-8 md:p-12 flex flex-col items-center text-center justify-center gap-6 ${registerType === "company" ? "md:col-span-1" : ""
+                }`}
             >
               <AnimatePresence
                 mode="wait"
@@ -70,9 +93,8 @@ export default function RegisterPage() {
                     animate="visible"
                     exit="exit"
                     custom={clicked === "company" ? "delayed" : undefined}
-                    className={`w-full flex flex-col items-center transition-transform ${
-                      clicked === "user" ? "scale-105" : ""
-                    }`}
+                    className={`w-full flex flex-col items-center transition-transform ${clicked === "user" ? "scale-105" : ""
+                      }`}
                   >
                     <div className="w-full max-w-md mx-auto">
                       <Motion.img
@@ -92,11 +114,10 @@ export default function RegisterPage() {
                       </p>
                       <Button
                         color="primary"
-                        className={`text-white text-lg py-6 px-8 rounded-2xl w-full transition-all duration-300 ${
-                          clicked === "user"
+                        className={`text-white text-lg py-6 px-8 rounded-2xl w-full transition-all duration-300 ${clicked === "user"
                             ? "ring-4 ring-primary shadow-lg scale-105"
                             : "hover:scale-105"
-                        }`}
+                          }`}
                         onClick={() => handleSelect("user")}
                       >
                         <ShoppingCart className="mr-2" /> Quiero comprar
@@ -139,9 +160,8 @@ export default function RegisterPage() {
 
             {/* Columna derecha (seller / formularios) */}
             <div
-              className={`order-1 md:order-2 relative p-8 md:p-12 bg-teal-100 flex flex-col items-center ${
-                registerType === "company" ? "md:col-span-2 p-0" : ""
-              }`}
+              className={`order-1 md:order-2 relative p-8 md:p-12 bg-teal-100 flex flex-col items-center ${registerType === "company" ? "md:col-span-2 p-0" : ""
+                }`}
             >
               <AnimatePresence
                 mode="wait"
@@ -155,9 +175,8 @@ export default function RegisterPage() {
                     animate="visible"
                     exit="exit"
                     custom={clicked === "user" ? "delayed" : undefined}
-                    className={`w-full flex flex-col items-center transition-transform ${
-                      clicked === "company" ? "scale-105" : ""
-                    }`}
+                    className={`w-full flex flex-col items-center transition-transform ${clicked === "company" ? "scale-105" : ""
+                      }`}
                   >
                     <div className="w-full max-w-md mx-auto text-center">
                       <Motion.img
@@ -177,11 +196,10 @@ export default function RegisterPage() {
                       </p>
                       <Button
                         color="secondary"
-                        className={`text-white text-lg py-6 px-8 rounded-2xl w-full transition-all duration-300 ${
-                          clicked === "company"
+                        className={`text-white text-lg py-6 px-8 rounded-2xl w-full transition-all duration-300 ${clicked === "company"
                             ? "ring-4 ring-secondary shadow-lg scale-105"
                             : "hover:scale-105"
-                        }`}
+                          }`}
                         onClick={() => handleSelect("company")}
                       >
                         <Store className="mr-2" /> Quiero vender

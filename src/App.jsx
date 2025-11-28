@@ -26,7 +26,7 @@ import Empleo from "./pages/Colabora/Empleo.jsx";
 import AbrirTienda from "./pages/Vendedores/AbrirTienda.jsx";
 import VentaParticulares from "./pages/Vendedores/VentaParticulares.jsx";
 import VentaProfesionales from "./pages/Vendedores/VentaProfesionales.jsx";
-import ResultadosPage from "./pages/ResultadosPage.jsx";
+import ResultadosPage from "./pages/ResultsPage.jsx";
 // import CartPage from "./pages/EmptyCartPage.jsx";
 // import FullCartPage from "./pages/FullCartPage.jsx";
 // import { CartProvider } from "./contexts/CartContext.jsx";
@@ -98,6 +98,8 @@ function App() {
             path="/register"
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
           />
+          <Route path="/register/seller" element={<RegisterPage seller={true} />} />
+          <Route path="/register/default" element={<RegisterPage default={true} />} />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/product-detail/:id" element={<ProductDetailPage />} />

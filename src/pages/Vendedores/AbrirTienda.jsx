@@ -1,10 +1,22 @@
 import React from "react";
-import { Card, CardBody, Button, Input } from "@heroui/react";
+import { Card, CardBody, Button } from "@heroui/react";
 import { Store, Users, Globe } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AbrirTienda() {
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("token"); // O tu método de verificación de sesión
+
+  const handleOpenStore = () => {
+    if (isLoggedIn) {
+      navigate("/dashboard");
+    } else {
+      navigate("/register/seller");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#f6fffd] text-gray-800">
+    <div className="bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       {/* Sección tipo Hero */}
       <div className="bg-transparent text-black py-20 text-center">
         <h1 className="text-4xl font-bold mb-4">¿Quieres abrir una tienda?</h1>
@@ -19,8 +31,8 @@ export default function AbrirTienda() {
         <div className="flex flex-col gap-6">
           <Card shadow="sm">
             <CardBody className="flex flex-col items-center text-center">
-              <Store size={36} className="text-[#26A69A] mb-3" />
-              <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+              <Store size={36} className="text-primary mb-3" />
+              <h3 className="font-semibold text-xl text-primary mb-2">
                 Tu tienda online
               </h3>
               <p>
@@ -31,8 +43,8 @@ export default function AbrirTienda() {
 
           <Card shadow="sm">
             <CardBody className="flex flex-col items-center text-center">
-              <Users size={36} className="text-[#26A69A] mb-3" />
-              <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+              <Users size={36} className="text-primary mb-3" />
+              <h3 className="font-semibold text-xl text-primary mb-2">
                 Comunidad de apoyo
               </h3>
               <p>Conéctate con otros emprendedores y comparte experiencias.</p>
@@ -41,8 +53,8 @@ export default function AbrirTienda() {
 
           <Card shadow="sm">
             <CardBody className="flex flex-col items-center text-center">
-              <Globe size={36} className="text-[#26A69A] mb-3" />
-              <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+              <Globe size={36} className="text-primary mb-3" />
+              <h3 className="font-semibold text-xl text-primary mb-2">
                 Ventas globales
               </h3>
               <p>Amplía tu alcance y vende a clientes en toda España.</p>
@@ -50,47 +62,22 @@ export default function AbrirTienda() {
           </Card>
         </div>
 
-        {/* Formulario */}
-        <Card shadow="sm">
-          <CardBody>
-            <h2 className="text-2xl font-semibold text-[#26A69A] mb-6">
-              Abre tu tienda hoy
-            </h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                alert(
-                  "¡Gracias! Nos pondremos en contacto contigo para abrir tu tienda 🌿"
-                );
-              }}
-              className="flex flex-col gap-4"
-            >
-              <Input
-                label="Nombre completo"
-                placeholder="Tu nombre"
-                isRequired
-              />
-              <Input
-                label="Correo electrónico"
-                type="email"
-                placeholder="tucorreo@ejemplo.com"
-                isRequired
-              />
-              <Input
-                label="Nombre de tu tienda"
-                placeholder="Mi tienda MERAKI"
-                isRequired
-              />
-              <Button
-                type="submit"
-                color="success"
-                className="bg-[#26A69A] text-white"
-              >
-                Abrir tienda 💚
-              </Button>
-            </form>
-          </CardBody>
-        </Card>
+        {/* Botón Call to Action */}
+        <div className="flex flex-col items-center justify-center">
+          <Button
+            size="lg"
+            color="success"
+            className="bg-primary text-white text-xl px-12 py-8 h-auto"
+            onClick={handleOpenStore}
+          >
+            Abrir mi tienda 💚
+          </Button>
+          <p className="text-sm text-gray-600 mt-4 text-center">
+            {isLoggedIn
+              ? "Ir a tu panel de vendedor"
+              : "Regístrate como vendedor en minutos"}
+          </p>
+        </div>
       </section>
     </div>
   );

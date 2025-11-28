@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function VentaParticulares() {
   return (
-    <div className="min-h-screen bg-[#f6fffd] text-gray-800">
+    <div className=" bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       {/* Título + descripción */}
       <div className="text-center max-w-3xl mx-auto pt-16 px-6 mb-10">
         <h1 className="text-4xl font-bold mb-4 text-black">
@@ -20,8 +20,8 @@ export default function VentaParticulares() {
       <section className="max-w-5xl mx-auto py-10 px-6 grid md:grid-cols-3 gap-6">
         <Card shadow="sm">
           <CardBody className="flex flex-col items-center text-center">
-            <ShoppingCart size={36} className="text-[#26A69A] mb-3" />
-            <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+            <ShoppingCart size={36} className="text-primary mb-3" />
+            <h3 className="font-semibold text-xl text-primary mb-2">
               Compra segura
             </h3>
             <p>Pagos confiables y entrega rápida para particulares.</p>
@@ -30,8 +30,8 @@ export default function VentaParticulares() {
 
         <Card shadow="sm">
           <CardBody className="flex flex-col items-center text-center">
-            <Heart size={36} className="text-[#26A69A] mb-3" />
-            <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+            <Heart size={36} className="text-primary mb-3" />
+            <h3 className="font-semibold text-xl text-primary mb-2">
               Productos únicos
             </h3>
             <p>Apoya el comercio justo y descubre productos con historia.</p>
@@ -40,8 +40,8 @@ export default function VentaParticulares() {
 
         <Card shadow="sm">
           <CardBody className="flex flex-col items-center text-center">
-            <Globe size={36} className="text-[#26A69A] mb-3" />
-            <h3 className="font-semibold text-xl text-[#26A69A] mb-2">
+            <Globe size={36} className="text-primary mb-3" />
+            <h3 className="font-semibold text-xl text-primary mb-2">
               Alcance nacional
             </h3>
             <p>Recibe tus productos en cualquier parte de España.</p>
@@ -53,7 +53,7 @@ export default function VentaParticulares() {
           <Link to="/products">
             <Button
               color="success"
-              className="bg-[#26A69A] text-white text-lg px-8 py-6"
+              className="bg-primary text-white text-lg px-8 py-6"
             >
               Explorar productos 🛒
             </Button>

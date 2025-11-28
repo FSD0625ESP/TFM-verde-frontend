@@ -3,7 +3,7 @@ import { Divider } from "@heroui/react";
 
 export default function CondicionesUso() {
   return (
-    <div className="min-h-screen bg-[#f6fffd] text-gray-800">
+    <div className="bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       <section className="max-w-4xl mx-auto py-16 px-6 leading-relaxed text-justify">
         <div className="text-center max-w-3xl mx-auto mb-10">
           <h1 className="text-4xl font-bold mb-4 text-black">
@@ -17,7 +17,7 @@ export default function CondicionesUso() {
 
         <div className="space-y-8">
           <div>
-            <h2 className="text-2xl font-semibold text-[#26A69A] mb-3">
+            <h2 className="text-2xl font-semibold text-primary mb-3">
               1. Uso de la plataforma
             </h2>
             <p>
@@ -32,7 +32,7 @@ export default function CondicionesUso() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-[#26A69A] mb-3">
+            <h2 className="text-2xl font-semibold text-primary mb-3">
               2. Registro de usuario
             </h2>
             <p>
@@ -47,7 +47,7 @@ export default function CondicionesUso() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-[#26A69A] mb-3">
+            <h2 className="text-2xl font-semibold text-primary mb-3">
               3. Propiedad intelectual
             </h2>
             <p>
@@ -62,7 +62,7 @@ export default function CondicionesUso() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-[#26A69A] mb-3">
+            <h2 className="text-2xl font-semibold text-primary mb-3">
               4. Responsabilidad
             </h2>
             <p>

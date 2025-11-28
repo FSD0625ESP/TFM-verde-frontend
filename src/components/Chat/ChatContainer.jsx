@@ -196,13 +196,13 @@ const ChatContainer = ({ chat, onClose, onBack }) => {
                     </button>
 
                     <Avatar
-                        src={chat.user.profileImage || `https://ui-avatars.com/api/?name=${chat.user.firstName}+${chat.user.lastName}&background=random`}
+                        src={chat.user?.profileImage || `https://ui-avatars.com/api/?name=${chat.user?.firstName || 'User'}+${chat.user?.lastName || ''}&background=random`}
                         size="sm"
                     />
 
                     <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-sm truncate">
-                            {chat.user.firstName} {chat.user.lastName}
+                            {chat.user?.firstName || 'Usuario'} {chat.user?.lastName || ''}
                         </h3>
                         <div className="flex items-center gap-1 text-xs opacity-90">
                             {isOtherUserTyping ? (
@@ -210,7 +210,7 @@ const ChatContainer = ({ chat, onClose, onBack }) => {
                             ) : (
                                 <>
                                     <StoreIcon size={12} />
-                                    <span className="truncate">{chat.store.name}</span>
+                                    <span className="truncate">{chat.store?.name || 'Tienda'}</span>
                                 </>
                             )}
                         </div>

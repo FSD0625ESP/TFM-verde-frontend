@@ -20,16 +20,16 @@ const ChatDebugButtons = () => {
         fetchStores();
     }, []);
     return (
-        <div className="flex flex-col gap-2 p-4 border border-gray-300 rounded-md bg-white">
+        <div className="flex gap-2 p-4 border border-gray-300 rounded-md bg-white">
             <h3 className="font-semibold mb-2">Debug Chat Buttons</h3>
             {stores.map((store) => (
                 <StartChatButton
                     key={store._id}
                     storeId={store._id}
                     storeName={store.name}
-                    variant="outline"
+                    variant="flat"
                     size="sm"
-                    className="w-full"
+                    className=""
                 />
             ))}
         </div>

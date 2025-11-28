@@ -31,5 +31,4 @@ const StoreListElement = ({ item }) => {
   );
 };
 
-
 export default StoreListElement;

@@ -63,8 +63,8 @@ const generateForgotPasswordToken = async (email) => {
   return response.data;
 };
 
-const forgotPassword = async (token, newPassword) => {
-  const response = await api.post("/users/forgot-password", {
+const changePassword = async (token, newPassword) => {
+  const response = await api.patch("/users/change-password", {
     token,
     newPassword,
   });
@@ -118,12 +118,17 @@ const searchProducts = async (
   };
 
   console.log(
-    "[Frontend] Sending search params:",
+    "[Frontend API] searchProducts llamado con:",
+    JSON.stringify({ page, text, categories, offer, min, max }, null, 2)
+  );
+  console.log(
+    "[Frontend API] Params que se envían:",
     JSON.stringify(params, null, 2)
   );
+
   // Pasar signal a axios (soporta AbortController desde axios v0.22+ / 1.x)
   const response = await api.get("/products/search", { params, signal });
-  console.log("[Frontend] Found products: ", response.data);
+  console.log("[Frontend API] Response recibido:", response.data?.length || 0, "productos");
   return response.data;
 };
 
@@ -162,6 +167,34 @@ const deleteChat = async (chatId) => {
   return response.data;
 };
 
+// Buscar tiendas con filtros
+const searchStores = async (
+  page = 1,
+  text = "",
+  categories = [],
+  minRating = 0,
+  maxRating = 5,
+  signal = undefined
+) => {
+  const params = {
+    page,
+    text,
+    categories: Array.isArray(categories) ? categories.join(",") : categories,
+    minRating,
+    maxRating,
+  };
+
+  const response = await api.get("/stores/search", { params, signal });
+  return response.data;
+};
+
+const contactFormSend = async (formData) => {
+  const response = await api.post("/users/contact", formData);
+  return response.data;
+};
+
+
+
 export {
   loginUser,
   registerUser,
@@ -169,6 +202,7 @@ export {
   logoutUser,
   getAllStores,
   registerStore,
+  searchStores,
   getAllProducts,
   getAllFeaturedProducts,
   getAllOfferProducts,
@@ -176,7 +210,7 @@ export {
   searchProducts,
   getAllCategories,
   generateForgotPasswordToken,
-  forgotPassword,
+  changePassword,
   verifyForgotPasswordToken,
   loginWithGoogle,
   getUserChats,
@@ -184,4 +218,5 @@ export {
   getOrCreateChat,
   sendMessage,
   deleteChat,
+  contactFormSend,
 };
