@@ -134,14 +134,7 @@ const searchProducts = async (
     max,
   };
 
-  console.log(
-    "[Frontend API] searchProducts llamado con:",
-    JSON.stringify({ page, text, categories, offer, min, max }, null, 2)
-  );
-  console.log(
-    "[Frontend API] Params que se envían:",
-    JSON.stringify(params, null, 2)
-  );
+
 
   // Pasar signal a axios (soporta AbortController desde axios v0.22+ / 1.x)
   const response = await api.get("/products/search", { params, signal });
@@ -230,6 +223,7 @@ const searchStores = async (
     minRating,
     maxRating,
   };
+  console.log("[Frontend API] Parámetros de búsqueda:", params);
 
   const response = await api.get("/stores/search", { params, signal });
   return response.data;
@@ -257,8 +251,68 @@ const uploadProductImage = async (imageFile, productId) => {
 const createProduct = async (productData) => {
   const response = await api.post("/products/add", productData);
   return response.data;
-}
+};
 
+const getRelatedProducts = async (productId, categories = [], limit = 8) => {
+  const response = await api.get(`/products/related/${productId}`, {
+    params: {
+      categories: Array.isArray(categories) ? categories.join(",") : categories,
+      limit
+    },
+  });
+  return response.data;
+};
+
+// ========== ADDRESS API ==========
+const getUserAddresses = async () => {
+  const response = await api.get("/addresses");
+  return response.data;
+};
+
+const getAddressById = async (id) => {
+  const response = await api.get(`/addresses/${id}`);
+  return response.data;
+};
+
+const createAddress = async (addressData) => {
+  const response = await api.post("/addresses", addressData);
+  return response.data;
+};
+
+const updateAddress = async (id, addressData) => {
+  const response = await api.patch(`/addresses/${id}`, addressData);
+  return response.data;
+};
+
+const deleteAddress = async (id) => {
+  const response = await api.delete(`/addresses/${id}`);
+  return response.data;
+};
+
+const setDefaultAddress = async (id) => {
+  const response = await api.patch(`/addresses/${id}/set-default`);
+  return response.data;
+};
+
+// ========== PROFILE IMAGE API ==========
+const uploadProfileImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  const response = await api.post(`/uploads/profile/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+const updateUserProfile = async (firstName, lastName) => {
+  const response = await api.patch("/users/update-profile", {
+    firstName,
+    lastName,
+  });
+  return response.data;
+};
 
 export {
   loginUser,
@@ -293,4 +347,16 @@ export {
   contactFormSend,
   uploadProductImage,
   createProduct,
+  getRelatedProducts,
+  // Address API
+  getUserAddresses,
+  getAddressById,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  // Profile Image API
+  uploadProfileImage,
+  // Update User Profile
+  updateUserProfile,
 };

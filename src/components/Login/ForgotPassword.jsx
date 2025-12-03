@@ -152,7 +152,7 @@ const ForgotPassword = ({ backToLogin, token }) => {
                 )}
 
                 <div className="flex gap-2">
-                    <Button type="submit" className="mt-2">
+                    <Button type="submit" className="mt-2 bg-primary text-white flex-1">
                         {token ? "Cambiar contraseña" : "Enviar email de restauración"}
                     </Button>
                     <Button

@@ -5,7 +5,7 @@ import {
   getAllStores,
   getAllCategories,
 } from "../services/api";
-import Filtros from "../components/Filtros/Filtros";
+import Filters from "../components/Filters/Filters";
 
 export default function ProductsPage() {
   const [featuredProductsList, setFeaturedProductsList] = useState([]);
@@ -51,13 +51,18 @@ export default function ProductsPage() {
         <Slider items={featuredProductsList} type="product" numSlides={1} />
       </div>
       <div className="w-full bg-primary">
-        <div className="max-w-[1536px] px-8 py-8 mx-auto">
+        <div className="container px-8 py-8 mx-auto">
           <Slider items={featuredProductsList} type="product" numSlides={4} />
         </div>
       </div>
 
       {categoriesList.length > 0 && storesList.length > 0 && (
-        <Filtros categoriesList={categoriesList} storesList={storesList} />
+        <Filters
+          categoriesList={categoriesList}
+          storesList={storesList}
+          mode="products"
+          showTabs={false}
+        />
       )}
     </>
   );

@@ -10,6 +10,7 @@ import {
   addToast,
 } from "@heroui/react";
 import ListElement from "../components/ListElement/ListElement";
+import RelatedProducts from "../components/RelatedProducts/RelatedProducts";
 import Rating from "../components/Rating/Rating";
 import { format, parseISO } from "date-fns";
 import { ShoppingBag, User } from "lucide-react";
@@ -130,7 +131,6 @@ export default function ProductDetailPage() {
   }, [user, product]);
 
   const validateComment = (value) => {
-    console.log("comment", value);
     if (!value) {
       return "Debes escribir una valoración";
     }
@@ -180,10 +180,10 @@ export default function ProductDetailPage() {
       });
     }
   };
-  console.log("Average rating:", averageRating);
+  console.log("Product:", product);
   return (
     <>
-      <section className="max-w-[1536px] grid px-8 py-8 mx-auto">
+      <section className="container grid px-8 py-8 mx-auto">
         {product && (
           /*<div className=" flex flex-row flex-grow flex-1 gap-4 items-start position-relative">*/
           <div className="w-full grid grid-cols-1 md:grid-cols-2 items-start gap-4 position-relative">
@@ -408,7 +408,20 @@ export default function ProductDetailPage() {
             </div>
           </div>
         )}
+
       </section>
+
+      {product.categories && product.categories.length > 0 && (
+        <section className="w-full bg-gray-50 py-8 mt-8  mx-auto">
+          <div className="container  px-8 mx-auto overflow-hidden">
+            <RelatedProducts
+              productId={productId}
+              categories={product.categories.map(cat => cat._id || cat)}
+              limit={8}
+            />
+          </div>
+        </section>
+      )}
     </>
   );
 }

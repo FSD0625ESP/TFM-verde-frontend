@@ -6,8 +6,11 @@ import { uploadProductImage } from "../../services/api";
 // Plugins
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
+import FilePondPluginImageCrop from "filepond-plugin-image-crop";
 import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+import FilePondPluginImageTransform from 'filepond-plugin-image-transform';
+
 
 // CSS
 import "filepond/dist/filepond.min.css";
@@ -18,7 +21,9 @@ registerPlugin(
   FilePondPluginFileValidateType,
   FilePondPluginFileValidateSize,
   FilePondPluginImageExifOrientation,
-  FilePondPluginImagePreview
+  FilePondPluginImagePreview,
+  FilePondPluginImageCrop,
+  FilePondPluginImageTransform
 );
 
 /*
@@ -62,6 +67,10 @@ export default function FileUploader({ images, setImages }) {
         acceptedFileTypes={["image/*"]}
         labelIdle='Arrastra imágenes o <span class="filepond--label-action">explora</span>'
         allowFileSizeValidation={true}
+        allowCrop={true}
+        imageCropAspectRatio="1:1"
+        imageResizeTargetWidth={800}
+        imageResizeTargetHeight={800}
         maxFileSize="5MB"
       />
     </div>

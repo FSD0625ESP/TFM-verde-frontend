@@ -1,0 +1,41 @@
+/* Estilos para el Swiper de Productos Relacionados */
+.related-products-swiper {
+  padding: 20px 0;
+  overflow: visible;
+}
+
+.related-products-swiper .swiper-button-next,
+.related-products-swiper .swiper-button-prev {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+.related-products-swiper .swiper-button-next:hover,
+.related-products-swiper .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.related-products-swiper .swiper-button-next::after,
+.related-products-swiper .swiper-button-prev::after {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.related-products-swiper .swiper-pagination-bullet {
+  background: #ccc;
+}
+
+.related-products-swiper .swiper-pagination-bullet-active {
+  background: #26a69a;
+}
+
+/* Asegurar que el contenido del slide se ajuste correctamente */
+.related-products-swiper .swiper-slide {
+  height: auto;
+  display: flex;
+  align-items: stretch;
+}

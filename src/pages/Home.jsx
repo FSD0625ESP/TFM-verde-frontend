@@ -77,7 +77,7 @@ const Home = () => {
       </div>
 
       <div className="w-full bg-primary">
-        <div className="max-w-[1536px] px-8 py-8 mx-auto grid gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid-cols-12">
+        <div className="container  px-8 py-8 mx-auto grid gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid-cols-12">
           <div className="col-span-12 sm:col-span-6 flex flex-col justify-center">
             <h1 className="text-4xl font-bold text-white">
               Bienvenido a Meraki
@@ -100,7 +100,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="w-full max-w-[1536px] gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
+      <div className="w-full container gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
         <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 flex flex-col justify-center bg-secondary p-4 rounded-lg">
           <h2 className="text-white text-3xl font-semibold mb-4">
             Tiendas Populares
@@ -130,7 +130,7 @@ const Home = () => {
         )}
       </div>
       <div className="w-full bg-primary">
-        <div className="max-w-[1536px] px-8 py-8 mx-auto">
+        <div className="container px-8 py-8 mx-auto">
           <h2 className="text-3xl font-semibold mb-4 text-white">
             Productos en Oferta
           </h2>
@@ -154,7 +154,7 @@ const Home = () => {
           )}
         </div>
       </div>
-      <div className="w-full max-w-[1536px] gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
+      <div className="w-full container gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
         <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 flex flex-col justify-center bg-secondary/60 p-4 rounded-lg">
           <h2 className="text-3xl font-semibold mb-4">Productos Destacados</h2>
           <p className="text-black/60 text-base">

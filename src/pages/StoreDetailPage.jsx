@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
 import Slider from "../components/Slider/Slider";
 import Gallery from "../components/Gallery/Gallery";
-import Filtros from "../components/Filtros/Filtros";
+import Filters from "../components/Filters/Filters";
 import {
   Button,
   Accordion,
@@ -100,15 +100,19 @@ export default function ProductDetailPage() {
       const allCategories = await getAllCategories();
       const categoriesFromStore = store?.categories || [];
       const filteredCategories = allCategories.filter((category) =>
-        categoriesFromStore.includes(category._id)
+        productsListByStore.some((product) =>
+          product.categories.includes(category._id)
+        )
       );
       setCategoriesList(filteredCategories);
       setAreCategoriesFiltered(true);
+      console.log("categoriesList filtered", filteredCategories);
+      console.log("categoriesList from store", categoriesFromStore);
+      console.log("categoriesList not filtered", allCategories);
     } catch (error) {
       console.error("Error al obtener las categorías:", error);
     }
   };
-  console.log("categoriesList", categoriesList);
 
   useEffect(() => {
     fetchStore();
@@ -193,6 +197,19 @@ export default function ProductDetailPage() {
     }
   };
 
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(500);
+
+  useEffect(() => {
+    if (productsListByStore && productsListByStore.length > 0) {
+      const prices = productsListByStore.map((p) => p.price || 0);
+      const min = Math.floor(Math.min(...prices));
+      const max = Math.ceil(Math.max(...prices));
+      setMinPrice(min);
+      setMaxPrice(max);
+    }
+  }, [productsListByStore]);
+
   return (
     <>
       <div className="w-full">
@@ -200,7 +217,7 @@ export default function ProductDetailPage() {
       </div>
 
       <section className="w-full bg-primary/10">
-        <div className="max-w-[1536px] px-8 py-4 mx-auto">
+        <div className="container px-8 py-4 mx-auto">
           {store && (
             <div className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4 ">
               <div className="p-3 justify-self-center">
@@ -291,11 +308,18 @@ export default function ProductDetailPage() {
       {areCategoriesFiltered && (
         <>
           {console.log("categoriesList", categoriesList)}
-          <Filtros categoriesList={categoriesList} storesList={[store]} />
+          <Filters
+            categoriesList={categoriesList}
+            storesList={[store]}
+            initialMinPrice={minPrice}
+            initialMaxPrice={maxPrice}
+            mode="products"
+            showTabs={false}
+          />
         </>
       )}
 
-      <section className="max-w-[1536px] px-8 py-4 mx-auto">
+      <section className="container px-8 py-4 mx-auto">
         {store && (
           <div className="w-full">
             <Accordion

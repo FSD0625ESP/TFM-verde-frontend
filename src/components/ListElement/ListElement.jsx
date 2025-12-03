@@ -17,10 +17,8 @@ const ListElement = ({ item, type }) => {
 
   const isProduct = type === "product";
 
-  console.log("Navigating to product", item);
   const handleClick = () => {
     if (isProduct) {
-      console.log("Navigating to product detail", item);
       const storeName = item.storeId?.slug;
       const productName = item.slug
       navigate(
@@ -45,7 +43,7 @@ const ListElement = ({ item, type }) => {
 
     return (
       <Card
-        className="element-card col-span-6 sm:col-span-4 md:col-span-3 shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+        className="element-card shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
         onClick={handleClick}
       >
         {/* Imagen principal */}
@@ -90,7 +88,7 @@ const ListElement = ({ item, type }) => {
           )}
         </div>
 
-        <CardBody className="p-4 space-y-2">
+        <CardBody className="p-4 space-y-2 bg-white">
           <h4 className="font-semibold text-gray-800 line-clamp-2">
             {item.title || item.name}
           </h4>
@@ -170,7 +168,7 @@ const ListElement = ({ item, type }) => {
   // Tarjeta de tienda (diseño ResultsPage)
   return (
     <Card
-      className="element-card col-span-6 sm:col-span-4 md:col-span-3 shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+      className="element-card shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
       onClick={handleClick}
     >
       {/* Imagen / logo principal */}
@@ -194,7 +192,7 @@ const ListElement = ({ item, type }) => {
         )}
       </div>
 
-      <CardBody className="p-4 space-y-2">
+      <CardBody className="p-4 space-y-2 bg-white">
         <h4 className="font-semibold text-gray-800 line-clamp-2">
           {item.name}
         </h4>
