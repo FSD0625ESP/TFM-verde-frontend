@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Slider from "../components/Slider/Slider";
 import {
   getAllFeaturedProducts,
@@ -8,6 +8,7 @@ import {
 import { addToast } from "@heroui/react";
 import { Slider as PriceSlider } from "@heroui/react";
 import { useCart } from "../contexts/CartContext.jsx";
+import Filtros from "../components/Filtros/Filtros";
 
 export default function ProductsPage() {
   const [productsList, setProductsList] = useState([]);
@@ -72,9 +73,6 @@ export default function ProductsPage() {
     }
   }, [loading, hasMore, page, selectedCategories, offer, min, max]);
 
-import Filtros from "../components/Filtros/Filtros";
-
-export default function ProductsPage() {
   const [featuredProductsList, setFeaturedProductsList] = useState([]);
   const fetchFeaturedProducts = async () => {
     try {

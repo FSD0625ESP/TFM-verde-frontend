@@ -4,7 +4,6 @@ import { Card, CardBody, Button } from "@heroui/react";
 import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
-import AddToCartButton from "../components/Cart/AddToCartButton.jsx";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -14,16 +13,6 @@ export default function CartPage() {
     const product = item.productId;
     return acc + (product?.price || 0) * (item.quantity || 0);
   }, 0);
-
-  const handleDebugAdd = async () => {
-    const debugId = "691b75b1942dc7de5487420c"; // ID de prueba
-    try {
-      await addToCart(debugId, 1);
-      console.log("Debug: añadido producto", debugId);
-    } catch (err) {
-      console.error("Debug add failed", err);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#f6fffd] text-gray-800 py-8">
@@ -40,9 +29,6 @@ export default function CartPage() {
             {" "}
             Seguir comprando{" "}
           </Button>{" "}
-          <AddToCartButton productId="691b75b1942dc7de5487420c">
-            Añadir productos
-          </AddToCartButton>
         </div>
 
         {cart.length === 0 ? (
@@ -66,9 +52,6 @@ export default function CartPage() {
                     onClick={() => navigate("/stores")}
                   >
                     Seguir comprando
-                  </Button>
-                  <Button color="primary" onClick={handleDebugAdd}>
-                    Añadir demo
                   </Button>
                 </div>
               </CardBody>

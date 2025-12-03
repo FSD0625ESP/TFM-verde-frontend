@@ -25,24 +25,14 @@ import Empleo from "./pages/Colabora/Empleo.jsx";
 import AbrirTienda from "./pages/Vendedores/AbrirTienda.jsx";
 import VentaParticulares from "./pages/Vendedores/VentaParticulares.jsx";
 import VentaProfesionales from "./pages/Vendedores/VentaProfesionales.jsx";
-import ResultadosPage from "./pages/ResultadosPage.jsx";
+import ResultadosPage from "./pages/ResultsPage.jsx";
 import CartPage from "./pages/CartPage.jsx";
 import Profile from "./pages/Profile";
-
-// IMPORTA Legal SI EXISTE
-// import Legal from "./pages/LegalPage/Legal.jsx";
-
-// IMPORTA Orders SI EXISTE
-// import Orders from "./pages/Orders.jsx";
-import ResultadosPage from "./pages/ResultsPage.jsx";
-import StoreAdminPage from "./pages/StoreAdminPage.jsx";
-import CartPage from "./pages/EmptyCartPage.jsx";
-import FullCartPage from "./pages/FullCartPage.jsx";
-import { CartProvider } from "./contexts/CartContext.jsx";
 import Legal from "./pages/LegalPage/Legal.jsx";
-
-import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
+import StoreAdminPage from "./pages/StoreAdminPage.jsx";
+
+import { CartProvider } from "./contexts/CartContext.jsx";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -100,8 +90,14 @@ function App() {
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
           />
 
-          <Route path="/register/seller" element={<RegisterPage seller={true} />} />
-          <Route path="/register/default" element={<RegisterPage default={true} />} />
+          <Route
+            path="/register/seller"
+            element={<RegisterPage seller={true} />}
+          />
+          <Route
+            path="/register/default"
+            element={<RegisterPage default={true} />}
+          />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -138,20 +134,9 @@ function App() {
 
           <Route path="/cart" element={<CartPage />} />
 
-          <Route path="/full-cart" element={<FullCartPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/legal" element={<Legal />} />
-          <Route path="/abrir-tienda" element={<AbrirTienda />} />
-          <Route path="/venta-particulares" element={<VentaParticulares />} />
-          <Route path="/venta-profesionales" element={<VentaProfesionales />} />
-          {/* <Route path="/cart" element={<CartPage />} /> */}
-          {/* <Route path="/full-cart" element={<FullCartPage />} /> */}
-          <Route path="/profile" element={<Profile />} />
-
-          {/* Activa solo si los componentes existen */}
-          {/* <Route path="/orders" element={<Orders />} /> */}
-          {/* <Route path="/legal" element={<Legal />} /> */}
         </Routes>
       </main>
 
