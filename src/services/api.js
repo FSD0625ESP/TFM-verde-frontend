@@ -138,7 +138,11 @@ const searchProducts = async (
 
   // Pasar signal a axios (soporta AbortController desde axios v0.22+ / 1.x)
   const response = await api.get("/products/search", { params, signal });
-  console.log("[Frontend API] Response recibido:", response.data?.length || 0, "productos");
+  console.log(
+    "[Frontend API] Response recibido:",
+    response.data?.length || 0,
+    "productos"
+  );
   return response.data;
 };
 
@@ -207,6 +211,27 @@ const deleteChat = async (chatId) => {
   return response.data;
 };
 
+// -----------------------------
+// Cart API helpers
+// -----------------------------
+const getCart = async () => {
+  const response = await api.get(`/cart`);
+  return response.data;
+};
+
+const addToCart = async ({ productId, quantity = 1 }) => {
+  const response = await api.post(`/cart/add`, { productId, quantity });
+  return response.data;
+};
+
+const removeFromCart = async ({ productId }) => {
+  console.log("API: removing product from cart", productId);
+  const response = await api.delete(`/cart/remove`, {
+    data: { productId },
+  });
+  return response.data;
+};
+
 // Buscar tiendas con filtros
 const searchStores = async (
   page = 1,
@@ -234,8 +259,6 @@ const contactFormSend = async (formData) => {
   return response.data;
 };
 
-
-
 const uploadProductImage = async (imageFile, productId) => {
   const formData = new FormData();
   formData.append("image", imageFile);
@@ -248,6 +271,10 @@ const uploadProductImage = async (imageFile, productId) => {
   return response.data;
 };
 
+const clearCart = async () => {
+  const response = await api.delete(`/cart/clear`);
+  return response.data;
+};
 const createProduct = async (productData) => {
   const response = await api.post("/products/add", productData);
   return response.data;
@@ -344,6 +371,10 @@ export {
   getOrCreateChat,
   sendMessage,
   deleteChat,
+  getCart,
+  addToCart,
+  removeFromCart,
+  clearCart,
   contactFormSend,
   uploadProductImage,
   createProduct,
