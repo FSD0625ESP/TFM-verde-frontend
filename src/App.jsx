@@ -3,6 +3,7 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import StoresPage from "./pages/StoresPage.jsx";
+import StoreDetailPage from "./pages/StoreDetailPage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
 import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -33,6 +34,15 @@ import Profile from "./pages/Profile";
 
 // IMPORTA Orders SI EXISTE
 // import Orders from "./pages/Orders.jsx";
+import ResultadosPage from "./pages/ResultsPage.jsx";
+import StoreAdminPage from "./pages/StoreAdminPage.jsx";
+import CartPage from "./pages/EmptyCartPage.jsx";
+import FullCartPage from "./pages/FullCartPage.jsx";
+import { CartProvider } from "./contexts/CartContext.jsx";
+import Legal from "./pages/LegalPage/Legal.jsx";
+
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -49,6 +59,7 @@ function App() {
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
+    // Reducir el contador de no leídos cuando se abre un chat
     setTotalUnread((prev) => Math.max(0, prev - (chat.unreadCount || 0)));
   };
 
@@ -67,6 +78,7 @@ function App() {
       setIsChatOpen(true);
       setSelectedChat(chatData);
     };
+
     window.addEventListener("openChat", handleOpenChat);
     return () => window.removeEventListener("openChat", handleOpenChat);
   }, []);
@@ -82,14 +94,31 @@ function App() {
           <Route path="/login/forgotPassword" element={<LoginPage />} />
           <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
 
+          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
           <Route
             path="/register"
             element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
           />
 
+          <Route path="/register/seller" element={<RegisterPage seller={true} />} />
+          <Route path="/register/default" element={<RegisterPage default={true} />} />
           <Route path="/stores" element={<StoresPage />} />
+          <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/product-detail/:id" element={<ProductDetailPage />} />
+          <Route
+            path="/product/:storeName/:productName/:id"
+            element={<ProductDetailPage />}
+          />
+          <Route
+            path="/store-admin/"
+            element={
+              isUserLoggedIn() && user.role === "seller" ? (
+                <StoreAdminPage />
+              ) : (
+                <LoginPage />
+              )
+            }
+          />
           <Route path="/resultados" element={<ResultadosPage />} />
 
           <Route path="/contact" element={<Contacto />} />
@@ -109,6 +138,15 @@ function App() {
 
           <Route path="/cart" element={<CartPage />} />
 
+          <Route path="/full-cart" element={<FullCartPage />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/legal" element={<Legal />} />
+          <Route path="/abrir-tienda" element={<AbrirTienda />} />
+          <Route path="/venta-particulares" element={<VentaParticulares />} />
+          <Route path="/venta-profesionales" element={<VentaProfesionales />} />
+          {/* <Route path="/cart" element={<CartPage />} /> */}
+          {/* <Route path="/full-cart" element={<FullCartPage />} /> */}
           <Route path="/profile" element={<Profile />} />
 
           {/* Activa solo si los componentes existen */}

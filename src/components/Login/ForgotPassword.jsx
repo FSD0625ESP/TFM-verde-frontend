@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Input, Button, addToast } from "@heroui/react";
-import { forgotPassword, verifyForgotPasswordToken, generateForgotPasswordToken } from "../../services/api";
+import { verifyForgotPasswordToken, generateForgotPasswordToken, changePassword } from "../../services/api";
 import { motion } from "framer-motion";
 import { ArrowBigLeftDash } from "lucide-react";
 
@@ -69,13 +69,14 @@ const ForgotPassword = ({ backToLogin, token }) => {
 
         try {
             if (token) {
-                await forgotPassword(token, formData.password);
+                await changePassword(token, formData.password);
                 addToast({
                     title: "Contraseña cambiada con éxito",
                     description: "Ahora puedes iniciar sesión con tu nueva contraseña.",
                     color: "success",
                     duration: 4000,
                 });
+                backToLogin();
             } else {
                 await generateForgotPasswordToken(formData.email);
                 addToast({

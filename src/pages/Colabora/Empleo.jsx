@@ -4,7 +4,7 @@ import { Briefcase, Users, Globe } from "lucide-react";
 
 export default function Empleo() {
   return (
-    <div className="min-h-screen bg-[#f6fffd] text-gray-800">
+    <div className="bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       {/* Título + descripción */}
       <div className="text-center max-w-3xl mx-auto pt-16 px-6 mb-10">
         <h1 className="text-4xl font-bold mb-4 text-black">Empleo</h1>

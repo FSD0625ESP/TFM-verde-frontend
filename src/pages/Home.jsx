@@ -53,7 +53,7 @@ const Home = () => {
 
   return (
     <>
-      <ChatDebugButtons />
+      {/* <ChatDebugButtons /> */}
       <div className="w-full">
         {/* {storesList && storesList.length > 0 ? (
           <Slider items={storesList} type="store" numSlides={1} />

@@ -1,4 +1,3 @@
-import { user } from "@heroui/theme";
 import axios from "axios";
 
 const api = axios.create({
@@ -45,6 +44,16 @@ const getAllStores = async () => {
   return response.data;
 };
 
+const getStoreById = async (id) => {
+  const response = await api.get(`/stores/store/${id}`);
+  return response.data;
+};
+
+const getStoreBySellerId = async (id) => {
+  const response = await api.get(`/stores/store/seller/${id}`);
+  return response.data;
+};
+
 const registerStore = async (storeData) => {
   const response = await api.post("/stores/register", storeData);
   return response.data;
@@ -64,8 +73,8 @@ const generateForgotPasswordToken = async (email) => {
   return response.data;
 };
 
-const forgotPassword = async (token, newPassword) => {
-  const response = await api.post("/users/forgot-password", {
+const changePassword = async (token, newPassword) => {
+  const response = await api.patch("/users/change-password", {
     token,
     newPassword,
   });
@@ -84,6 +93,11 @@ const getAllProducts = async () => {
   return response.data;
 };
 
+const getAllProductsByStoreId = async (id) => {
+  const response = await api.get(`/products/store/${id}`);
+  return response.data;
+};
+
 const getAllFeaturedProducts = async () => {
   const response = await api.get("/products/featured");
   return response.data;
@@ -95,7 +109,7 @@ const getAllOfferProducts = async () => {
 };
 
 const getProductById = async (id) => {
-  const response = await api.get(`/products/${id}`);
+  const response = await api.get(`/products/product/${id}`);
   return response.data;
 };
 
@@ -103,6 +117,7 @@ const searchProducts = async (
   page = 1,
   text = "",
   categories = [],
+  stores = [],
   offer = false,
   min = 0,
   max = 500,
@@ -113,23 +128,63 @@ const searchProducts = async (
     page,
     text,
     categories: Array.isArray(categories) ? categories.join(",") : categories,
+    stores: Array.isArray(stores) ? stores.join(",") : stores,
     offer,
     min,
     max,
   };
 
   console.log(
-    "[Frontend] Sending search params:",
+    "[Frontend API] searchProducts llamado con:",
+    JSON.stringify({ page, text, categories, offer, min, max }, null, 2)
+  );
+  console.log(
+    "[Frontend API] Params que se envían:",
     JSON.stringify(params, null, 2)
   );
+
   // Pasar signal a axios (soporta AbortController desde axios v0.22+ / 1.x)
   const response = await api.get("/products/search", { params, signal });
-  console.log("[Frontend] Found products: ", response.data);
+  console.log(
+    "[Frontend API] Response recibido:",
+    response.data?.length || 0,
+    "productos"
+  );
   return response.data;
 };
 
 const getAllCategories = async () => {
   const response = await api.get("/categories/all");
+  return response.data;
+};
+
+const getStoreReviewsById = async (id) => {
+  const response = await api.get(`/reviews/store/${id}`);
+  return response.data;
+};
+
+const getProductReviewsById = async (id) => {
+  const response = await api.get(`/reviews/product/${id}`);
+  return response.data;
+};
+
+const addStoreReview = async ({ userId, storeId, rating, comment }) => {
+  const response = await api.post(`/reviews/add/store/`, {
+    userId,
+    storeId,
+    rating,
+    comment,
+  });
+  return response.data;
+};
+
+const addProductReview = async ({ userId, productId, rating, comment }) => {
+  const response = await api.post(`/reviews/add/product/`, {
+    userId,
+    productId,
+    rating,
+    comment,
+  });
   return response.data;
 };
 
@@ -184,8 +239,50 @@ const removeFromCart = async ({ productId }) => {
   return response.data;
 };
 
+// Buscar tiendas con filtros
+const searchStores = async (
+  page = 1,
+  text = "",
+  categories = [],
+  minRating = 0,
+  maxRating = 5,
+  signal = undefined
+) => {
+  const params = {
+    page,
+    text,
+    categories: Array.isArray(categories) ? categories.join(",") : categories,
+    minRating,
+    maxRating,
+  };
+
+  const response = await api.get("/stores/search", { params, signal });
+  return response.data;
+};
+
+const contactFormSend = async (formData) => {
+  const response = await api.post("/users/contact", formData);
+  return response.data;
+};
+
+const uploadProductImage = async (imageFile, productId) => {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  formData.append("productId", productId);
+  const response = await api.post(`/uploads/product/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
 const clearCart = async () => {
   const response = await api.delete(`/cart/clear`);
+  return response.data;
+};
+const createProduct = async (productData) => {
+  const response = await api.post("/products/add", productData);
   return response.data;
 };
 
@@ -195,15 +292,23 @@ export {
   getUser,
   logoutUser,
   getAllStores,
+  getStoreById,
+  getStoreBySellerId,
   registerStore,
+  searchStores,
   getAllProducts,
+  getAllProductsByStoreId,
   getAllFeaturedProducts,
   getAllOfferProducts,
   getProductById,
   searchProducts,
   getAllCategories,
+  getStoreReviewsById,
+  getProductReviewsById,
+  addStoreReview,
+  addProductReview,
   generateForgotPasswordToken,
-  forgotPassword,
+  changePassword,
   verifyForgotPasswordToken,
   loginWithGoogle,
   getUserChats,
@@ -215,4 +320,7 @@ export {
   addToCart,
   removeFromCart,
   clearCart,
+  contactFormSend,
+  uploadProductImage,
+  createProduct,
 };

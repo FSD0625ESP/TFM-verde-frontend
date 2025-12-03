@@ -3,7 +3,7 @@ import { Card, CardBody, Divider } from "@heroui/react";
 
 export default function QuienesSomos() {
   return (
-    <div className="min-h-[calc(100vh-120px)] bg-[#f6fffd] text-gray-800">
+    <div className="bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       {/* Título + descripción */}
       <div className="text-center max-w-3xl mx-auto pt-16 px-6 mb-10">
         <h1 className="text-4xl font-bold mb-4 text-black">¿Quiénes somos?</h1>
