@@ -22,6 +22,7 @@ import {
   getProductReviewsById,
   addProductReview,
 } from "../services/api";
+import AddToCartButton from "../components/Cart/AddToCartButton";
 
 import "./accordion.css";
 
@@ -245,10 +246,11 @@ export default function ProductDetailPage() {
                 </span>
               </div>
               <div className="flex flex-row items-center gap-2 py-2">
-                <Button color="primary" radius="lg" size="lg">
+                {/* <Button color="primary" radius="lg" size="lg">
                   COMPRAR
-                  <ShoppingBag className="mr-2" />
-                </Button>
+                 
+                </Button> */}
+                <AddToCartButton productId={product._id} > <ShoppingBag className="mr-2" /> Comprar </AddToCartButton>
               </div>
               <div className="w-full">
                 <Accordion
