@@ -10,6 +10,7 @@ import {
 } from "../services/api";
 import { addToast } from "@heroui/react";
 import { Slider as PriceSlider } from "@heroui/react";
+import { useCart } from "../contexts/CartContext.jsx";
 
 export default function ProductsPage() {
   const [productsList, setProductsList] = useState([]);
@@ -23,6 +24,7 @@ export default function ProductsPage() {
   const [offer, setOffer] = useState(false);
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(500);
+
   // referencia al AbortController actual para cancelar peticiones en vuelo
   const controllerRef = useRef(null);
   // token para ignorar respuestas antiguas cuando cambian los filtros

@@ -1,39 +1,104 @@
 // src/contexts/CartContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  getCart as apiGetCart,
+  addToCart as apiAddToCart,
+  removeFromCart as apiRemoveFromCart,
+  clearCart as apiClearCart,
+} from "../services/api";
+import { addToast } from "@heroui/react";
+import { AuthContext } from "./AuthContext";
 
-// Crear contexto
 const CartContext = createContext();
 
-// Proveedor del carrito
 export const CartProvider = ({ children }) => {
+  const { user } = useContext(AuthContext);
   const [cart, setCart] = useState([]);
 
-  // Añadir producto al carrito
-  const addToCart = (product) => {
-    setCart((prevItems) => {
-      // Revisar si el producto ya existe
-      const existingItem = prevItems.find((item) => item.id === product.id);
-      if (existingItem) {
-        // Si existe, aumentar cantidad
-        return prevItems.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + (product.quantity || 1) }
-            : item
-        );
-      } else {
-        // Si no existe, añadir al carrito con quantity por defecto 1
-        return [...prevItems, { ...product, quantity: product.quantity || 1 }];
+  // 1️⃣ Cargar carrito al iniciar
+  useEffect(() => {
+    const loadCart = async () => {
+      try {
+        const data = await apiGetCart();
+        setCart(data.items || []);
+      } catch (err) {
+        console.error("Error loading cart:", err);
       }
-    });
+    };
+    loadCart();
+  }, []);
+
+  // 2️⃣ Añadir producto al carrito
+  const addToCart = async ({ productId, quantity = 1 }) => {
+    try {
+      if (!productId) throw new Error("productId es obligatorio");
+      const data = await apiAddToCart({ productId, quantity });
+      setCart(data.items || []);
+      addToast({
+        title: "Añadido al carrito",
+        description: "Producto añadido correctamente",
+        color: "success",
+        duration: 3000,
+      });
+      return data;
+    } catch (err) {
+      console.error("Error al añadir al carrito:", err);
+      addToast({
+        title: "Error",
+        description:
+          err.response?.data?.message || "No se pudo añadir al carrito",
+        color: "danger",
+        duration: 4000,
+      });
+      throw err;
+    }
   };
 
-  // Eliminar producto del carrito
-  const removeFromCart = (id) => {
-    setCart((prevItems) => prevItems.filter((item) => item.id !== id));
+  // 3️⃣ Eliminar producto del carrito
+  const removeFromCart = async (productId) => {
+    console.log("🛒 Eliminando producto del carrito:", productId);
+    try {
+      const data = await apiRemoveFromCart({ productId });
+      setCart(data.items || []);
+      addToast({
+        title: "Eliminado",
+        description: "Producto eliminado del carrito",
+        color: "success",
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error("Error al eliminar del carrito:", err);
+      addToast({
+        title: "Error",
+        description:
+          err.response?.data?.msg || "No se pudo eliminar el producto",
+        color: "danger",
+        duration: 4000,
+      });
+    }
   };
 
-  // Vaciar carrito
-  const clearCart = () => setCart([]);
+  // 4️⃣ Vaciar carrito
+  const clearCart = async () => {
+    try {
+      await apiClearCart();
+      setCart([]);
+      addToast({
+        title: "Carrito vaciado",
+        description: "Se han eliminado todos los productos del carrito",
+        color: "success",
+        duration: 3000,
+      });
+    } catch (err) {
+      console.error("Error al vaciar carrito:", err);
+      addToast({
+        title: "Error",
+        description: err.response?.data?.msg || "No se pudo vaciar el carrito",
+        color: "danger",
+        duration: 4000,
+      });
+    }
+  };
 
   return (
     <CartContext.Provider
@@ -44,5 +109,6 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Hook personalizado para usar el carrito
 export const useCart = () => useContext(CartContext);
+
+export default CartContext;

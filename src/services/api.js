@@ -1,3 +1,4 @@
+import { user } from "@heroui/theme";
 import axios from "axios";
 
 const api = axios.create({
@@ -162,6 +163,32 @@ const deleteChat = async (chatId) => {
   return response.data;
 };
 
+// -----------------------------
+// Cart API helpers
+// -----------------------------
+const getCart = async () => {
+  const response = await api.get(`/cart`);
+  return response.data;
+};
+
+const addToCart = async ({ productId, quantity = 1 }) => {
+  const response = await api.post(`/cart/add`, { productId, quantity });
+  return response.data;
+};
+
+const removeFromCart = async ({ productId }) => {
+  console.log("API: removing product from cart", productId);
+  const response = await api.delete(`/cart/remove`, {
+    data: { productId },
+  });
+  return response.data;
+};
+
+const clearCart = async () => {
+  const response = await api.delete(`/cart/clear`);
+  return response.data;
+};
+
 export {
   loginUser,
   registerUser,
@@ -184,4 +211,8 @@ export {
   getOrCreateChat,
   sendMessage,
   deleteChat,
+  getCart,
+  addToCart,
+  removeFromCart,
+  clearCart,
 };
