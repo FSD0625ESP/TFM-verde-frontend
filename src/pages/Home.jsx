@@ -100,34 +100,37 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="w-full container gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 flex flex-col justify-center bg-secondary p-4 rounded-lg">
-          <h2 className="text-white text-3xl font-semibold mb-4">
-            Tiendas Populares
-          </h2>
-          <p className="text-white text-base">
-            Explora las tiendas favoritas de nuestros usuarios para encontrar
-            productos de alta calidad.
-          </p>
-        </div>
-        {loading ? (
-          // skeleton loader
-          <>{[...Array(7)].map((_, index) => (
-            <div className="animate-pulse col-span-3 bg-secondary rounded-lg h-48 w-full mx-2">
-              <div className="h-32 bg-gray-300 rounded-t-lg"></div>
-              <div className="p-4">
-                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-              </div>
+      <div className="w-full bg-white py-3 sm:py-4 md:py-6 lg:py-8">
+        <div className="container px-3 sm:px-4 md:px-6 lg:px-8 mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold mb-4">Tiendas Populares</h2>
+            <p className="text-gray-600 text-base">
+              Explora las tiendas favoritas de nuestros usuarios para encontrar
+              productos de alta calidad.
+            </p>
+          </div>
+          {loading ? (
+            <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {[...Array(8)].map((_, index) => (
+                <div key={index} className="animate-pulse bg-secondary rounded-lg h-48">
+                  <div className="h-32 bg-gray-300 rounded-t-lg"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}</>
-        ) : storesList && storesList.length > 0 ? (
-          storesList.map((store) => (
-            <ListElement key={store._id} type="store" item={store} />
-          ))
-        ) : (
-          <p>No hay tiendas disponibles</p>
-        )}
+          ) : storesList && storesList.length > 0 ? (
+            <div className="w-full grid gap-4 sm:gap-5 md:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {storesList.map((store) => (
+                <ListElement key={store._id} type="store" item={store} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No hay tiendas disponibles</p>
+          )}
+        </div>
       </div>
       <div className="w-full bg-primary">
         <div className="container px-8 py-8 mx-auto">
@@ -154,34 +157,36 @@ const Home = () => {
           )}
         </div>
       </div>
-      <div className="w-full container gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid grid-cols-12 grid-rows-2 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 mx-auto">
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 flex flex-col justify-center bg-secondary/60 p-4 rounded-lg">
-          <h2 className="text-3xl font-semibold mb-4">Productos Destacados</h2>
-          <p className="text-black/60 text-base">
-            Explore nuestra diversa gama de productos destacados.
-          </p>
-        </div>
-        {/* {featuredProductsList.map((product) => (
-          <ListElement key={product._id} type="product" item={product} />
-        ))} */}
-        {loading ? (
-          // skeleton loader
-          <>{[...Array(7)].map((_, index) => (
-            <div className="animate-pulse col-span-3 bg-secondary rounded-lg h-48 w-full mx-2">
-              <div className="h-32 bg-gray-300 rounded-t-lg"></div>
-              <div className="p-4">
-                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-              </div>
+      <div className="w-full bg-white py-3 sm:py-4 md:py-6 lg:py-8">
+        <div className="container px-3 sm:px-4 md:px-6 lg:px-8 mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold mb-4">Productos Destacados</h2>
+            <p className="text-gray-600 text-base">
+              Explore nuestra diversa gama de productos destacados.
+            </p>
+          </div>
+          {loading ? (
+            <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {[...Array(8)].map((_, index) => (
+                <div key={index} className="animate-pulse bg-secondary rounded-lg h-48">
+                  <div className="h-32 bg-gray-300 rounded-t-lg"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}</>
-        ) : featuredProductsList && featuredProductsList.length > 0 ? (
-          featuredProductsList.map((product) => (
-            <ListElement key={product._id} type="product" item={product} />
-          ))
-        ) : (
-          <p>No hay productos destacados disponibles</p>
-        )}
+          ) : featuredProductsList && featuredProductsList.length > 0 ? (
+            <div className="w-full grid gap-4 sm:gap-5 md:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {featuredProductsList.map((product) => (
+                <ListElement key={product._id} type="product" item={product} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No hay productos destacados disponibles</p>
+          )}
+        </div>
       </div>
     </>
   );
