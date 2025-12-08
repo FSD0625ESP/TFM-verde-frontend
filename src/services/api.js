@@ -134,8 +134,6 @@ const searchProducts = async (
     max,
   };
 
-
-
   // Pasar signal a axios (soporta AbortController desde axios v0.22+ / 1.x)
   const response = await api.get("/products/search", { params, signal });
   console.log(
@@ -284,7 +282,7 @@ const getRelatedProducts = async (productId, categories = [], limit = 8) => {
   const response = await api.get(`/products/related/${productId}`, {
     params: {
       categories: Array.isArray(categories) ? categories.join(",") : categories,
-      limit
+      limit,
     },
   });
   return response.data;
@@ -341,6 +339,32 @@ const updateUserProfile = async (firstName, lastName) => {
   return response.data;
 };
 
+// ========== ORDERS API ==========
+const getOrders = async () => {
+  const response = await api.get("/orders");
+  return response.data;
+};
+
+const getOrderById = async (id) => {
+  const response = await api.get(`/orders/${id}`);
+  return response.data;
+};
+
+const createOrder = async (orderData) => {
+  const response = await api.post("/orders", orderData);
+  return response.data;
+};
+
+const updateOrderStatus = async (id, status) => {
+  const response = await api.patch(`/orders/${id}`, { status });
+  return response.data;
+};
+
+const deleteOrder = async (id) => {
+  const response = await api.delete(`/orders/${id}`);
+  return response.data;
+};
+
 export {
   loginUser,
   registerUser,
@@ -390,4 +414,10 @@ export {
   uploadProfileImage,
   // Update User Profile
   updateUserProfile,
+  // Orders API
+  getOrders,
+  getOrderById,
+  createOrder,
+  updateOrderStatus,
+  deleteOrder,
 };

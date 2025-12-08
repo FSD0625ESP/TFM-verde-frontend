@@ -26,7 +26,7 @@ export const CartProvider = ({ children }) => {
       }
     };
     loadCart();
-  }, []);
+  }, [user]);
 
   // 2️⃣ Añadir producto al carrito
   const addToCart = async ({ productId, quantity = 1 }) => {

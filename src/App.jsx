@@ -31,6 +31,8 @@ import Profile from "./pages/Profile";
 import Legal from "./pages/LegalPage/Legal.jsx";
 import Orders from "./pages/Orders";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
+import CheckOutPage from "./pages/CheckOutPage.jsx";
+import ConfirmationPage from "./pages/ConfirmationPage.jsx";
 
 import { CartProvider } from "./contexts/CartContext.jsx";
 
@@ -133,6 +135,8 @@ function App() {
           <Route path="/venta-profesionales" element={<VentaProfesionales />} />
 
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckOutPage />} />
+          <Route path="/confirmation" element={<ConfirmationPage />} />
 
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />

@@ -1,13 +1,13 @@
 // src/pages/CartPage.jsx
 import React from "react";
-import { Card, CardBody, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const { cart, addToCart, removeFromCart, clearCart } = useCart();
+  const { cart, removeFromCart, clearCart } = useCart();
 
   const total = cart.reduce((acc, item) => {
     const product = item.productId;
@@ -15,47 +15,38 @@ export default function CartPage() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-[#f6fffd] text-gray-800 py-8">
-      <div className="max-w-5xl mx-auto px-6">
-        <header className="text-center mb-8">
+    <div className="min-h-[60vh] bg-gray-100 text-gray-800 py-8 flex flex-col">
+      {/* Container principal blanco con padding */}
+      <div className="max-w-5xl mx-auto px-6 bg-white rounded-md shadow-sm flex-grow flex flex-col">
+        <header className="text-center mb-8 pt-8">
           <h1 className="text-4xl font-bold mb-2">Tu carrito</h1>
           <p className="text-lg text-gray-700">
             Revisa los productos antes de pagar
           </p>
         </header>
 
-        <div className="flex justify-end mb-4 gap-3">
-          <Button color="secondary" onClick={() => navigate("/stores")}>
-            {" "}
-            Seguir comprando{" "}
-          </Button>{" "}
-        </div>
-
         {cart.length === 0 ? (
-          <section className="flex justify-center">
-            <Card shadow="sm" className="w-full max-w-md text-center">
-              <CardBody>
-                <ShoppingCart
-                  className="mx-auto mb-4 text-[#26A69A]"
-                  size={48}
-                />
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                  Tu carrito está vacío
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  ¡Parece que aún no has agregado productos!
-                </p>
-                <div className="flex justify-center gap-2">
-                  <Button
-                    color="success"
-                    className="bg-[#26A69A] text-white"
-                    onClick={() => navigate("/stores")}
-                  >
-                    Seguir comprando
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
+          // Contenedor centrado verticalmente y horizontalmente
+          <section className="flex-grow flex justify-center items-center">
+            <div className="max-w-md text-center px-4">
+              <ShoppingCart className="mx-auto mb-4 text-[#26A69A]" size={48} />
+
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                Tu carrito está vacío
+              </h2>
+
+              <p className="text-gray-600 mb-6">
+                ¡Parece que aún no has agregado productos!
+              </p>
+
+              <Button
+                color="success"
+                className="bg-[#26A69A] text-white"
+                onClick={() => navigate("/stores")}
+              >
+                Seguir comprando
+              </Button>
+            </div>
           </section>
         ) : (
           <section>
@@ -88,7 +79,6 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    {console.log("producto eliminado del carrito", product)}
                     <div className="mt-4 sm:mt-0 flex gap-3">
                       <Button
                         color="danger"
@@ -102,15 +92,17 @@ export default function CartPage() {
               })}
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-2xl font-semibold">
                 Total: ${total.toFixed(2)}
               </p>
-              <div className="flex gap-4">
+              <div className="flex gap-4 pb-4">
                 <Button color="secondary" onClick={clearCart}>
                   Vaciar carrito
                 </Button>
-                <Button color="success">Pagar</Button>
+                <Button color="success" onClick={() => navigate("/checkout")}>
+                  Pagar
+                </Button>
               </div>
             </div>
           </section>
