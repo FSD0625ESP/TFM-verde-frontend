@@ -79,14 +79,14 @@ const Home = () => {
       <div className="w-full bg-primary">
         <div className="container  px-8 py-8 mx-auto grid gap-6 sm:gap-3 md:gap-4 lg-gap-5 grid-cols-12">
           <div className="col-span-12 sm:col-span-6 flex flex-col justify-center">
-            <h1 className="text-4xl font-bold text-white">
+            <h1 className="text-4xl font-bold text-white text-shadow-lg">
               Bienvenido a Meraki
             </h1>
-            <p className="text-lg text-white/90 mt-4">
+            <p className="text-lg text-white/90 mt-4 text-shadow-lg">
               Tu plataforma para descubrir y comprar productos artesanales
               únicos de tiendas locales.
             </p>
-            <p className="text-lg text-white/90 mt-4">
+            <p className="text-lg text-white/90 mt-4 text-shadow-lg">
               Descubre las mejores tiendas artesanales en un solo lugar.
             </p>
           </div>
@@ -100,11 +100,11 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="w-full bg-white py-3 sm:py-4 md:py-6 lg:py-8">
+      <div className="w-full bg-emerald-500/20 py-3 sm:py-4 md:py-6 lg:py-8">
         <div className="container px-3 sm:px-4 md:px-6 lg:px-8 mx-auto">
           <div className="mb-8">
-            <h2 className="text-3xl font-semibold mb-4">Tiendas Populares</h2>
-            <p className="text-gray-600 text-base">
+            <h2 className="text-3xl font-semibold mb-4 text-shadow-md">Tiendas Populares</h2>
+            <p className="text-gray-600 text-base text-shadow-md">
               Explora las tiendas favoritas de nuestros usuarios para encontrar
               productos de alta calidad.
             </p>
@@ -157,7 +157,7 @@ const Home = () => {
           )}
         </div>
       </div>
-      <div className="w-full bg-white py-3 sm:py-4 md:py-6 lg:py-8">
+      <div className="w-full bg-emerald-500/20 py-3 sm:py-4 md:py-6 lg:py-8">
         <div className="container px-3 sm:px-4 md:px-6 lg:px-8 mx-auto">
           <div className="mb-8">
             <h2 className="text-3xl font-semibold mb-4">Productos Destacados</h2>

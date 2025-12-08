@@ -89,6 +89,7 @@ export const AuthProvider = ({ children }) => {
       .then(() => {
         setUser(null);
         localStorage.removeItem("user");
+        window.location.href = "/";
       })
       .catch((error) => {
         console.error("Logout failed:", error);
