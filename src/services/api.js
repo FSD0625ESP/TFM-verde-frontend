@@ -333,10 +333,11 @@ const uploadProfileImage = async (imageFile) => {
   return response.data;
 };
 
-const updateUserProfile = async (firstName, lastName) => {
+const updateUserProfile = async (firstName, lastName, phone = null) => {
   const response = await api.patch("/users/update-profile", {
     firstName,
     lastName,
+    ...(phone && { phone }),
   });
   return response.data;
 };
