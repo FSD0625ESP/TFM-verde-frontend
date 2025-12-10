@@ -1,0 +1,27 @@
+.filepond--file-action-button.filepond--action-edit {
+  position: absolute;
+  z-index: 10000;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filepond--file-action-button.filepond--action-edit:hover {
+  background: black;
+}
+
+.filepond-edit-btn {
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px 6px;
+  transition: 0.2s;
+}
+
+.filepond-edit-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}

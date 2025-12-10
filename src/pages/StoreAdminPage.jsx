@@ -1,108 +1,95 @@
 import { useEffect, useState, useContext } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, Outlet } from "react-router-dom";
+import { Button, Image } from "@heroui/react";
 import {
-  Button,
-  Image,
-  Accordion,
-  AccordionItem,
-  Textarea,
-  addToast,
-} from "@heroui/react";
-import Rating from "../components/Rating/Rating";
-import { ChevronLeft, ChevronRight, Menu, ChevronDown } from "lucide-react";
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Users,
+  ShoppingBag,
+  PackageSearch,
+  SquarePlus,
+  ClipboardList,
+  Brush,
+  UserRoundCog,
+} from "lucide-react";
 
 import { getAllCategories } from "../services/api";
-
 import { AuthContext } from "../contexts/AuthContext";
-import ProductForm from "../components/ProductForm/ProductForm";
-//import DropZoneWithPreviews from "../components/DropZone/DropZone";
 
 export default function StoreAdminPage() {
-  //obtenemos la id del producto de la url
-  //const { id: storeId } = useParams();
+  const location = useLocation();
+  const { user, sellerStore } = useContext(AuthContext);
 
-  //const [store, setStore] = useState({});
   const [allCategoriesList, setAllCategoriesList] = useState([]);
   const [storeCategoriesList, setStoreCategoriesList] = useState([]);
-  const [areCategoriesFiltered, setAreCategoriesFiltered] = useState(false);
 
-  const { user, sellerStore } = useContext(AuthContext);
-  console.log("user id", user?._id);
-  console.log("store id", sellerStore?._id);
+  const [collapsed, setCollapsed] = useState(false);
 
-  function round(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
-    return Math.round(value * multiplier) / multiplier;
-  }
-  /* 
-  const fetchStore = async () => {
-    try {
-      const data = await getStoreById(storeId);
-      setStore(data);
-      console.log("fetchStore - store", data);
-    } catch (error) {
-      console.error("Error al obtener la tienda:", error);
+  // abrir/cerrar secciones
+  const [openSection, setOpenSection] = useState(null);
+  const [openSubSection, setOpenSubSection] = useState(null);
+
+  // detectar qué item está activo por URL
+  const currentPath = location.pathname;
+  const isActive = (path) => currentPath === path;
+  const isActiveStarts = (base) => currentPath.startsWith(base);
+
+  // abrir automáticamente secciones según URL
+  useEffect(() => {
+    if (isActiveStarts("/store-admin/usuarios")) setOpenSection("gestion");
+    if (isActiveStarts("/store-admin/productos")) {
+      setOpenSection("gestion");
+      setOpenSubSection("productos");
     }
-  };
-   */
+    if (isActiveStarts("/store-admin/pedidos")) setOpenSection("gestion");
+
+    if (isActiveStarts("/store-admin/apariencia")) setOpenSection("config");
+    if (isActiveStarts("/store-admin/cuenta")) setOpenSection("config");
+  }, [currentPath]);
 
   const fetchCategories = async () => {
     try {
-      const allCategories = await getAllCategories();
-      setAllCategoriesList(allCategories);
-      if (sellerStore && sellerStore.categories) {
-        const filteredCategories = allCategories.filter((category) =>
-          sellerStore.categories.includes(category._id)
+      const all = await getAllCategories();
+      setAllCategoriesList(all);
+
+      if (sellerStore?.categories) {
+        const filtered = all.filter((c) =>
+          sellerStore.categories.includes(c._id)
         );
-        setStoreCategoriesList(filteredCategories);
-        setAreCategoriesFiltered(true);
-        console.log("allCategories", allCategories);
+        setStoreCategoriesList(filtered);
       }
     } catch (error) {
-      console.error("Error al obtener las categorías:", error);
+      console.error("Error al obtener categorías:", error);
     }
   };
-  console.log("allCategories", allCategoriesList);
 
   useEffect(() => {
     fetchCategories();
-    console.log("useEffect launched");
-  }, []);
-
-  // Se ejecuta cuando store cambia y ya tiene datos
-  useEffect(() => {
-    if (sellerStore && sellerStore.categories) {
-      fetchCategories();
-    }
   }, [sellerStore]);
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [openSection, setOpenSection] = useState(null);
-
-  const toggleSection = (section) => {
-    setOpenSection(openSection === section ? null : section);
-  };
-
   return (
-    <div className="w-full min-h-screen flex basis-1 overflow-hidden bg-gray-100">
-      {/* Sidebar */}
+    <div className="w-full min-h-screen flex basis-1 bg-gray-100">
+      {/* SIDEBAR */}
       <aside
-        className={`bg-secondary/80 shadow-lg sticky top-[100px] h-full transition-all duration-300 flex flex-col overflow-x-hidden ${
+        className={`bg-secondary/80 shadow-lg transition-all duration-300 flex flex-col overflow-x-hidden ${
           collapsed ? "w-16" : "w-64"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
+        {/* Header del sidebar */}
+        <div className="flex items-center justify-between p-3 border-b">
           {!collapsed && (
             <>
               <Image
                 removeWrapper
-                alt={sellerStore.name}
+                alt={sellerStore?.name}
                 className="h-8 w-auto border-2 border-white rounded-md"
-                src={sellerStore.logo}
+                src={sellerStore?.logo}
               />
               <h1 className="text-xl font-semibold">Dashboard</h1>
             </>
           )}
+
           <Button
             isIconOnly
             radius="full"
@@ -113,47 +100,170 @@ export default function StoreAdminPage() {
           </Button>
         </div>
 
-        {/* Navigation */}
+        {/* NAV */}
         <nav className="flex-1 overflow-y-auto p-2">
-          {/* Section 1 */}
+          {/* --- Sección Gestión --- */}
           <div>
             <Button
               className="w-full justify-between"
               variant="light"
-              onPress={() => toggleSection("sec1")}
+              onPress={() =>
+                setOpenSection(openSection === "gestion" ? null : "gestion")
+              }
             >
               <span className="flex items-center gap-2">
                 {!collapsed && "Gestión"}
               </span>
+
               {!collapsed && (
                 <ChevronDown
                   className={`transition-transform ${
-                    openSection === "sec1" ? "rotate-180" : ""
+                    openSection === "gestion" ? "rotate-180" : ""
                   }`}
                 />
               )}
             </Button>
-            {!collapsed && openSection === "sec1" && (
+
+            {/* Contenido de la sección Gestión */}
+            {!collapsed && openSection === "gestion" && (
               <div className="pl-6 py-2 flex flex-col gap-2">
-                <Button variant="light" className="justify-start">
-                  Usuarios
+                {/* Usuarios */}
+                <Link to="/store-admin/usuarios">
+                  <Button
+                    variant="light"
+                    className={`w-full justify-start ${
+                      isActive("/store-admin/usuarios")
+                        ? "bg-white/40 font-semibold text-secondary"
+                        : ""
+                    }`}
+                  >
+                    <Users
+                      size={18}
+                      className={`${
+                        isActive("/store-admin/usuarios")
+                          ? "text-secondary"
+                          : "text-black"
+                      }`}
+                    />
+                    Usuarios
+                  </Button>
+                </Link>
+
+                {/* Productos */}
+                <Button
+                  variant="light"
+                  className={`w-full justify-between ${
+                    isActiveStarts("/store-admin/productos")
+                      ? "bg-white/40 font-semibold text-secondary"
+                      : ""
+                  }`}
+                  onPress={() =>
+                    setOpenSubSection(
+                      openSubSection === "productos" ? null : "productos"
+                    )
+                  }
+                >
+                  <span className="flex items-center gap-2">
+                    <ShoppingBag
+                      size={18}
+                      className={`${
+                        isActiveStarts("/store-admin/productos")
+                          ? "text-secondary"
+                          : "text-black"
+                      }`}
+                    />
+                    {!collapsed && "Productos"}
+                  </span>
+
+                  {!collapsed && (
+                    <ChevronDown
+                      className={`transition-transform ${
+                        openSubSection === "productos" ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
                 </Button>
-                <Button variant="light" className="justify-start">
-                  Productos
-                </Button>
-                <Button variant="light" className="justify-start">
-                  Pedidos
-                </Button>
+
+                {/* Submenú Productos */}
+                {!collapsed && openSubSection === "productos" && (
+                  <div className="pl-6 py-2 flex flex-col gap-2">
+                    <Link to="/store-admin/productos/todos">
+                      <Button
+                        variant="light"
+                        className={`w-full justify-start ${
+                          isActive("/store-admin/productos/todos")
+                            ? "bg-primary/20 font-semibold"
+                            : ""
+                        }`}
+                      >
+                        <PackageSearch
+                          size={18}
+                          className={`${
+                            isActive("/store-admin/productos/todos")
+                              ? "text-secondary"
+                              : "text-black"
+                          }`}
+                        />
+                        Ver todos
+                      </Button>
+                    </Link>
+
+                    <Link to="/store-admin/productos/nuevo">
+                      <Button
+                        variant="light"
+                        className={`w-full justify-start ${
+                          isActive("/store-admin/productos/nuevo")
+                            ? "bg-primary/20 font-semibold"
+                            : ""
+                        }`}
+                      >
+                        <SquarePlus
+                          size={18}
+                          className={`${
+                            isActive("/store-admin/productos/nuevo")
+                              ? "text-secondary"
+                              : "text-black"
+                          }`}
+                        />
+                        Añadir producto
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+
+                {/* Pedidos */}
+                <Link to="/store-admin/pedidos">
+                  <Button
+                    variant="light"
+                    className={`w-full justify-start ${
+                      isActive("/store-admin/pedidos")
+                        ? "bg-white/40 font-semibold text-secondary"
+                        : ""
+                    }`}
+                  >
+                    <ClipboardList
+                      size={18}
+                      className={`${
+                        isActive("/store-admin/pedidos")
+                          ? "text-secondary"
+                          : "text-black"
+                      }`}
+                    />
+                    Pedidos
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
 
-          {/* Section 2 */}
+          {/* --- Sección Configuración --- */}
           <div>
             <Button
-              className="w-full justify-between"
+              className="w-full justify-between mt-4"
               variant="light"
-              onPress={() => toggleSection("sec2")}
+              onPress={() =>
+                setOpenSection(openSection === "config" ? null : "config")
+              }
             >
               <span className="flex items-center gap-2">
                 {!collapsed && "Configuración"}
@@ -161,49 +271,79 @@ export default function StoreAdminPage() {
               {!collapsed && (
                 <ChevronDown
                   className={`transition-transform ${
-                    openSection === "sec2" ? "rotate-180" : ""
+                    openSection === "config" ? "rotate-180" : ""
                   }`}
                 />
               )}
             </Button>
-            {!collapsed && openSection === "sec2" && (
+
+            {!collapsed && openSection === "config" && (
               <div className="pl-6 py-2 flex flex-col gap-2">
-                <Button variant="light" className="justify-start">
-                  Apariencia
-                </Button>
-                <Button variant="light" className="justify-start">
-                  Cuenta
-                </Button>
+                <Link to="/store-admin/apariencia">
+                  <Button
+                    variant="light"
+                    className={`w-full justify-start ${
+                      isActive("/store-admin/apariencia")
+                        ? "bg-white/40 font-semibold text-secondary"
+                        : ""
+                    }`}
+                  >
+                    <Brush
+                      size={18}
+                      className={`${
+                        isActive("/store-admin/apariencia")
+                          ? "text-secondary"
+                          : "text-black"
+                      }`}
+                    />
+                    Apariencia
+                  </Button>
+                </Link>
+
+                <Link to="/store-admin/cuenta">
+                  <Button
+                    variant="light"
+                    className={`w-full justify-start ${
+                      isActive("/store-admin/cuenta")
+                        ? "bg-white/40 font-semibold text-secondary"
+                        : ""
+                    }`}
+                  >
+                    <UserRoundCog
+                      size={18}
+                      className={`${
+                        isActive("/store-admin/cuenta")
+                          ? "text-secondary"
+                          : "text-black"
+                      }`}
+                    />
+                    Cuenta
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col">
         <header className="bg-primary/20 shadow p-4 flex items-center gap-4">
-          <Button
-            isIconOnly
-            variant="light"
-            onPress={() => setCollapsed(!collapsed)}
-          >
-            <Menu />
-          </Button>
-          <h2 className="text-2xl font-semibold">{sellerStore.name}</h2>
+          <h2 className="text-2xl font-semibold">{sellerStore?.name}</h2>
         </header>
 
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="bg-white shadow rounded-xl p-6 bg-gray-20">
-            <h3 className="text-xl font-semibold mb-4">
-              Añadir Nuevo Producto
-            </h3>
-            <p className="text-gray-700">
-              Rellena el siguiente formulario para añadir un nuevo producto
-            </p>
-            {allCategoriesList && allCategoriesList.length > 0 && (
-              <ProductForm allCategories={allCategoriesList} />
-            )}
+        {/* AQUÍ SE RENDERIZAN TODAS LAS PÁGINAS /store-admin/... */}
+        <div className="flex-1 p-5 overflow-y-auto">
+          <div className="admin-panel-wrapper">
+            <div className="bg-white shadow rounded-xl p-5">
+              <Outlet
+                context={{
+                  sellerStore,
+                  allCategoriesList,
+                  storeCategoriesList,
+                }}
+              />
+            </div>
           </div>
         </div>
       </main>

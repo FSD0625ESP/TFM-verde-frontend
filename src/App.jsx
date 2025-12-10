@@ -31,8 +31,8 @@ import Profile from "./pages/Profile";
 import Legal from "./pages/LegalPage/Legal.jsx";
 import Orders from "./pages/Orders";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
-import CheckOutPage from "./pages/CheckOutPage.jsx";
-import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+import ProductForm from "./components/Admin/ProductForm/ProductForm.jsx";
+import AdminProductList from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 
 import { CartProvider } from "./contexts/CartContext.jsx";
 
@@ -116,7 +116,24 @@ function App() {
                 <LoginPage />
               )
             }
-          />
+          >
+            {/* --- Rutas internas que cargan dentro del <Outlet /> --- */}
+            <Route
+              index
+              element={<div>Bienvenido al panel de administración</div>}
+            />
+
+            <Route path="usuarios" element={<div>Página Usuarios</div>} />
+
+            <Route path="productos">
+              <Route path="todos" element={<AdminProductList />} />
+              <Route path="nuevo" element={<ProductForm />} />
+            </Route>
+
+            <Route path="pedidos" element={<div>Página Pedidos</div>} />
+            <Route path="apariencia" element={<div>Página Apariencia</div>} />
+            <Route path="cuenta" element={<div>Página Cuenta</div>} />
+          </Route>
           <Route path="/resultados" element={<ResultadosPage />} />
 
           <Route path="/contact" element={<Contacto />} />
@@ -135,8 +152,6 @@ function App() {
           <Route path="/venta-profesionales" element={<VentaProfesionales />} />
 
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckOutPage />} />
-          <Route path="/confirmation" element={<ConfirmationPage />} />
 
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />
