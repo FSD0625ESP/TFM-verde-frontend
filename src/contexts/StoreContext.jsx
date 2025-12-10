@@ -1,10 +1,25 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 export const StoreContext = React.createContext();
 
-export const StoreProvider = ({ children, initialStore = null }) => {
+export const StoreProvider = ({ children, initialStore = null, initialProducts = [] }) => {
     const [storeData, setStoreData] = useState(initialStore || {});
-    const [storeProducts, setStoreProducts] = useState([]);
+    const [storeProducts, setStoreProducts] = useState(initialProducts || []);
+
+    // Sincronizar storeData cuando initialStore cambia
+    useEffect(() => {
+        if (initialStore) {
+            setStoreData(initialStore);
+        }
+    }, [initialStore]);
+
+    // Sincronizar storeProducts cuando initialProducts cambia
+    useEffect(() => {
+        if (initialProducts && initialProducts.length > 0) {
+            setStoreProducts(initialProducts);
+        }
+    }, [initialProducts]);
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 

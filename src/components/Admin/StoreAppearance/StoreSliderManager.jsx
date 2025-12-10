@@ -2,9 +2,9 @@ import { Card, CardHeader, CardBody, Button, Chip, Tooltip, image } from "@herou
 import { X, Plus, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useRef, useState } from "react";
-import { StoreContext } from "../../contexts/StoreContext";
+import { StoreContext } from "../../../contexts/StoreContext.jsx";
 import { FilePond, registerPlugin } from "react-filepond";
-import * as api from "../../services/api";
+import * as api from "../../../services/api";
 
 // Plugins
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";

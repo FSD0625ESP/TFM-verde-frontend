@@ -31,9 +31,12 @@ import Profile from "./pages/Profile";
 import Legal from "./pages/LegalPage/Legal.jsx";
 import Orders from "./pages/Orders";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
+import ProductForm from "./components/Admin/ProductForm/ProductForm.jsx";
+import AdminProductList from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
+import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsListAux.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
-
+import StoreAppearance from "./components/Admin/StoreAppearance/StoreAppearance.jsx";
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { AlertProvider } from "./contexts/AlertContext.jsx";
 
@@ -88,7 +91,6 @@ function App() {
             <Route path="/login/forgotPassword" element={<LoginPage />} />
             <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
 
-            <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
             <Route
               path="/register"
               element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
@@ -118,7 +120,25 @@ function App() {
                   <LoginPage />
                 )
               }
-            />
+            >
+              {/* --- Rutas internas que cargan dentro del <Outlet /> --- */}
+              <Route
+                index
+                element={<div>Bienvenido al panel de administración</div>}
+              />
+
+              <Route path="usuarios" element={<div>Página Usuarios</div>} />
+
+              <Route path="productos">
+                {/* <Route path="todos" element={<AdminProductList />} /> */}
+                <Route path="todos" element={<AdminProductListAux />} />
+                <Route path="nuevo" element={<ProductForm />} />
+              </Route>
+
+              <Route path="pedidos" element={<div>Página Pedidos</div>} />
+              <Route path="apariencia" element={<StoreAppearance />} />
+              <Route path="cuenta" element={<div>Página Cuenta</div>} />
+            </Route>
             <Route path="/resultados" element={<ResultadosPage />} />
 
             <Route path="/contact" element={<Contacto />} />

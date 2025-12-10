@@ -528,38 +528,6 @@ export default function ProductDetailPage() {
                 </p>
               </AccordionItem>
               <AccordionItem
-                key="2"
-                aria-label="Valoraciones y reseñas"
-                title="Valoraciones y reseñas"
-              >
-                <div
-                  className="w-fullflex flex-col items-center gap-6 p-3"
-                  id="reviews"
-                >
-                  {storeReviews.map((review) => (
-                    <div key={review.id} className="pb-8">
-                      <div className="flex flex-col gap-2">
-                        <Rating
-                          initialValue={review.rating}
-                          readonly
-                          size="lg"
-                        />
-                        {review.userId && (
-                          <p className="text-gray-600">
-                            <span className="font-bold">
-                              {review.userId.firstName} {review.userId.lastName}
-                            </span>
-                            {" - "}
-                            {format(parseISO(review.createdAt), "dd-MM-yyyy")}
-                          </p>
-                        )}
-                        <span className="text-gray-600">{review.comment}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </AccordionItem>
-              <AccordionItem
                 key="3"
                 aria-label="Condiciones de envío"
                 title="Condiciones de envío"
@@ -580,27 +548,29 @@ export default function ProductDetailPage() {
           id="reviews-section"
           className="grid grid-cols-1 md:grid-cols-2 items-start gap-4 "
         >
+          <h2 className="text-2xl font-semibold pt-10 col-span-2">
+            Reseñas de la tienda
+          </h2>
           <div className="flex flex-col p-3">
-            {storeReviews.map((review) => (
-              <div key={review.id} className="pb-8">
-                <div className="flex flex-col gap-2">
-                  <Rating initialValue={review.rating} readonly size="lg" />
-                  {review.userId && (
-                    <p className="text-gray-600">
-                      <span className="font-bold">
-                        {review.userId.firstName} {review.userId.lastName}
-                      </span>
-                      {" - "}
-                      {format(parseISO(review.createdAt), "dd-MM-yyyy")}
-                    </p>
-                  )}
-                  <span className="text-gray-600">{review.comment}</span>
+            <div className="w-full pt-6 flex flex-col gap-4">
+              {[...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className="flex flex-row justify-start items-end gap-3"
+                >
+                  <Rating initialValue={5 - index} readonly size="lg" />
+                  <span className="text-sm text-gray-600">
+                    {
+                      storeReviews.filter(
+                        (review) => review.rating === 5 - index
+                      ).length
+                    }{" "}
+                    reseñas
+                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="flex flex-col p-3">
             {user && (
               <div className="w-full pt-8">
                 <form onSubmit={onSubmit} className="space-y-4 w-full">
@@ -647,6 +617,26 @@ export default function ProductDetailPage() {
                 </form>
               </div>
             )}
+          </div>
+
+          <div className="flex flex-col p-3">
+            {storeReviews.map((review) => (
+              <div key={review.id} className="pt-8">
+                <div className="flex flex-col gap-2">
+                  <Rating initialValue={review.rating} readonly size="lg" />
+                  {review.userId && (
+                    <p className="text-gray-600">
+                      <span className="font-bold">
+                        {review.userId.firstName} {review.userId.lastName}
+                      </span>
+                      {" - "}
+                      {format(parseISO(review.createdAt), "dd-MM-yyyy")}
+                    </p>
+                  )}
+                  <span className="text-gray-600">{review.comment}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </motion.section>

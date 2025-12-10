@@ -2,9 +2,9 @@ import { Card, CardBody, Image, Button, Tooltip, addToast } from "@heroui/react"
 import { X, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { useContext, useRef, useState, useEffect } from "react";
-import { StoreContext } from "../../contexts/StoreContext";
-import { uploadStoreImage } from "../../services/api";
-import ListElement from "../ListElement/ListElement";
+import { StoreContext } from "../../../contexts/StoreContext.jsx";
+import { uploadStoreImage } from "../../../services/api";
+import ListElement from "../../ListElement/ListElement";
 
 import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
@@ -24,6 +24,7 @@ registerPlugin(
 
 export default function StoreImageSelector() {
     const { storeData, setStoreData } = useContext(StoreContext);
+    console.log("storeData in StoreImageSelector:", storeData);
 
     const [previewImage, setPreviewImage] = useState(null);
     const [previewLogo, setPreviewLogo] = useState(null);

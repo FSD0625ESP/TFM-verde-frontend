@@ -1,16 +1,16 @@
 import { Card, CardHeader, CardBody, Divider, Button, Tabs, Tab } from "@heroui/react";
 import { useContext, useState } from "react";
-import { motion } from "framer-motion";
 import { Palette, Image as ImageIcon, Zap, Sparkles } from "lucide-react";
-import { StoreContext } from "../../contexts/StoreContext";
+import { StoreContext } from "../../../contexts/StoreContext.jsx";
 import StoreImageSelector from "./StoreImageSelector";
 import StoreSliderManager from "./StoreSliderManager";
 import SectionToggleCard from "./SectionToggleCard";
 import FeaturedProductsSelector from "./FeaturedProductsSelector";
 import OfferProductsSelector from "./OfferProductsSelector";
-import * as api from "../../services/api";
+import * as api from "../../../services/api";
+import { motion } from "framer-motion";
 
-export default function StoreAppearance() {
+export default function StoreAppearance({ sellerStore }) {
     const {
         storeData,
         toggleFeaturedSection,
