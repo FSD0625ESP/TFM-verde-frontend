@@ -17,8 +17,8 @@ const CheckOutPage = () => {
   // Verificar si hay usuario y carrito
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <Card className="w-full max-w-md">
+      <div className="flex items-center justify-center">
+        <Card className="w-full container mx-auto max-w-md mt-20">
           <CardBody className="text-center gap-4">
             <h2 className="text-2xl font-bold">Inicia sesión para continuar</h2>
             <p className="text-gray-600">
@@ -144,8 +144,8 @@ const CheckOutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="py-12 px-4">
+      <div className="container mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">
           Checkout
         </h1>

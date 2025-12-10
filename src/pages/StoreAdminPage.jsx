@@ -11,22 +11,22 @@ import {
 import Rating from "../components/Rating/Rating";
 import { ChevronLeft, ChevronRight, Menu, ChevronDown } from "lucide-react";
 
-import { getAllCategories } from "../services/api";
+import { getAllCategories, getAllProductsByStoreId } from "../services/api";
 
 import { AuthContext } from "../contexts/AuthContext";
+import { StoreProvider, StoreContext } from "../contexts/StoreContext";
 import ProductForm from "../components/ProductForm/ProductForm";
+import StoreAppearance from "../components/StoreAppearance/StoreAppearance";
 //import DropZoneWithPreviews from "../components/DropZone/DropZone";
 
-export default function StoreAdminPage() {
-  //obtenemos la id del producto de la url
-  //const { id: storeId } = useParams();
-
-  //const [store, setStore] = useState({});
+function StoreAdminPageContent() {
   const [allCategoriesList, setAllCategoriesList] = useState([]);
   const [storeCategoriesList, setStoreCategoriesList] = useState([]);
   const [areCategoriesFiltered, setAreCategoriesFiltered] = useState(false);
 
   const { user, sellerStore } = useContext(AuthContext);
+  const { setStoreData, setStoreProductsList } = useContext(StoreContext);
+
   console.log("user id", user?._id);
   console.log("store id", sellerStore?._id);
 
@@ -34,17 +34,13 @@ export default function StoreAdminPage() {
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
   }
-  /* 
-  const fetchStore = async () => {
-    try {
-      const data = await getStoreById(storeId);
-      setStore(data);
-      console.log("fetchStore - store", data);
-    } catch (error) {
-      console.error("Error al obtener la tienda:", error);
+
+  // Cargar datos de la tienda en el contexto
+  useEffect(() => {
+    if (sellerStore) {
+      setStoreData(sellerStore);
     }
-  };
-   */
+  }, [sellerStore, setStoreData]);
 
   const fetchCategories = async () => {
     try {
@@ -62,6 +58,20 @@ export default function StoreAdminPage() {
       console.error("Error al obtener las categorías:", error);
     }
   };
+
+  // Cargar productos de la tienda
+  const fetchStoreProducts = async () => {
+    try {
+      if (sellerStore?._id) {
+        const products = await getAllProductsByStoreId(sellerStore._id);
+        setStoreProductsList(products);
+        console.log("Productos de la tienda cargados:", products);
+      }
+    } catch (error) {
+      console.error("Error al obtener los productos:", error);
+    }
+  };
+
   console.log("allCategories", allCategoriesList);
 
   useEffect(() => {
@@ -73,6 +83,7 @@ export default function StoreAdminPage() {
   useEffect(() => {
     if (sellerStore && sellerStore.categories) {
       fetchCategories();
+      fetchStoreProducts();
     }
   }, [sellerStore]);
 
@@ -87,9 +98,8 @@ export default function StoreAdminPage() {
     <div className="w-full min-h-screen flex basis-1 overflow-hidden bg-gray-100">
       {/* Sidebar */}
       <aside
-        className={`bg-secondary/80 shadow-lg sticky top-[100px] h-full transition-all duration-300 flex flex-col overflow-x-hidden ${
-          collapsed ? "w-16" : "w-64"
-        }`}
+        className={`bg-gray-400 shadow-lg sticky top-[100px] h-full transition-all duration-300 flex flex-col overflow-x-hidden ${collapsed ? "w-16" : "w-64"
+          }`}
       >
         <div className="flex items-center justify-between p-4 border-b">
           {!collapsed && (
@@ -127,9 +137,8 @@ export default function StoreAdminPage() {
               </span>
               {!collapsed && (
                 <ChevronDown
-                  className={`transition-transform ${
-                    openSection === "sec1" ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${openSection === "sec1" ? "rotate-180" : ""
+                    }`}
                 />
               )}
             </Button>
@@ -160,9 +169,8 @@ export default function StoreAdminPage() {
               </span>
               {!collapsed && (
                 <ChevronDown
-                  className={`transition-transform ${
-                    openSection === "sec2" ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${openSection === "sec2" ? "rotate-180" : ""
+                    }`}
                 />
               )}
             </Button>
@@ -193,7 +201,7 @@ export default function StoreAdminPage() {
           <h2 className="text-2xl font-semibold">{sellerStore.name}</h2>
         </header>
 
-        <div className="flex-1 p-6 overflow-y-auto">
+        {/* <div className="flex-1 p-6 overflow-y-auto">
           <div className="bg-white shadow rounded-xl p-6 bg-gray-20">
             <h3 className="text-xl font-semibold mb-4">
               Añadir Nuevo Producto
@@ -205,8 +213,24 @@ export default function StoreAdminPage() {
               <ProductForm allCategories={allCategoriesList} />
             )}
           </div>
+        </div> */}
+        <div>
+
+        </div>
+        <div className={"p-5 overflow-y-auto flex-1 bg-green-50"}>
+          <StoreAppearance></StoreAppearance>
         </div>
       </main>
     </div>
+  );
+}
+
+export default function StoreAdminPage() {
+  const { sellerStore } = useContext(AuthContext);
+
+  return (
+    <StoreProvider initialStore={sellerStore}>
+      <StoreAdminPageContent />
+    </StoreProvider>
   );
 }

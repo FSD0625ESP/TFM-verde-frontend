@@ -366,6 +366,83 @@ const deleteOrder = async (id) => {
   return response.data;
 };
 
+
+
+// ============================================
+// STORE APPEARANCE API
+// ============================================
+
+const getStoreAppearance = async (storeId) => {
+  const response = await api.get(`/stores/${storeId}/appearance`);
+  return response.data;
+};
+
+const updateStoreAppearance = async (storeId, appearanceData) => {
+  const response = await api.patch(`/stores/${storeId}/appearance`, {
+    showFeaturedSection: appearanceData.showFeaturedSection,
+    showOfferSection: appearanceData.showOfferSection,
+    showSlider: appearanceData.showSlider,
+  });
+  return response.data;
+};
+
+const uploadStoreImage = async (file, storeId, isLogo = false) => {
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("type", isLogo ? "logo" : "image");
+
+  const response = await api.post(`/stores/${storeId}/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+const uploadSliderImage = async (file, storeId) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await api.post(`/stores/${storeId}/slider`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+const deleteSliderImage = async (storeId, imageUrl) => {
+  const response = await api.delete(
+    `/stores/${storeId}/slider/${encodeURIComponent(imageUrl)}`
+  );
+  return response.data;
+};
+
+const toggleProductFeatured = async (productId, destacado) => {
+  const response = await api.patch(`/stores/products/${productId}/featured`, {
+    destacado,
+  });
+  return response.data;
+};
+
+const toggleProductOffer = async (productId, oferta) => {
+  const response = await api.patch(`/stores/products/${productId}/offer`, {
+    oferta,
+  });
+  return response.data;
+};
+
+const getStoreFeaturedProducts = async (storeId) => {
+  const response = await api.get(`/stores/${storeId}/featured-products`);
+  return response.data;
+};
+
+const getStoreOfferProducts = async (storeId) => {
+  const response = await api.get(`/stores/${storeId}/offer-products`);
+  return response.data;
+};
+
+// Export all functions
 export {
   loginUser,
   registerUser,
@@ -373,16 +450,37 @@ export {
   logoutUser,
   getAllStores,
   getStoreById,
-  getStoreBySellerId,
   registerStore,
+  getStoreBySellerId,
   searchStores,
+  getStoreAppearance,
+  updateStoreAppearance,
+  uploadStoreImage,
+  uploadSliderImage,
+  deleteSliderImage,
+  toggleProductFeatured,
+  toggleProductOffer,
+  getStoreFeaturedProducts,
+  getStoreOfferProducts,
   getAllProducts,
   getAllProductsByStoreId,
   getAllFeaturedProducts,
   getAllOfferProducts,
   getProductById,
   searchProducts,
+  createProduct,
+  getRelatedProducts,
+  uploadProductImage,
   getAllCategories,
+  getCart,
+  addToCart,
+  removeFromCart,
+  clearCart,
+  getUserChats,
+  getChatById,
+  getOrCreateChat,
+  sendMessage,
+  deleteChat,
   getStoreReviewsById,
   getProductReviewsById,
   addStoreReview,
@@ -391,34 +489,18 @@ export {
   changePassword,
   verifyForgotPasswordToken,
   loginWithGoogle,
-  getUserChats,
-  getChatById,
-  getOrCreateChat,
-  sendMessage,
-  deleteChat,
-  getCart,
-  addToCart,
-  removeFromCart,
-  clearCart,
-  contactFormSend,
-  uploadProductImage,
-  createProduct,
-  getRelatedProducts,
-  // Address API
+  updateUserProfile,
   getUserAddresses,
   getAddressById,
   createAddress,
   updateAddress,
   deleteAddress,
   setDefaultAddress,
-  // Profile Image API
   uploadProfileImage,
-  // Update User Profile
-  updateUserProfile,
-  // Orders API
   getOrders,
   getOrderById,
   createOrder,
   updateOrderStatus,
   deleteOrder,
+  contactFormSend,
 };

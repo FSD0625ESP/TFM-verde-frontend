@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 
 const ListElement = ({ item, type }) => {
   const navigate = useNavigate();
-
   const isProduct = type === "product";
 
   const handleClick = () => {
@@ -32,18 +31,16 @@ const ListElement = ({ item, type }) => {
     }
   };
 
-
   if (isProduct) {
     const now = new Date();
     const createdAt = new Date(item.createdAt);
     const diffTime = Math.abs(now - createdAt);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     let isNew = diffDays <= 10; // Consider a product new if it was created within the last 30 days
-    console.log("isNew", isNew);
 
     return (
       <Card
-        className="element-card shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+        className="element-card shadow-sm border-1 max-w-[400px]  border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
         onClick={handleClick}
       >
         {/* Imagen principal */}
@@ -60,13 +57,12 @@ const ListElement = ({ item, type }) => {
               New
             </p>
           </>)}
-
           {item.storeId?.logo && (
             <div className="store-logo">
               <Image
                 removeWrapper
                 alt={item.storeId?.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full "
                 src={item.storeId.logo}
               />
             </div>
@@ -171,24 +167,35 @@ const ListElement = ({ item, type }) => {
       className="element-card shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
       onClick={handleClick}
     >
-      {/* Imagen / logo principal */}
+      {/* Imagen principal */}
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
         {item.image ? (
           <Image
             src={item.image}
             alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform opacity-100"
             radius="none"
+            removeWrapper
           />
         ) : item.logo ? (
           <Image
             src={item.logo}
             alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            className="w-full h-full  group-hover:scale-105 transition-transform"
             radius="none"
           />
         ) : (
           <Home size={64} className="text-gray-300" />
+        )}
+        {item.logo && (
+          <div className="store-logo">
+            <Image
+              removeWrapper
+              alt={item.name}
+              className="w-full h-full  opacity-100"
+              src={item.logo}
+            />
+          </div>
         )}
       </div>
 
@@ -213,13 +220,13 @@ const ListElement = ({ item, type }) => {
                 size="sm"
                 variant="flat"
                 color="primary"
+                className="opacity-100"
               >
                 {cat.name}
               </Chip>
             ))}
             {item.categories.length > 2 && (
               <Tooltip
-                color="foreground"
                 content={
                   <div className="flex flex-col gap-1">
                     {item.categories.slice(2).map((cat) => (

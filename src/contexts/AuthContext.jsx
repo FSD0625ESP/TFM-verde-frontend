@@ -13,11 +13,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
-    console.log("👤 User changed in Header:", user);
-  }, [user]);
-
-  useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {

@@ -35,9 +35,9 @@ import Buscador from "../Buscador/Buscador";
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const { user, logout } = React.useContext(AuthContext);
+  const { user, logout, sellerStore } = React.useContext(AuthContext);
   const { cart } = useCart();
-  console.log("👤 User in Header:", user);
+  console.log("👤 seller in Header:", sellerStore);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -67,6 +67,7 @@ export default function App() {
       label: "Mi tienda",
       href: "/store-admin",
       icon: Store,
+      sellerRoleRequired: true,
       loginRequired: true,
       mobileOnly: false,
     },
@@ -130,13 +131,16 @@ export default function App() {
           <Buscador />
         </NavbarItem>
 
-        {/* Links sin icono (texto simple) */}
+        {/* Links sin icono (texto simple) */
+          console.log("sellerStore in Header:", sellerStore)
+        }
         {menuItems
           .filter(
             (item) =>
               !item.icon &&
               (!item.loginRequired || user) &&
-              (!item.showOnlyWhenLoggedOut || !user)
+              (!item.showOnlyWhenLoggedOut || !user) &&
+              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
             <NavbarItem
@@ -165,7 +169,8 @@ export default function App() {
             (item) =>
               item.icon &&
               (!item.loginRequired || user) &&
-              (!item.showOnlyWhenLoggedOut || !user)
+              (!item.showOnlyWhenLoggedOut || !user) &&
+              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
             <NavbarItem
@@ -189,7 +194,7 @@ export default function App() {
                       <Chip
                         isOneChar
                         size="sm"
-                        className="absolute -top-2 -right-2 bg-danger text-white font-bold"
+                        className="absolute -top-2 -right-2 bg-danger text-white font-bold custom-notification-badge-header desktop"
                         variant="light"
                       >
                         {/* sum all quantities in cart */}
@@ -293,7 +298,8 @@ export default function App() {
           .filter(
             (item) =>
               (!item.loginRequired || user) &&
-              (!item.showOnlyWhenLoggedOut || !user)
+              (!item.showOnlyWhenLoggedOut || !user) &&
+              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((item, index) => (
             <NavbarMenuItem key={`nav-menu-item-${index}`}>
@@ -312,7 +318,7 @@ export default function App() {
                   <Chip
                     isOneChar
                     size="sm"
-                    className="ml-2 bg-danger text-white font-bold"
+                    className="ml-2 bg-danger text-white font-bold custom-notification-badge-header mobile"
                     variant="light"
                   >
                     {/* sum all quantities in cart */}

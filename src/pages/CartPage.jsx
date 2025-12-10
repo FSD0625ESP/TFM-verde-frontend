@@ -4,10 +4,12 @@ import { Button } from "@heroui/react";
 import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
+import { useAlert } from "../contexts/AlertContext";
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { cart, removeFromCart, clearCart } = useCart();
+  const { addAlert, addToast } = useAlert();
 
   const total = cart.reduce((acc, item) => {
     const product = item.productId;
@@ -15,9 +17,9 @@ export default function CartPage() {
   }, 0);
 
   return (
-    <div className="min-h-[60vh] bg-gray-100 text-gray-800 py-8 flex flex-col">
+    <div className="text-gray-800 py-8 flex flex-col">
       {/* Container principal blanco con padding */}
-      <div className="max-w-5xl mx-auto px-6 bg-white rounded-md shadow-sm flex-grow flex flex-col">
+      <div className="container mx-auto px-6 bg-white rounded-md shadow-sm flex-grow flex flex-col">
         <header className="text-center mb-8 pt-8">
           <h1 className="text-4xl font-bold mb-2">Tu carrito</h1>
           <p className="text-lg text-gray-700">
@@ -82,7 +84,23 @@ export default function CartPage() {
                     <div className="mt-4 sm:mt-0 flex gap-3">
                       <Button
                         color="danger"
-                        onClick={() => removeFromCart(product._id)}
+                        onClick={() =>
+                          addAlert({
+                            title: "Eliminar producto",
+                            message: `¿Estás seguro de que deseas eliminar "${product.title}" del carrito?`,
+                            type: "danger",
+                            confirmText: "Eliminar",
+                            cancelText: "Cancelar",
+                            onConfirm: () => {
+                              removeFromCart(product._id);
+                              addToast({
+                                message: "Producto eliminado del carrito",
+                                type: "success",
+                                duration: 2000,
+                              });
+                            },
+                          })
+                        }
                       >
                         Eliminar
                       </Button>
@@ -97,7 +115,26 @@ export default function CartPage() {
                 Total: ${total.toFixed(2)}
               </p>
               <div className="flex gap-4 pb-4">
-                <Button color="secondary" onClick={clearCart}>
+                <Button
+                  color="secondary"
+                  onClick={() =>
+                    addAlert({
+                      title: "Vaciar carrito",
+                      message: "¿Deseas vaciar completamente tu carrito?",
+                      type: "warning",
+                      confirmText: "Vaciar",
+                      cancelText: "Cancelar",
+                      onConfirm: () => {
+                        clearCart();
+                        addToast({
+                          message: "Carrito vaciado correctamente",
+                          type: "success",
+                          duration: 2000,
+                        });
+                      },
+                    })
+                  }
+                >
                   Vaciar carrito
                 </Button>
                 <Button color="success" onClick={() => navigate("/checkout")}>

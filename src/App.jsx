@@ -35,6 +35,7 @@ import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
 
 import { CartProvider } from "./contexts/CartContext.jsx";
+import { AlertProvider } from "./contexts/AlertContext.jsx";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -76,102 +77,104 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Header />
+    <AlertProvider>
+      <BrowserRouter>
+        <Header />
 
-      <main className="flex flex-col justify-center flex-1 bg-gray-100">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/login/forgotPassword" element={<LoginPage />} />
-          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
+        <main className="flex flex-col justify-center flex-1 bg-gray-100">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login/forgotPassword" element={<LoginPage />} />
+            <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
 
-          <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
-          <Route
-            path="/register"
-            element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
-          />
-
-          <Route
-            path="/register/seller"
-            element={<RegisterPage seller={true} />}
-          />
-          <Route
-            path="/register/default"
-            element={<RegisterPage default={true} />}
-          />
-          <Route path="/stores" element={<StoresPage />} />
-          <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route
-            path="/product/:storeName/:productName/:id"
-            element={<ProductDetailPage />}
-          />
-          <Route
-            path="/store-admin/"
-            element={
-              isUserLoggedIn() && user.role === "seller" ? (
-                <StoreAdminPage />
-              ) : (
-                <LoginPage />
-              )
-            }
-          />
-          <Route path="/resultados" element={<ResultadosPage />} />
-
-          <Route path="/contact" element={<Contacto />} />
-          <Route path="/quienes-somos" element={<QuienesSomos />} />
-
-          <Route path="/donaciones" element={<Donaciones />} />
-          <Route path="/empleo" element={<Empleo />} />
-          <Route path="/hazte-volunt" element={<HazteVolunt />} />
-
-          <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
-          <Route path="/condiciones-uso" element={<CondicionesUso />} />
-          <Route path="/cookies" element={<Cookies />} />
-
-          <Route path="/abrir-tienda" element={<AbrirTienda />} />
-          <Route path="/venta-particulares" element={<VentaParticulares />} />
-          <Route path="/venta-profesionales" element={<VentaProfesionales />} />
-
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckOutPage />} />
-          <Route path="/confirmation" element={<ConfirmationPage />} />
-
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/legal" element={<Legal />} />
-        </Routes>
-      </main>
-
-      <Footer />
-
-      {isUserLoggedIn() && (
-        <>
-          <ChatToggler
-            isOpen={isChatOpen || selectedChat !== null}
-            onToggle={handleToggleChat}
-            unreadCount={totalUnread}
-          />
-
-          {!selectedChat && (
-            <ChatsDropdown
-              isOpen={isChatOpen}
-              onSelectChat={handleSelectChat}
-              onUnreadUpdate={handleUnreadUpdate}
+            <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
+            <Route
+              path="/register"
+              element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
             />
-          )}
 
-          {selectedChat && (
-            <ChatContainer
-              chat={selectedChat}
-              onClose={handleCloseChat}
-              onBack={handleBackToList}
+            <Route
+              path="/register/seller"
+              element={<RegisterPage seller={true} />}
             />
-          )}
-        </>
-      )}
-    </BrowserRouter>
+            <Route
+              path="/register/default"
+              element={<RegisterPage default={true} />}
+            />
+            <Route path="/stores" element={<StoresPage />} />
+            <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route
+              path="/product/:storeName/:productName/:id"
+              element={<ProductDetailPage />}
+            />
+            <Route
+              path="/store-admin/"
+              element={
+                isUserLoggedIn() && user.role === "seller" ? (
+                  <StoreAdminPage />
+                ) : (
+                  <LoginPage />
+                )
+              }
+            />
+            <Route path="/resultados" element={<ResultadosPage />} />
+
+            <Route path="/contact" element={<Contacto />} />
+            <Route path="/quienes-somos" element={<QuienesSomos />} />
+
+            <Route path="/donaciones" element={<Donaciones />} />
+            <Route path="/empleo" element={<Empleo />} />
+            <Route path="/hazte-volunt" element={<HazteVolunt />} />
+
+            <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
+            <Route path="/condiciones-uso" element={<CondicionesUso />} />
+            <Route path="/cookies" element={<Cookies />} />
+
+            <Route path="/abrir-tienda" element={<AbrirTienda />} />
+            <Route path="/venta-particulares" element={<VentaParticulares />} />
+            <Route path="/venta-profesionales" element={<VentaProfesionales />} />
+
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckOutPage />} />
+            <Route path="/confirmation" element={<ConfirmationPage />} />
+
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/legal" element={<Legal />} />
+          </Routes>
+        </main>
+
+        <Footer />
+
+        {isUserLoggedIn() && (
+          <>
+            <ChatToggler
+              isOpen={isChatOpen || selectedChat !== null}
+              onToggle={handleToggleChat}
+              unreadCount={totalUnread}
+            />
+
+            {!selectedChat && (
+              <ChatsDropdown
+                isOpen={isChatOpen}
+                onSelectChat={handleSelectChat}
+                onUnreadUpdate={handleUnreadUpdate}
+              />
+            )}
+
+            {selectedChat && (
+              <ChatContainer
+                chat={selectedChat}
+                onClose={handleCloseChat}
+                onBack={handleBackToList}
+              />
+            )}
+          </>
+        )}
+      </BrowserRouter>
+    </AlertProvider>
   );
 }
 
