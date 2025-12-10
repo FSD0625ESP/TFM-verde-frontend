@@ -8,17 +8,20 @@ import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+import FilePondPluginImageEdit from "filepond-plugin-image-edit";
 
 // CSS
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+import "filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css";
 import "./FileUploader.css";
 
 registerPlugin(
   FilePondPluginFileValidateType,
   FilePondPluginFileValidateSize,
   FilePondPluginImageExifOrientation,
-  FilePondPluginImagePreview
+  FilePondPluginImagePreview,
+  FilePondPluginImageEdit
 );
 
 export default function FileUploader({ images, setImages }) {
@@ -129,6 +132,18 @@ export default function FileUploader({ images, setImages }) {
         labelIdle='Arrastra imágenes o <span class="filepond--label-action">explora</span>'
         allowFileSizeValidation={true}
         maxFileSize="5MB"
+        allowImageEdit={true}
+        imageEditInstantEdit={false}
+        imageEditEditor={{
+          open: (file, instructions, options) => {
+            // file es el blob original del FilePond FileItem
+            setEditorFile(file); // abre el modal
+            setCurrentItem(options.file); // asigna el FileItem activo
+
+            // FilePond espera una promesa; la dejamos pendiente hasta que guardes
+            return new Promise(() => {});
+          },
+        }}
         onupdatefiles={handleUpdateFiles}
         onremovefile={handleUpdateFiles}
         onactivatefile={handleActivateFile}

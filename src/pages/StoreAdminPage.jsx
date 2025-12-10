@@ -335,7 +335,7 @@ export default function StoreAdminPage() {
         {/* AQUÍ SE RENDERIZAN TODAS LAS PÁGINAS /store-admin/... */}
         <div className="flex-1 p-5 overflow-y-auto">
           <div className="admin-panel-wrapper">
-            <div className="bg-white shadow rounded-xl p-5 max-w-[1200px] mx-auto">
+            <div className="bg-white shadow rounded-xl p-5 max-w-[1400px] mx-auto">
               <Outlet
                 context={{
                   sellerStore,

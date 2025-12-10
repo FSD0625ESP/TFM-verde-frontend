@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useOutletContext, Link } from "react-router-dom";
+import { useOutletContext, Link, useNavigate } from "react-router-dom";
 import { getAllProductsByStoreId } from "../../../services/api";
 
 import { Edit, Trash2, Store, Tag, Star, Eye, EyeOff } from "lucide-react";
 
 export default function ProductsPage() {
+  const navigate = useNavigate();
+
   const { sellerStore } = useOutletContext();
 
   console.log("sellerStore", sellerStore._id);
@@ -105,15 +107,19 @@ export default function ProductsPage() {
                 {/* --- DERECHA: Botones --- */}
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => console.log("Editar", p._id)}
-                    className="p-2 rounded-lg hover:bg-primary/20 transition"
+                    onClick={() => {
+                      console.log("Editar", p._id);
+                      //navigate(`/store-admin/productos/editar/${p._id}`);
+                      navigate(`/store-admin/productos/nuevo`);
+                    }}
+                    className="p-2 rounded-lg hover:bg-primary/20 transition cursor-pointer"
                   >
                     <Edit size={18} className="text-primary-700" />
                   </button>
 
                   <button
                     onClick={() => console.log("Eliminar", p._id)}
-                    className="p-2 rounded-lg hover:bg-red-100 transition"
+                    className="p-2 rounded-lg hover:bg-red-100 transition cursor-pointer"
                   >
                     <Trash2 size={18} className="text-red-600" />
                   </button>
