@@ -33,6 +33,8 @@ import Orders from "./pages/Orders";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+import OrderDetailsPage from "./pages/OrderDetailsPage.jsx";
+import PaymentPage from "./pages/PaymentPage.jsx";
 
 import { CartProvider } from "./contexts/CartContext.jsx";
 
@@ -137,9 +139,17 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckOutPage />} />
           <Route path="/confirmation" element={<ConfirmationPage />} />
+          <Route
+            path="/orders/:id"
+            element={isUserLoggedIn() ? <OrderDetailsPage /> : <LoginPage />}
+          />
+          <Route path="/payment" element={<PaymentPage />} />
 
           <Route path="/profile" element={<Profile />} />
-          <Route path="/orders" element={<Orders />} />
+          <Route
+            path="/orders"
+            element={isUserLoggedIn() ? <Orders /> : <LoginPage />}
+          />
           <Route path="/legal" element={<Legal />} />
         </Routes>
       </main>
