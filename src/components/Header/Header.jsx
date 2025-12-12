@@ -16,9 +16,11 @@ import {
   DropdownMenu,
   DropdownItem,
   Input,
+  Chip,
 } from "@heroui/react";
 import Logo from "../../assets/logo_white.svg?react";
 import { AuthContext } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 import {
   UserPlus,
   Store,
@@ -33,8 +35,9 @@ import Buscador from "../Buscador/Buscador";
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const { user, logout } = React.useContext(AuthContext);
-  console.log("👤 User in Header:", user);
+  const { user, logout, sellerStore } = React.useContext(AuthContext);
+  const { cart } = useCart();
+  console.log("👤 seller in Header:", sellerStore);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,6 +67,7 @@ export default function App() {
       label: "Mi tienda",
       href: "/store-admin",
       icon: Store,
+      sellerRoleRequired: true,
       loginRequired: true,
       mobileOnly: false,
     },
@@ -127,13 +131,16 @@ export default function App() {
           <Buscador />
         </NavbarItem>
 
-        {/* Links sin icono (texto simple) */}
+        {/* Links sin icono (texto simple) */
+          console.log("sellerStore in Header:", sellerStore)
+        }
         {menuItems
           .filter(
             (item) =>
               !item.icon &&
               (!item.loginRequired || user) &&
-              (!item.showOnlyWhenLoggedOut || !user)
+              (!item.showOnlyWhenLoggedOut || !user) &&
+              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
             <NavbarItem
@@ -145,11 +152,10 @@ export default function App() {
                 to={menuItem.href}
                 aria-current="page"
                 className={`text-black text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
-                                    ${
-                                      location.pathname === menuItem.href
-                                        ? "font-bold text-white"
-                                        : ""
-                                    }
+                                    ${location.pathname === menuItem.href
+                    ? "font-bold text-white"
+                    : ""
+                  }
                                 `}
               >
                 {menuItem.label}
@@ -163,34 +169,67 @@ export default function App() {
             (item) =>
               item.icon &&
               (!item.loginRequired || user) &&
-              (!item.showOnlyWhenLoggedOut || !user)
+              (!item.showOnlyWhenLoggedOut || !user) &&
+              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
             <NavbarItem
               key={menuItem.href}
               isActive={location.pathname === menuItem.href}
             >
-              <HeroLink
-                as={Link}
-                to={menuItem.href}
-                aria-current="page"
-                className={`flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200
-                                    ${
-                                      location.pathname === menuItem.href
-                                        ? "font-bold text-white"
-                                        : ""
-                                    }
+              {menuItem.href === "/cart" ? (
+                <HeroLink
+                  as={Link}
+                  to={menuItem.href}
+                  aria-current="page"
+                  className="relative flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200"
+                >
+                  <div className="relative">
+                    <menuItem.icon
+                      size={24}
+                      strokeWidth={1.5}
+                      className="drop-shadow"
+                    />
+                    {cart.length > 0 && (
+                      <Chip
+                        isOneChar
+                        size="sm"
+                        className="absolute -top-2 -right-2 bg-danger text-white font-bold custom-notification-badge-header desktop"
+                        variant="light"
+                      >
+                        {/* sum all quantities in cart */}
+                        {
+                          cart.reduce((total, item) => total + item.quantity, 0)
+                        }
+                      </Chip>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-shadow-sm">
+                    {menuItem.label}
+                  </span>
+                </HeroLink>
+              ) : (
+                <HeroLink
+                  as={Link}
+                  to={menuItem.href}
+                  aria-current="page"
+                  className={`flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200
+                                    ${location.pathname === menuItem.href
+                      ? "font-bold text-white"
+                      : ""
+                    }
                                 `}
-              >
-                <menuItem.icon
-                  size={24}
-                  strokeWidth={1.5}
-                  className="drop-shadow"
-                />
-                <span className="text-xs font-medium text-shadow-sm">
-                  {menuItem.label}
-                </span>
-              </HeroLink>
+                >
+                  <menuItem.icon
+                    size={24}
+                    strokeWidth={1.5}
+                    className="drop-shadow"
+                  />
+                  <span className="text-xs font-medium text-shadow-sm">
+                    {menuItem.label}
+                  </span>
+                </HeroLink>
+              )}
             </NavbarItem>
           ))}
         {user && (
@@ -259,7 +298,8 @@ export default function App() {
           .filter(
             (item) =>
               (!item.loginRequired || user) &&
-              (!item.showOnlyWhenLoggedOut || !user)
+              (!item.showOnlyWhenLoggedOut || !user) &&
+              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((item, index) => (
             <NavbarMenuItem key={`nav-menu-item-${index}`}>
@@ -267,14 +307,26 @@ export default function App() {
                 as={Link}
                 to={item.href}
                 onPress={() => setIsMenuOpen(false)}
-                className={`w-full flex items-center gap-3 py-2 transition-colors ${
-                  location.pathname === item.href
-                    ? "text-primary-500 font-bold"
-                    : "text-foreground"
-                }`}
+                className={`w-full flex items-center gap-3 py-2 transition-colors relative ${location.pathname === item.href
+                  ? "text-primary-500 font-bold"
+                  : "text-foreground"
+                  }`}
               >
                 {item.icon && <item.icon size={20} />}
                 {item.label}
+                {item.href === "/cart" && cart.length > 0 && (
+                  <Chip
+                    isOneChar
+                    size="sm"
+                    className="ml-2 bg-danger text-white font-bold custom-notification-badge-header mobile"
+                    variant="light"
+                  >
+                    {/* sum all quantities in cart */}
+                    {
+                      cart.reduce((total, item) => total + item.quantity, 0)
+                    }
+                  </Chip>
+                )}
               </HeroLink>
             </NavbarMenuItem>
           ))}

@@ -1,6 +1,8 @@
 import { useEffect, useState, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
-import Slider from "../components/Slider/Slider";
+import { motion } from "framer-motion";
+import SliderStorePage from "../components/Slider/SliderStorePage";
+import ListItemSlider from "../components/Slider/ListItemSlider";
 import Gallery from "../components/Gallery/Gallery";
 import Filters from "../components/Filters/Filters";
 import {
@@ -9,23 +11,28 @@ import {
   AccordionItem,
   Textarea,
   addToast,
+  Card,
+  CardBody,
 } from "@heroui/react";
-import ListElement from "../components/ListElement/ListElement";
 import Rating from "../components/Rating/Rating";
 import { format, parseISO } from "date-fns";
 import { ShoppingBag, Instagram, Facebook, Globe, User } from "lucide-react";
 import {
   getStoreById,
   getAllProductsByStoreId,
-  //getAllFeaturedProducts,
   getAllCategories,
   getStoreReviewsById,
   addStoreReview,
+  getStoreAppearance,
+  getStoreFeaturedProducts,
+  getStoreOfferProducts,
 } from "../services/api";
 
 import "./accordion.css";
 
 import { AuthContext } from "../contexts/AuthContext";
+import StartChatButton from "../components/Chat/StartChatButton";
+
 
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
@@ -38,6 +45,9 @@ export default function ProductDetailPage() {
   const [storeReviews, setStoreReviews] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
+  const [storeAppearance, setStoreAppearance] = useState(null);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [offerProducts, setOfferProducts] = useState([]);
 
   const { user } = useContext(AuthContext);
   console.log("user id", user?._id);
@@ -83,17 +93,35 @@ export default function ProductDetailPage() {
     }
   };
 
-  /*
-  const [featuredProductsList, setFeaturedProductsList] = useState([]);
-  const fetchFeaturedProducts = async () => {
+  const fetchStoreAppearance = async () => {
     try {
-      const data = await getAllFeaturedProducts();
-      setFeaturedProductsList(data);
+      const data = await getStoreAppearance(storeId);
+      setStoreAppearance(data);
+      console.log("storeAppearance", data);
     } catch (error) {
-      console.error("Error al obtener los productos destacados:", error);
+      console.error("Error al obtener la apariencia de la tienda:", error);
     }
   };
-*/
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const data = await getStoreFeaturedProducts(storeId);
+      setFeaturedProducts(data.products || []);
+      console.log("featuredProducts", data);
+    } catch (error) {
+      console.error("Error al obtener productos destacados:", error);
+    }
+  };
+
+  const fetchOfferProducts = async () => {
+    try {
+      const data = await getStoreOfferProducts(storeId);
+      setOfferProducts(data.products || []);
+      console.log("offerProducts", data);
+    } catch (error) {
+      console.error("Error al obtener productos en oferta:", error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -118,7 +146,9 @@ export default function ProductDetailPage() {
     fetchStore();
     fetchStoreProducts();
     fetchStoreReviews();
-    //fetchFeaturedProducts();
+    fetchStoreAppearance();
+    fetchFeaturedProducts();
+    fetchOfferProducts();
     console.log("useEffect launched");
   }, []);
 
@@ -212,14 +242,35 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <div className="w-full">
-        <Slider items={[store]} type="store" numSlides={1} />
-      </div>
 
-      <section className="w-full bg-primary/10">
+
+      {/* SECCIÓN DE SLIDER PERSONALIZADO */}
+      {storeAppearance?.appearance.showSlider && storeAppearance?.appearance.sliderImages && storeAppearance.appearance.sliderImages.length > 0 && (
+        <div className="w-full shadow-md">
+          <SliderStorePage
+            images={storeAppearance.appearance.sliderImages}
+            storeName={store.name}
+            storeDescription={store.description}
+            storeLogo={store.logo}
+          />
+        </div>
+      )}
+      <motion.section
+        className="w-full bg-primary/10"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
         <div className="container px-8 py-4 mx-auto">
           {store && (
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4 ">
+            <motion.div
+              className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
               <div className="p-3 justify-self-center">
                 <div className="flex flex-row items-center gap-2">
                   {averageRating > 0 && (
@@ -242,7 +293,7 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </div>
-
+              <StartChatButton storeId={store._id} storeName={store.name} />
               <div className="p-3 justify-self-center">
                 <div className="flex flex-row items-center gap-2">
                   <a
@@ -300,26 +351,127 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
-      </section>
+      </motion.section>
+      {/* SECCIÓN DE DESTACADOS */}
+      {storeAppearance?.appearance.showFeaturedSection && featuredProducts.length > 0 && (
+        <motion.section
+          className="w-full py-12 shadow-sm"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <div className=" px-8 mx-auto">
+            <div className="mb-8">
+              <motion.h2
+                className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true }}
+              >
+                Productos Destacados
+              </motion.h2>
+              <motion.p
+                className="text-gray-600 text-center"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                Descubre nuestros mejores productos
+              </motion.p>
+            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <ListItemSlider
+                items={featuredProducts}
+                type="product"
+                breakpoints={{ 320: 1, 640: 2, 840: 3, 1024: 4, 1200: 5, 1400: 6 }}
+
+              />
+            </motion.div>
+          </div>
+        </motion.section>
+      )}
+
+      {/* SECCIÓN DE OFERTAS */}
+      {storeAppearance?.appearance.showOfferSection && offerProducts.length > 0 && (
+        <motion.section
+          className="w-full py-12 bg-danger-50/30 shadow-sm"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <div className=" px-8 mx-auto">
+            <div className="mb-8">
+              <motion.h2
+                className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true }}
+              >
+                Ofertas Especiales
+              </motion.h2>
+              <motion.p
+                className="text-gray-600 text-center "
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                No te pierdas nuestras mejores ofertas
+              </motion.p>
+            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <ListItemSlider
+                items={offerProducts}
+                type="product"
+                breakpoints={{ 320: 1, 640: 2, 840: 3, 1024: 4, 1200: 5, 1400: 6 }}
+
+              />
+            </motion.div>
+          </div>
+        </motion.section>
+      )}
+
 
       {areCategoriesFiltered && (
         <>
-          {console.log("categoriesList", categoriesList)}
+          <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">Todos nuestros productos</h2>
           <Filters
             categoriesList={categoriesList}
             storesList={[store]}
             initialMinPrice={minPrice}
             initialMaxPrice={maxPrice}
+            className="shadow-sm"
             mode="products"
             showTabs={false}
           />
         </>
       )}
 
-      <section className="container px-8 py-4 mx-auto">
+      <motion.section
+        className="container px-8 py-4 mx-auto"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
         {store && (
           <div className="w-full">
             <Accordion
@@ -376,38 +528,6 @@ export default function ProductDetailPage() {
                 </p>
               </AccordionItem>
               <AccordionItem
-                key="2"
-                aria-label="Valoraciones y reseñas"
-                title="Valoraciones y reseñas"
-              >
-                <div
-                  className="w-fullflex flex-col items-center gap-6 p-3"
-                  id="reviews"
-                >
-                  {storeReviews.map((review) => (
-                    <div key={review.id} className="pb-8">
-                      <div className="flex flex-col gap-2">
-                        <Rating
-                          initialValue={review.rating}
-                          readonly
-                          size="lg"
-                        />
-                        {review.userId && (
-                          <p className="text-gray-600">
-                            <span className="font-bold">
-                              {review.userId.firstName} {review.userId.lastName}
-                            </span>
-                            {" - "}
-                            {format(parseISO(review.createdAt), "dd-MM-yyyy")}
-                          </p>
-                        )}
-                        <span className="text-gray-600">{review.comment}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </AccordionItem>
-              <AccordionItem
                 key="3"
                 aria-label="Condiciones de envío"
                 title="Condiciones de envío"
@@ -428,27 +548,29 @@ export default function ProductDetailPage() {
           id="reviews-section"
           className="grid grid-cols-1 md:grid-cols-2 items-start gap-4 "
         >
+          <h2 className="text-2xl font-semibold pt-10 col-span-2">
+            Reseñas de la tienda
+          </h2>
           <div className="flex flex-col p-3">
-            {storeReviews.map((review) => (
-              <div key={review.id} className="pb-8">
-                <div className="flex flex-col gap-2">
-                  <Rating initialValue={review.rating} readonly size="lg" />
-                  {review.userId && (
-                    <p className="text-gray-600">
-                      <span className="font-bold">
-                        {review.userId.firstName} {review.userId.lastName}
-                      </span>
-                      {" - "}
-                      {format(parseISO(review.createdAt), "dd-MM-yyyy")}
-                    </p>
-                  )}
-                  <span className="text-gray-600">{review.comment}</span>
+            <div className="w-full pt-6 flex flex-col gap-4">
+              {[...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className="flex flex-row justify-start items-end gap-3"
+                >
+                  <Rating initialValue={5 - index} readonly size="lg" />
+                  <span className="text-sm text-gray-600">
+                    {
+                      storeReviews.filter(
+                        (review) => review.rating === 5 - index
+                      ).length
+                    }{" "}
+                    reseñas
+                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="flex flex-col p-3">
             {user && (
               <div className="w-full pt-8">
                 <form onSubmit={onSubmit} className="space-y-4 w-full">
@@ -496,8 +618,28 @@ export default function ProductDetailPage() {
               </div>
             )}
           </div>
+
+          <div className="flex flex-col p-3">
+            {storeReviews.map((review) => (
+              <div key={review.id} className="pt-8">
+                <div className="flex flex-col gap-2">
+                  <Rating initialValue={review.rating} readonly size="lg" />
+                  {review.userId && (
+                    <p className="text-gray-600">
+                      <span className="font-bold">
+                        {review.userId.firstName} {review.userId.lastName}
+                      </span>
+                      {" - "}
+                      {format(parseISO(review.createdAt), "dd-MM-yyyy")}
+                    </p>
+                  )}
+                  <span className="text-gray-600">{review.comment}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
+      </motion.section>
     </>
   );
 }

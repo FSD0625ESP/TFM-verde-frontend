@@ -11,6 +11,7 @@ export default function Profile() {
   const [editingUser, setEditingUser] = useState(false);
   const [userForm, setUserForm] = useState({});
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
+  const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
 
   // Cargar datos del usuario
@@ -23,6 +24,7 @@ export default function Profile() {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
+            phone: user.phone || "",
             profileImage: user.profileImage || "https://i.pravatar.cc/200",
           });
         } else {
@@ -32,6 +34,7 @@ export default function Profile() {
             firstName: userData.firstName,
             lastName: userData.lastName,
             email: userData.email,
+            phone: userData.phone || "",
             profileImage: userData.profileImage || "https://i.pravatar.cc/200",
           });
         }
@@ -53,6 +56,13 @@ export default function Profile() {
   const handleUserChange = (e) => {
     const { name, value } = e.target;
     setUserForm({ ...userForm, [name]: value });
+    // Limpiar el error del campo cuando el usuario empieza a escribir
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
   };
 
   // Manejar carga de imagen de perfil
@@ -109,16 +119,47 @@ export default function Profile() {
     }
   };
 
+  // Validar campos del formulario
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!userForm.firstName || userForm.firstName.trim() === "") {
+      newErrors.firstName = "El nombre es requerido";
+    } else if (userForm.firstName.length < 2) {
+      newErrors.firstName = "El nombre debe tener al menos 2 caracteres";
+    }
+
+    if (!userForm.lastName || userForm.lastName.trim() === "") {
+      newErrors.lastName = "El apellido es requerido";
+    } else if (userForm.lastName.length < 2) {
+      newErrors.lastName = "El apellido debe tener al menos 2 caracteres";
+    }
+
+    if (userForm.phone && userForm.phone.trim() !== "") {
+      if (!/^[0-9+\s\-()]{9,}$/.test(userForm.phone.trim())) {
+        newErrors.phone = "El teléfono debe tener al menos 9 dígitos";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   // Guardar cambios del usuario
   const saveUserChanges = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       // Llamar al endpoint para actualizar el perfil en el backend
-      const result = await updateUserProfile(userForm.firstName, userForm.lastName);
+      const result = await updateUserProfile(userForm.firstName, userForm.lastName, userForm.phone);
 
       // Actualizar en el contexto (esto también actualiza localStorage)
       updateUser({
         firstName: result.user.firstName,
         lastName: result.user.lastName,
+        phone: result.user.phone,
       });
 
       setEditingUser(false);
@@ -210,9 +251,17 @@ export default function Profile() {
                   <label className="text-sm font-semibold text-gray-600">Apellido</label>
                   <p className="text-lg text-gray-900">{userForm.lastName}</p>
                 </div>
-                <div className="md:col-span-2">
+                <div className="">
                   <label className="text-sm font-semibold text-gray-600">Email</label>
                   <p className="text-lg text-gray-900">{userForm.email}</p>
+                </div>
+                <div className="">
+                  <label className="text-sm font-semibold text-gray-600">Teléfono</label>
+                  {userForm.phone ? (
+                    <p className="text-lg text-gray-900">{userForm.phone}</p>
+                  ) : (
+                    <p className="text-lg text-gray-500 italic">No hay teléfono registrado</p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -224,6 +273,9 @@ export default function Profile() {
                     value={userForm.firstName}
                     onChange={handleUserChange}
                     variant="bordered"
+                    errorMessage={errors.firstName}
+                    isInvalid={!!errors.firstName}
+                    isClearable
                   />
                   <Input
                     label="Apellido"
@@ -231,21 +283,42 @@ export default function Profile() {
                     value={userForm.lastName}
                     onChange={handleUserChange}
                     variant="bordered"
+                    errorMessage={errors.lastName}
+                    isInvalid={!!errors.lastName}
+                    isClearable
                   />
                 </div>
-                <Input
-                  label="Email"
-                  name="email"
-                  value={userForm.email}
-                  disabled
-                  variant="bordered"
-                  className="text-gray-500"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <Input
+                    label="Email"
+                    name="email"
+                    value={userForm.email}
+                    disabled
+                    variant="bordered"
+                    className="text-gray-500"
+                  />
+                  <Input
+                    label="Teléfono"
+                    name="phone"
+                    type="tel"
+                    placeholder="Ej: +34 123 456 789"
+                    value={userForm.phone}
+                    onChange={handleUserChange}
+                    variant="bordered"
+                    errorMessage={errors.phone}
+                    isInvalid={!!errors.phone}
+                    isClearable
+                  />
+                </div>
                 <div className="flex gap-3 pt-4">
                   <Button
                     color="danger"
                     variant="bordered"
-                    onPress={() => setEditingUser(false)}
+                    onPress={() => {
+                      setEditingUser(false);
+                      setErrors({});
+                    }}
                   >
                     Cancelar
                   </Button>
