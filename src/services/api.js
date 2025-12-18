@@ -113,6 +113,19 @@ const getProductById = async (id) => {
   return response.data;
 };
 
+const deleteProductById = async (id, userId) => {
+  const response = await api.delete(`/products/delete-product/${id}/${userId}`);
+  return response.data;
+};
+
+const updateProductById = async (id, productData) => {
+  const response = await api.patch(
+    `/products/update-product/${id}`,
+    productData
+  );
+  return response.data;
+};
+
 const searchProducts = async (
   page = 1,
   text = "",
@@ -366,8 +379,6 @@ const deleteOrder = async (id) => {
   return response.data;
 };
 
-
-
 // ============================================
 // STORE APPEARANCE API
 // ============================================
@@ -467,6 +478,8 @@ export {
   getAllFeaturedProducts,
   getAllOfferProducts,
   getProductById,
+  deleteProductById,
+  updateProductById,
   searchProducts,
   createProduct,
   getRelatedProducts,

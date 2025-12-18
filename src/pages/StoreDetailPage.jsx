@@ -33,7 +33,6 @@ import "./accordion.css";
 import { AuthContext } from "../contexts/AuthContext";
 import StartChatButton from "../components/Chat/StartChatButton";
 
-
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
   const { id: storeId } = useParams();
@@ -242,19 +241,19 @@ export default function ProductDetailPage() {
 
   return (
     <>
-
-
       {/* SECCIÓN DE SLIDER PERSONALIZADO */}
-      {storeAppearance?.appearance.showSlider && storeAppearance?.appearance.sliderImages && storeAppearance.appearance.sliderImages.length > 0 && (
-        <div className="w-full shadow-md">
-          <SliderStorePage
-            images={storeAppearance.appearance.sliderImages}
-            storeName={store.name}
-            storeDescription={store.description}
-            storeLogo={store.logo}
-          />
-        </div>
-      )}
+      {storeAppearance?.appearance.showSlider &&
+        storeAppearance?.appearance.sliderImages &&
+        storeAppearance.appearance.sliderImages.length > 0 && (
+          <div className="w-full shadow-md">
+            <SliderStorePage
+              images={storeAppearance.appearance.sliderImages}
+              storeName={store.name}
+              storeDescription={store.description}
+              storeLogo={store.logo}
+            />
+          </div>
+        )}
       <motion.section
         className="w-full bg-primary/10"
         initial={{ opacity: 0 }}
@@ -293,7 +292,7 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </div>
-              <StartChatButton storeId={store._id} storeName={store.name} />
+
               <div className="p-3 justify-self-center">
                 <div className="flex flex-row items-center gap-2">
                   <a
@@ -329,130 +328,126 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <div className="p-3 justify-self-center">
-                <div className="flex flex-row items-center gap-2">
-                  {averageRating > 0 && (
-                    <Rating
-                      initialValue={averageRating ? averageRating : 0}
-                      readonly
-                      size="lg"
-                    />
-                  )}
-                  {averageRating && (
-                    <span className="text-sm text-gray-600">
-                      ({averageRating}) -{" "}
-                      <a
-                        href="#reviews"
-                        className="underline hover:text-primary duration-300"
-                      >
-                        {totalReviews} reseñas
-                      </a>
-                    </span>
-                  )}
-                </div>
+              <div className="p-1 justify-self-center">
+                <StartChatButton storeId={store._id} storeName={store.name} />
               </div>
             </motion.div>
           )}
         </div>
       </motion.section>
       {/* SECCIÓN DE DESTACADOS */}
-      {storeAppearance?.appearance.showFeaturedSection && featuredProducts.length > 0 && (
-        <motion.section
-          className="w-full py-12 shadow-sm"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <div className=" px-8 mx-auto">
-            <div className="mb-8">
-              <motion.h2
-                className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                viewport={{ once: true }}
-              >
-                Productos Destacados
-              </motion.h2>
-              <motion.p
-                className="text-gray-600 text-center"
+      {storeAppearance?.appearance.showFeaturedSection &&
+        featuredProducts.length > 0 && (
+          <motion.section
+            className="w-full py-12 shadow-sm"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className=" px-8 mx-auto">
+              <div className="mb-8">
+                <motion.h2
+                  className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  Productos Destacados
+                </motion.h2>
+                <motion.p
+                  className="text-gray-600 text-center"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  Descubre nuestros mejores productos
+                </motion.p>
+              </div>
+              <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
                 viewport={{ once: true }}
               >
-                Descubre nuestros mejores productos
-              </motion.p>
+                <ListItemSlider
+                  items={featuredProducts}
+                  type="product"
+                  breakpoints={{
+                    320: 1,
+                    640: 2,
+                    840: 3,
+                    1024: 4,
+                    1200: 5,
+                    1400: 6,
+                  }}
+                />
+              </motion.div>
             </div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <ListItemSlider
-                items={featuredProducts}
-                type="product"
-                breakpoints={{ 320: 1, 640: 2, 840: 3, 1024: 4, 1200: 5, 1400: 6 }}
-
-              />
-            </motion.div>
-          </div>
-        </motion.section>
-      )}
+          </motion.section>
+        )}
 
       {/* SECCIÓN DE OFERTAS */}
-      {storeAppearance?.appearance.showOfferSection && offerProducts.length > 0 && (
-        <motion.section
-          className="w-full py-12 bg-danger-50/30 shadow-sm"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <div className=" px-8 mx-auto">
-            <div className="mb-8">
-              <motion.h2
-                className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                viewport={{ once: true }}
-              >
-                Ofertas Especiales
-              </motion.h2>
-              <motion.p
-                className="text-gray-600 text-center "
+      {storeAppearance?.appearance.showOfferSection &&
+        offerProducts.length > 0 && (
+          <motion.section
+            className="w-full py-12 bg-danger-50/30 shadow-sm"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className=" px-8 mx-auto">
+              <div className="mb-8">
+                <motion.h2
+                  className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  Ofertas Especiales
+                </motion.h2>
+                <motion.p
+                  className="text-gray-600 text-center "
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  No te pierdas nuestras mejores ofertas
+                </motion.p>
+              </div>
+              <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
                 viewport={{ once: true }}
               >
-                No te pierdas nuestras mejores ofertas
-              </motion.p>
+                <ListItemSlider
+                  items={offerProducts}
+                  type="product"
+                  breakpoints={{
+                    320: 1,
+                    640: 2,
+                    840: 3,
+                    1024: 4,
+                    1200: 5,
+                    1400: 6,
+                  }}
+                />
+              </motion.div>
             </div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <ListItemSlider
-                items={offerProducts}
-                type="product"
-                breakpoints={{ 320: 1, 640: 2, 840: 3, 1024: 4, 1200: 5, 1400: 6 }}
-
-              />
-            </motion.div>
-          </div>
-        </motion.section>
-      )}
-
+          </motion.section>
+        )}
 
       {areCategoriesFiltered && (
         <>
-          <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">Todos nuestros productos</h2>
+          <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">
+            Todos nuestros productos
+          </h2>
           <Filters
             categoriesList={categoriesList}
             storesList={[store]}
@@ -516,8 +511,8 @@ export default function ProductDetailPage() {
             >
               <AccordionItem
                 key="1"
-                aria-label="Descripción del producto"
-                title="Descripción del producto"
+                aria-label="Información adicional de la tienda"
+                title="Información adicional de la tienda"
                 className="pt-6"
               >
                 <p className="pb-4">
@@ -528,9 +523,21 @@ export default function ProductDetailPage() {
                 </p>
               </AccordionItem>
               <AccordionItem
-                key="3"
+                key="2"
                 aria-label="Condiciones de envío"
                 title="Condiciones de envío"
+              >
+                <p className="pb-4">
+                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                  Incidunt eveniet expedita voluptatem facere unde itaque odit
+                  commodi praesentium? Amet sed suscipit culpa in commodi maxime
+                  consequuntur adipisci, ratione nulla quae?
+                </p>
+              </AccordionItem>
+              <AccordionItem
+                key="3"
+                aria-label="Información del vendedor"
+                title="Información del vendedor"
                 className="border-b-1 border-gray-300"
               >
                 <p className="pb-4">
@@ -575,7 +582,7 @@ export default function ProductDetailPage() {
               <div className="w-full pt-8">
                 <form onSubmit={onSubmit} className="space-y-4 w-full">
                   <h3 className="text-lg font-semibold text-gray-700 mb-5">
-                    Valora este producto
+                    Deja tu reseña
                   </h3>
                   <Rating
                     initialValue={0}

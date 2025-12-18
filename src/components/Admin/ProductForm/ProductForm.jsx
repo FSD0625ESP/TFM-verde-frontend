@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { StoreContext } from "../../../contexts/StoreContext";
 import {
   Camera,
   Save,
   Plus,
   Image as ImageIcon,
   Trash2,
+  Ban,
   Link as LinkIcon,
 } from "lucide-react";
 import {
@@ -19,17 +22,49 @@ import {
 } from "@heroui/react";
 
 import FileUploader from "../FileUploader/FileUploader";
-import { uploadProductImage, createProduct } from "../../../services/api";
+import {
+  uploadProductImage,
+  createProduct,
+  updateProductById,
+} from "../../../services/api";
 import slugify from "slugify";
 
 export default function ProductForm({
   product = null,
   categoriesList = [],
-  submitLabel = "Guardar producto",
+  submitLabel = "",
 }) {
-  const { storeCategoriesList } = useOutletContext();
+  const navigate = useNavigate();
+  // si se pasa un producto por url, se edita, sino se crea
+  const { id: productId } = useParams();
 
-  categoriesList = storeCategoriesList;
+  const { storeProducts, storeCategories } = useContext(StoreContext);
+
+  const resolvedProduct = useMemo(() => {
+    if (product) return product;
+    if (!productId) return null;
+    return storeProducts.find((p) => p._id === productId) ?? null;
+  }, [product, productId, storeProducts]);
+
+  // estado inicial para hacer reset del formulario si no llega productId vía url
+  const EMPTY_FORM = {
+    title: "",
+    description: "",
+    longDescription: "",
+    price: "",
+    stock: "",
+    status: "onSale",
+    nuevo: false,
+    oferta: false,
+    destacado: false,
+    categories: [],
+    active: true,
+  };
+
+  submitLabel = productId ? "Guardar cambios" : "Guardar producto";
+
+  categoriesList = storeCategories;
+  console.log("ProductForm - categoriesList", categoriesList);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -47,36 +82,46 @@ export default function ProductForm({
   const [productImages, setProductImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // si se pasa un producto por url, se edita, sino se crea
   useEffect(() => {
-    if (!product) return;
-    setFormData({
-      title: product.title ?? "",
-      description: product.description ?? "",
-      price: product.price != null ? String(product.price) : "",
-      stock: product.stock != null ? String(product.stock) : "",
-      status: product.status ?? "onSale",
-      nuevo: !!product.nuevo,
-      oferta: !!product.oferta,
-      destacado: !!product.destacado,
-      categories: Array.isArray(product.categories)
-        ? product.categories.map((c) => String(c))
-        : [],
-      active: product.deletedAt ? false : true,
-    });
-    /* 
-    if (Array.isArray(product.images)) {
-      setProductImages(
-        product.images.map((url, i) => ({
-          id: `existing-${i}`,
-          file: null,
-          url: null,
-          preview: url,
-          uploading: false,
-        }))
-      );
+    // MODO CREAR PRODUCTO
+    if (!productId) {
+      setFormData(EMPTY_FORM);
+      setProductImages([]);
+      return;
     }
-     */
-  }, [product]);
+
+    // MODO EDITAR PRODUCTO
+    if (!resolvedProduct) return;
+
+    setFormData({
+      title: resolvedProduct.title ?? "",
+      description: resolvedProduct.description ?? "",
+      longDescription: resolvedProduct.longDescription ?? "",
+      price: resolvedProduct.price != null ? String(resolvedProduct.price) : "",
+      stock: resolvedProduct.stock != null ? String(resolvedProduct.stock) : "",
+      status: resolvedProduct.status ?? "",
+      nuevo: !!resolvedProduct.nuevo,
+      oferta: !!resolvedProduct.oferta,
+      destacado: !!resolvedProduct.destacado,
+      categories: Array.isArray(resolvedProduct.categories)
+        ? resolvedProduct.categories.map((c) =>
+            typeof c === "string" ? c : c._id
+          )
+        : [],
+      active: resolvedProduct.deletedAt ? false : true,
+    });
+
+    setProductImages(
+      resolvedProduct.images.map((url, i) => ({
+        id: `existing-${i}`,
+        file: null, // NO File
+        source: url, // URL real
+        preview: url,
+        uploading: false,
+      }))
+    );
+  }, [productId, resolvedProduct]);
 
   const setField = (k, v) => setFormData((s) => ({ ...s, [k]: v }));
 
@@ -226,26 +271,49 @@ export default function ProductForm({
       oferta: !!formData.oferta,
       destacado: !!formData.destacado,
       stock: Number(formData.stock),
-      categories: formData.categories.split(",").map((cat) => cat.trim()),
+      //categories: formData.categories.split(",").map((cat) => cat.trim()),
+      categories: formData.categories,
       active: !!formData.active,
     };
     console.log("FORMDATA", payload);
 
-    try {
-      setSubmitting(true);
-      const productData = await createProduct(payload);
-      console.log("Producto creado:", productData);
-      await uploadImages(productData.productId);
-      //await onSubmit(payload);
-    } catch (err) {
-      console.error(err);
-      addToast({
-        title: "Error",
-        description: err?.message || "Error al guardar producto",
-        color: "danger",
-      });
-    } finally {
-      setSubmitting(false);
+    if (productId) {
+      // EDITAR PRODUCTO
+      try {
+        setSubmitting(true);
+        const productData = await updateProductById(productId, payload);
+        console.log("Producto actualizado:", productData);
+        await uploadImages(productId);
+        //await onSubmit(payload);
+      } catch (err) {
+        console.error(err);
+        addToast({
+          title: "Error",
+          description: err?.message || "Error al guardar producto",
+          color: "danger",
+        });
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    } else {
+      // CREAR PRODUCTO
+      try {
+        setSubmitting(true);
+        const productData = await createProduct(payload);
+        console.log("Producto creado:", productData);
+        await uploadImages(productData.productId);
+        //await onSubmit(payload);
+      } catch (err) {
+        console.error(err);
+        addToast({
+          title: "Error",
+          description: err?.message || "Error al guardar producto",
+          color: "danger",
+        });
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
   const uploadImages = async (productId) => {
@@ -296,9 +364,15 @@ export default function ProductForm({
 
   return (
     <>
-      <h3 class="text-xl font-semibold mb-2">Añadir Nuevo Producto</h3>
-      <p class="text-gray-700">
-        Rellena el siguiente formulario para añadir un nuevo producto
+      <h3 className="text-xl font-semibold mb-2">
+        {productId && resolvedProduct
+          ? `Editar Producto: ${resolvedProduct.title}`
+          : "Añadir Nuevo Producto"}
+      </h3>
+      <p className="text-gray-700">
+        {productId
+          ? "Modifica el siguiente formulario para editar el producto"
+          : "Rellena el siguiente formulario para añadir un nuevo producto"}
       </p>
       <form onSubmit={handleSubmit} className="product-form pt-3 ">
         <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
@@ -365,13 +439,19 @@ export default function ProductForm({
             <Select
               label="Categoría"
               placeholder="Seleccionar categoría"
+              selectionMode="multiple"
+              className="mt-2"
+              selectedKeys={new Set(formData.categories)}
+              onSelectionChange={(keys) => {
+                setField("categories", Array.from(keys));
+              }}
+              /* 
               value={formData.categories}
               onChange={(e) => {
                 setField("categories", e.target.value);
                 console.log("Selected categories:", e.target.value);
               }}
-              className="mt-2"
-              selectionMode="multiple"
+               */
               validate={validateCategories}
               isRequired
             >
@@ -384,11 +464,18 @@ export default function ProductForm({
             <Select
               label="Estado"
               placeholder="Estado del producto en la tienda"
+              className="mt-2"
+              selectedKeys={new Set([formData.status])}
+              onSelectionChange={(keys) => {
+                const [value] = Array.from(keys);
+                setField("status", value);
+              }}
+              /* 
               value={formData.status}
               onChange={(e) => {
                 setField("status", e.target.value);
               }}
-              className="mt-2"
+               */
               isRequired
             >
               <SelectItem key="onSale" value="onSale">
@@ -423,8 +510,24 @@ export default function ProductForm({
           </div>
         </div>
 
-        <div className="actions w-full flex justify-center">
-          <Button type="submit" disabled={submitting} icon={<Save size={14} />}>
+        <div className="actions w-full flex justify-center gap-3">
+          {productId && (
+            <Button
+              className="bg-danger-200 w-[180px]"
+              type="button"
+              onPress={() => navigate(`/store-admin/productos/todos`)}
+              disabled={submitting}
+              startContent={<Ban size={14} />}
+            >
+              Cancelar
+            </Button>
+          )}
+          <Button
+            className="bg-primary w-[180px]"
+            type="submit"
+            disabled={submitting}
+            startContent={<Save size={14} />}
+          >
             {submitting ? "Guardando..." : submitLabel}
           </Button>
         </div>

@@ -33,7 +33,7 @@ import Orders from "./pages/Orders";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
 import ProductForm from "./components/Admin/ProductForm/ProductForm.jsx";
 import AdminProductList from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
-import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsListAux.jsx";
+import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
 import StoreAppearance from "./components/Admin/StoreAppearance/StoreAppearance.jsx";
@@ -89,7 +89,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login/forgotPassword" element={<LoginPage />} />
-            <Route path="/login/forgotPassword/:token" element={<LoginPage />} />
+            <Route
+              path="/login/forgotPassword/:token"
+              element={<LoginPage />}
+            />
 
             <Route
               path="/register"
@@ -127,12 +130,13 @@ function App() {
                 element={<div>Bienvenido al panel de administración</div>}
               />
 
-              <Route path="usuarios" element={<div>Página Usuarios</div>} />
+              <Route path="tienda" element={<div>Página de la tienda</div>} />
 
               <Route path="productos">
                 {/* <Route path="todos" element={<AdminProductList />} /> */}
                 <Route path="todos" element={<AdminProductListAux />} />
                 <Route path="nuevo" element={<ProductForm />} />
+                <Route path="editar/:id" element={<ProductForm />} />
               </Route>
 
               <Route path="pedidos" element={<div>Página Pedidos</div>} />
@@ -154,7 +158,10 @@ function App() {
 
             <Route path="/abrir-tienda" element={<AbrirTienda />} />
             <Route path="/venta-particulares" element={<VentaParticulares />} />
-            <Route path="/venta-profesionales" element={<VentaProfesionales />} />
+            <Route
+              path="/venta-profesionales"
+              element={<VentaProfesionales />}
+            />
 
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckOutPage />} />
