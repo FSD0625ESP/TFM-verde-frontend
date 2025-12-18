@@ -90,11 +90,38 @@ const CheckOutPage = () => {
       // Obtener storeId del primer producto (todos los productos deben ser de la misma tienda en un carrito real)
       const storeId = cart[0]?.productId?.storeId;
 
+      // 🔥 GUARDAR DATOS EN LOCAL STORAGE
+      localStorage.setItem(
+        "paymentData",
+        JSON.stringify({
+          cart,
+          total,
+          items: transformedItems,
+          storeId,
+          user,
+          selectedAddressId,
+        })
+      );
+
+      // 🔥 NAVEGAR A PAYMENTPAGE SIN STATE
+      navigate("/payment");
+
       if (!storeId) {
         throw new Error(
           "No se pudo obtener la tienda del producto. Recarga la página e intenta de nuevo."
         );
       }
+
+      navigate("/payment", {
+        state: {
+          cart,
+          total,
+          items: transformedItems,
+          storeId,
+          user,
+          selectedAddressId,
+        },
+      });
 
       // 2️⃣ Confirmar orden usando API
       const orderData = await createOrder({

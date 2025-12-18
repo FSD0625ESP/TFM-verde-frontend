@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ChevronDown,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Orders() {
   const { user } = useContext(AuthContext);
@@ -17,6 +18,8 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     if (!user) {
@@ -119,7 +122,11 @@ export default function Orders() {
             <p className="text-gray-500 text-lg mb-6">
               Inicia sesión para ver tus pedidos
             </p>
-            <Button color="primary" className="bg-teal-600 hover:bg-teal-700">
+            <Button
+              color="primary"
+              className="bg-teal-600 hover:bg-teal-700"
+              onClick={() => navigate("/login")}
+            >
               Iniciar sesión
             </Button>
           </div>
@@ -183,10 +190,14 @@ export default function Orders() {
               No hay pedidos
             </h2>
             <p className="text-gray-600 mb-6">
-              Aún no has realizado ningún pedido. ¡Comienza a comprar ahora!
+              Aún no has realizado ningún pedido.
             </p>
-            <Button color="primary" className="bg-teal-600 hover:bg-teal-700">
-              Ver productos
+            <Button
+              color="primary"
+              className="bg-teal-600 hover:bg-teal-700"
+              onClick={() => navigate("/stores")}
+            >
+              ¡Empieza a comprar!
             </Button>
           </div>
         ) : (
@@ -234,19 +245,33 @@ export default function Orders() {
                             )}
                           </p>
                         </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-3xl font-bold text-teal-600">
-                            €{total.toFixed(2)}
-                          </p>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-3xl font-bold text-teal-600">
+                              €{total.toFixed(2)}
+                            </p>
+                          </div>
+
+                          <Button
+                            color="primary"
+                            className="bg-white border border-teal-600 text-teal-600 hover:bg-teal-50 ml-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/orders/${order._id}`);
+                            }}
+                          >
+                            Detalles
+                          </Button>
+
+                          <button className="text-gray-600 hover:text-gray-900 ml-2 shrink-0">
+                            <ChevronDown
+                              size={24}
+                              className={`transition-transform ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
                         </div>
-                        <button className="text-gray-600 hover:text-gray-900 ml-4 shrink-0">
-                          <ChevronDown
-                            size={24}
-                            className={`transition-transform ${
-                              isExpanded ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
                       </div>
                     </div>
 

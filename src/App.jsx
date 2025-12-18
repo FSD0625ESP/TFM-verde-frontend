@@ -36,7 +36,14 @@ import AdminProductList from "./components/Admin/AdminProductsList/AdminProducts
 import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+
+// Rutas de HEAD
+import OrderDetailsPage from "./pages/OrderDetailsPage.jsx";
+import PaymentPage from "./pages/PaymentPage.jsx";
+
+// Rutas de la rama
 import StoreAppearance from "./components/Admin/StoreAppearance/StoreAppearance.jsx";
+
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { AlertProvider } from "./contexts/AlertContext.jsx";
 
@@ -55,7 +62,6 @@ function App() {
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
-    // Reducir el contador de no leídos cuando se abre un chat
     setTotalUnread((prev) => Math.max(0, prev - (chat.unreadCount || 0)));
   };
 
@@ -87,6 +93,8 @@ function App() {
         <main className="flex flex-col justify-center flex-1 bg-gray-100">
           <Routes>
             <Route path="/" element={<Home />} />
+
+            {/* Login */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login/forgotPassword" element={<LoginPage />} />
             <Route
@@ -94,11 +102,11 @@ function App() {
               element={<LoginPage />}
             />
 
+            {/* Register */}
             <Route
               path="/register"
               element={isUserLoggedIn() ? <Home /> : <RegisterPage />}
             />
-
             <Route
               path="/register/seller"
               element={<RegisterPage seller={true} />}
@@ -107,13 +115,19 @@ function App() {
               path="/register/default"
               element={<RegisterPage default={true} />}
             />
+
+            {/* Stores */}
             <Route path="/stores" element={<StoresPage />} />
             <Route path="/store/:storeName/:id" element={<StoreDetailPage />} />
+
+            {/* Products */}
             <Route path="/products" element={<ProductsPage />} />
             <Route
               path="/product/:storeName/:productName/:id"
               element={<ProductDetailPage />}
             />
+
+            {/* Store Admin */}
             <Route
               path="/store-admin/"
               element={
@@ -124,7 +138,6 @@ function App() {
                 )
               }
             >
-              {/* --- Rutas internas que cargan dentro del <Outlet /> --- */}
               <Route
                 index
                 element={<div>Bienvenido al panel de administración</div>}
@@ -133,7 +146,6 @@ function App() {
               <Route path="tienda" element={<div>Página de la tienda</div>} />
 
               <Route path="productos">
-                {/* <Route path="todos" element={<AdminProductList />} /> */}
                 <Route path="todos" element={<AdminProductListAux />} />
                 <Route path="nuevo" element={<ProductForm />} />
                 <Route path="editar/:id" element={<ProductForm />} />
@@ -143,19 +155,18 @@ function App() {
               <Route path="apariencia" element={<StoreAppearance />} />
               <Route path="cuenta" element={<div>Página Cuenta</div>} />
             </Route>
+
             <Route path="/resultados" element={<ResultadosPage />} />
 
+            {/* Static pages */}
             <Route path="/contact" element={<Contacto />} />
             <Route path="/quienes-somos" element={<QuienesSomos />} />
-
             <Route path="/donaciones" element={<Donaciones />} />
             <Route path="/empleo" element={<Empleo />} />
             <Route path="/hazte-volunt" element={<HazteVolunt />} />
-
             <Route path="/aviso-privacidad" element={<AvisoPrivacidad />} />
             <Route path="/condiciones-uso" element={<CondicionesUso />} />
             <Route path="/cookies" element={<Cookies />} />
-
             <Route path="/abrir-tienda" element={<AbrirTienda />} />
             <Route path="/venta-particulares" element={<VentaParticulares />} />
             <Route
@@ -163,18 +174,35 @@ function App() {
               element={<VentaProfesionales />}
             />
 
+            {/* Cart */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckOutPage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
 
+            {/* Orders */}
+            <Route
+              path="/orders"
+              element={isUserLoggedIn() ? <Orders /> : <LoginPage />}
+            />
+            <Route
+              path="/orders/:id"
+              element={isUserLoggedIn() ? <OrderDetailsPage /> : <LoginPage />}
+            />
+
+            {/* Payment */}
+            <Route path="/payment" element={<PaymentPage />} />
+
+            {/* Profile */}
             <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<Orders />} />
+
+            {/* Legal */}
             <Route path="/legal" element={<Legal />} />
           </Routes>
         </main>
 
         <Footer />
 
+        {/* Chat widgets */}
         {isUserLoggedIn() && (
           <>
             <ChatToggler
