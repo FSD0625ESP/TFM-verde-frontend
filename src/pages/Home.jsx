@@ -113,7 +113,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="w-full bg-emerald-500/20 py-3 sm:py-4 md:py-6 lg:py-8">
+      <div className="w-full   py-3 sm:py-4 md:py-6 lg:py-8">
         <div className="container px-3 sm:px-4 md:px-6 lg:px-8 mx-auto">
           <motion.div
             className="mb-8"
@@ -212,7 +212,7 @@ const Home = () => {
           )}
         </div>
       </div>
-      <div className="w-full bg-emerald-500/20 py-3 sm:py-4 md:py-6 lg:py-8">
+      <div className="w-full   py-3 sm:py-4 md:py-6 lg:py-8">
         <div className="container px-3 sm:px-4 md:px-6 lg:px-8 mx-auto">
           <motion.div
             className="mb-8"

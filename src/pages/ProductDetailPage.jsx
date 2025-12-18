@@ -40,6 +40,8 @@ export default function ProductDetailPage() {
 
   const { user } = useContext(AuthContext);
 
+  const sessionId = sessionStorage.getItem("sessionId");
+
   function round(value, precision) {
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
@@ -113,7 +115,7 @@ export default function ProductDetailPage() {
     //fetchFeaturedProducts();
     fetchCategories();
     console.log("useEffect launched");
-  }, []);
+  }, [productId]);
 
   const [rating, setRating] = useState(0);
   const [formData, setFormData] = useState({

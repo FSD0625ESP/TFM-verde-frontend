@@ -151,7 +151,7 @@ export default function App() {
                 as={Link}
                 to={menuItem.href}
                 aria-current="page"
-                className={`text-black text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
+                className={`text-white text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
                                     ${location.pathname === menuItem.href
                     ? "font-bold text-white"
                     : ""
@@ -182,7 +182,7 @@ export default function App() {
                   as={Link}
                   to={menuItem.href}
                   aria-current="page"
-                  className="relative flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200"
+                  className="relative flex flex-col items-center gap-1 text-shadow-xl text-white hover:text-secondary transition-colors duration-200"
                 >
                   <div className="relative">
                     <menuItem.icon

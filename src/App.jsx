@@ -39,6 +39,7 @@ import ConfirmationPage from "./pages/ConfirmationPage.jsx";
 import StoreAppearance from "./components/Admin/StoreAppearance/StoreAppearance.jsx";
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { AlertProvider } from "./contexts/AlertContext.jsx";
+import { generateUUID } from "./utils/utils.js";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -47,6 +48,14 @@ function App() {
   const [totalUnread, setTotalUnread] = useState(0);
 
   const isUserLoggedIn = () => user !== null;
+
+  let sessionId = localStorage.getItem("sessionId");
+  if ((!sessionId && isUserLoggedIn()) || (isUserLoggedIn() && sessionId !== user._id)) {
+    sessionStorage.setItem("sessionId", user._id);
+  } else if (!sessionId) {
+    sessionId = generateUUID();
+    localStorage.setItem("sessionId", sessionId);
+  }
 
   const handleToggleChat = () => {
     setIsChatOpen(!isChatOpen);
