@@ -26,7 +26,6 @@ registerPlugin(
 
 export default function FileUploader({ images, setImages }) {
   const pondRef = useRef(null);
-  const imageEditPromiseRef = useRef(null);
   const [editorFile, setEditorFile] = useState(null); // File para editar
   const [currentItem, setCurrentItem] = useState(null); // FilePond fileItem
 
@@ -60,26 +59,19 @@ export default function FileUploader({ images, setImages }) {
 
   // Actualiza estado images desde FilePond
   const handleUpdateFiles = (fileItems) => {
-    if (!fileItems) return;
-
-    const mapped = fileItems.map((item) => {
-      let preview = null;
-
-      if (item.file instanceof File) {
-        preview = URL.createObjectURL(item.file);
-      } else if (typeof item.source === "string") {
-        preview = item.source;
-      }
-
-      return {
-        id: item.id,
-        file: item.file instanceof File ? item.file : null,
-        source: typeof item.source === "string" ? item.source : null,
-        preview, // SIEMPRE string o null
-      };
-    });
+    const mapped = fileItems.map((item) => ({
+      //id: item.id,
+      //file: item.file || null,
+      //preview: item.file ? URL.createObjectURL(item.file) : null,
+      id: item.id,
+      file: item.file instanceof File ? item.file : null,
+      source: item.source || null,
+      preview:
+        item.source || (item.file ? URL.createObjectURL(item.file) : null),
+    }));
 
     setImages(mapped);
+    // console.log("handleUpdateFiles", mapped);
   };
 
   // Activar editor desde FilePond native (onactivatefile)
@@ -97,26 +89,43 @@ export default function FileUploader({ images, setImages }) {
   };
 
   // Activar editor desde miniatura externa (cuando el usuario pulsa "Editar" de la lista)
+  /* 
+  const handleActivateFromPreview = (file) => {
+    if (!pondRef.current) return;
+
+    const pondFiles = pondRef.current.getFiles();
+    const fileItem = pondFiles.find((f) => f.file === file);
+    if (!fileItem) {
+      // Si no encuentra por referencia, intenta por nombre/size como fallback
+      const fallback = pondFiles.find(
+        (f) => f.file?.name === file.name && f.file?.size === file.size
+      );
+      if (!fallback) return;
+      setCurrentItem(fallback);
+      setEditorFile(fallback.file);
+      return;
+    }
+
+    setCurrentItem(fileItem);
+    setEditorFile(fileItem.file);
+  };
+   */
   const handleActivateFromPreview = async (file, source) => {
     if (!pondRef.current) return;
 
     let fileObj = file;
 
     // Si es remoto, convertir URL a File
-    if (!fileObj && source) {
-      fileObj = await fetchRemoteFile(source); // esto devuelve un File
+    if (!file && source) {
+      fileObj = await fetchRemoteFile(source);
     }
-
-    // si no hay fileObj, salir antes de acceder a .name
-    if (!fileObj) return;
 
     const pondFiles = pondRef.current.getFiles();
     const fileItem =
       pondFiles.find((f) => f.file === fileObj) ||
       pondFiles.find(
-        (f) => f.file?.name === fileObj.name && f.file?.size === fileObj.size // fallback local
-      ) ||
-      pondFiles.find((f) => f.source === source); // <-- búsqueda remota
+        (f) => f.file?.name === fileObj.name && f.file?.size === fileObj.size
+      );
 
     if (!fileItem) return;
 
@@ -140,20 +149,10 @@ export default function FileUploader({ images, setImages }) {
     setImages((prev) =>
       prev.map((img) =>
         img.id === currentItem.id
-          ? {
-              ...img,
-              file: newFile,
-              preview: URL.createObjectURL(newFile),
-              source: null, // elimina source para que thumbnail use preview
-            }
+          ? { ...img, file: newFile, preview: URL.createObjectURL(newFile) }
           : img
       )
     );
-
-    if (imageEditPromiseRef.current) {
-      imageEditPromiseRef.current.resolve(blob);
-      imageEditPromiseRef.current = null;
-    }
 
     // Cerrar modal
     setEditorFile(null);
@@ -166,6 +165,7 @@ export default function FileUploader({ images, setImages }) {
 
       <FilePond
         ref={pondRef}
+        //files={images.map((img) => img.file)} // pasar File[] directamente (mejor)
         files={images
           .map((img) =>
             img.file instanceof File
@@ -183,20 +183,17 @@ export default function FileUploader({ images, setImages }) {
         acceptedFileTypes={["image/*"]}
         labelIdle='Arrastra imágenes o <span class="filepond--label-action">explora</span>'
         allowFileSizeValidation={true}
-        maxFileSize="8MB"
+        maxFileSize="5MB"
         allowImageEdit={true}
         imageEditInstantEdit={false}
         imageEditEditor={{
-          open: (file, fileItem, instructions, options) => {
+          open: (file, instructions, options) => {
             // file es el blob original del FilePond FileItem
             setEditorFile(file); // abre el modal
-            setCurrentItem(fileItem); // asigna el FileItem activo
+            setCurrentItem(options.file); // asigna el FileItem activo
 
             // FilePond espera una promesa; la dejamos pendiente hasta que guardes
-            //return new Promise(() => {});
-            return new Promise((resolve, reject) => {
-              imageEditPromiseRef.current = { resolve, reject };
-            });
+            return new Promise(() => {});
           },
         }}
         onupdatefiles={handleUpdateFiles}
@@ -229,7 +226,7 @@ export default function FileUploader({ images, setImages }) {
                 onClick={(e) => {
                   e.preventDefault(); // NO ENVÍA FORMULARIO
                   e.stopPropagation(); // NO INTERFIERE CON FilePond
-                  handleActivateFromPreview(img.file, img.source);
+                  handleActivateFromPreview(img.file);
                 }}
               >
                 Editar
@@ -244,18 +241,10 @@ export default function FileUploader({ images, setImages }) {
         <ImageEditorModal
           file={editorFile}
           onClose={() => {
-            if (imageEditPromiseRef.current) {
-              imageEditPromiseRef.current.reject(
-                new Error("Image edit cancelled")
-              );
-              imageEditPromiseRef.current = null;
-            }
-
             setEditorFile(null);
             setCurrentItem(null);
           }}
           onSave={handleSaveEdit}
-          preset="square"
         />
       )}
     </div>

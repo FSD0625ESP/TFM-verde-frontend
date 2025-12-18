@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 export const StoreContext = React.createContext();
 
@@ -6,83 +6,27 @@ export const StoreProvider = ({
   children,
   initialStore = null,
   initialProducts = [],
-  initialCategories = [],
 }) => {
   const [storeData, setStoreData] = useState(initialStore || {});
   const [storeProducts, setStoreProducts] = useState(initialProducts || []);
-  const [allCategories, setAllCategories] = useState(initialCategories || []);
+
+  // Sincronizar storeData cuando initialStore cambia
+  useEffect(() => {
+    if (initialStore) {
+      setStoreData(initialStore);
+    }
+  }, [initialStore]);
+
+  // Sincronizar storeProducts cuando initialProducts cambia
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      setStoreProducts(initialProducts);
+    }
+  }, [initialProducts]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("StoreProvider - received categories (all):", allCategories);
-
-  // sincronizar store
-  useEffect(() => {
-    if (initialStore) setStoreData(initialStore);
-  }, [initialStore]);
-
-  // sincronizar productos
-  useEffect(() => {
-    setStoreProducts(initialProducts || []);
-  }, [initialProducts]);
-
-  // sincronizar categorías
-  useEffect(() => {
-    setAllCategories(initialCategories || []);
-  }, [initialCategories]);
-
-  // 🔥 categorías de la tienda (DERIVADO)
-  /*   const storeCategories = useMemo(() => {
-    if (!storeData?.categories?.length || !allCategories.length) {
-      return [];
-    }
-
-    console.log("storeData.categories:", storeData.categories);
-
-    const filteredCategories = allCategories.filter((cat) =>
-      storeData.categories.some((id) => String(id) === String(cat._id))
-    );
-    console.log("StoreProvider - store categories:", filteredCategories);
-
-    return filteredCategories;
-  }, [storeData?.categories, allCategories]); */
-
-  const storeCategories = useMemo(() => {
-    if (!storeData?.categories?.length || !allCategories.length) {
-      return [];
-    }
-
-    const storeCategoryIds = storeData.categories.map((c) =>
-      typeof c === "string" ? c : c._id
-    );
-
-    const filteredCategories = allCategories.filter((cat) =>
-      storeCategoryIds.some((id) => String(id) === String(cat._id))
-    );
-    console.log("StoreProvider - store categories:", filteredCategories);
-
-    return filteredCategories;
-  }, [storeData?.categories, allCategories]);
-
-  /* =====================
-     PRODUCTS
-  ===================== */
-  const setStoreProductsList = useCallback((updater) => {
-    setStoreProducts((prev) =>
-      typeof updater === "function" ? updater(prev) : updater
-    );
-  }, []);
-
-  const updateProduct = useCallback((productId, updates) => {
-    setStoreProducts((prev) =>
-      prev.map((p) => (p._id === productId ? { ...p, ...updates } : p))
-    );
-  }, []);
-
-  /* =====================
-     APPEARANCE
-  ===================== */
   // Actualizar datos de la tienda
   const updateStoreAppearance = useCallback((appearanceData) => {
     setStoreData((prev) => ({
@@ -150,14 +94,31 @@ export const StoreProvider = ({
     }));
   }, []);
 
+  // Establecer productos de la tienda
+  /* const setStoreProductsList = useCallback((products) => {
+        setStoreProducts(products);
+    }, []); */
+  const setStoreProductsList = useCallback((updater) => {
+    setStoreProducts((prev) =>
+      typeof updater === "function" ? updater(prev) : updater
+    );
+  }, []);
+
+  // Actualizar un producto individual
+  const updateProduct = useCallback((productId, updates) => {
+    setStoreProducts((prev) =>
+      prev.map((product) =>
+        product._id === productId ? { ...product, ...updates } : product
+      )
+    );
+  }, []);
+
   const value = {
     storeData,
     setStoreData,
     storeProducts,
     setStoreProductsList,
     updateProduct,
-    allCategories,
-    storeCategories,
     isLoading,
     setIsLoading,
     error,

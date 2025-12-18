@@ -5,7 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Users,
+  Store,
   ShoppingBag,
   PackageSearch,
   SquarePlus,
@@ -22,7 +22,6 @@ export default function StoreAdminPage() {
   const { user, sellerStore } = useContext(AuthContext);
 
   const [allCategoriesList, setAllCategoriesList] = useState([]);
-  const [storeCategoriesList, setStoreCategoriesList] = useState([]);
   const [storeProducts, setStoreProducts] = useState([]);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -38,7 +37,7 @@ export default function StoreAdminPage() {
 
   // abrir automáticamente secciones según URL
   useEffect(() => {
-    if (isActiveStarts("/store-admin/usuarios")) setOpenSection("gestion");
+    if (isActiveStarts("/store-admin/tienda")) setOpenSection("gestion");
     if (isActiveStarts("/store-admin/productos")) {
       setOpenSection("gestion");
       setOpenSubSection("productos");
@@ -49,17 +48,11 @@ export default function StoreAdminPage() {
     if (isActiveStarts("/store-admin/cuenta")) setOpenSection("config");
   }, [currentPath]);
 
-  const fetchCategories = async () => {
+  const fetchAllCategories = async () => {
     try {
       const all = await getAllCategories();
       setAllCategoriesList(all);
-
-      if (sellerStore?.categories) {
-        const filtered = all.filter((c) =>
-          sellerStore.categories.includes(c._id)
-        );
-        setStoreCategoriesList(filtered);
-      }
+      console.log("AdminPage - ALL store categories:", all);
     } catch (error) {
       console.error("Error al obtener categorías:", error);
     }
@@ -77,16 +70,19 @@ export default function StoreAdminPage() {
   };
 
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
-  }, [sellerStore]);
+    if (sellerStore?._id) {
+      fetchAllCategories();
+      fetchProducts();
+    }
+  }, [sellerStore?._id]);
 
   return (
     <div className="w-full min-h-screen flex basis-1 bg-gray-100">
       {/* SIDEBAR */}
       <aside
-        className={`bg-secondary/80 shadow-lg transition-all duration-300 flex flex-col overflow-x-hidden ${collapsed ? "w-16" : "w-64"
-          }`}
+        className={`bg-secondary/80 shadow-lg transition-all duration-300 flex flex-col overflow-x-hidden ${
+          collapsed ? "w-16" : "w-64"
+        }`}
       >
         {/* Header del sidebar */}
         <div className="flex items-center justify-between p-3 border-b">
@@ -129,8 +125,9 @@ export default function StoreAdminPage() {
 
               {!collapsed && (
                 <ChevronDown
-                  className={`transition-transform ${openSection === "gestion" ? "rotate-180" : ""
-                    }`}
+                  className={`transition-transform ${
+                    openSection === "gestion" ? "rotate-180" : ""
+                  }`}
                 />
               )}
             </Button>
@@ -141,30 +138,33 @@ export default function StoreAdminPage() {
                 {/* Usuarios */}
                 <Button
                   as={Link}
-                  to="/store-admin/usuarios"
+                  to="/store-admin/tienda"
                   variant="light"
-                  className={`w-full justify-start ${isActive("/store-admin/usuarios")
-                    ? "bg-white/40 font-semibold text-secondary"
-                    : ""
-                    }`}
+                  className={`w-full justify-start ${
+                    isActive("/store-admin/tienda")
+                      ? "bg-white/40 font-semibold text-secondary"
+                      : ""
+                  }`}
                 >
-                  <Users
+                  <Store
                     size={18}
-                    className={`${isActive("/store-admin/usuarios")
-                      ? "text-secondary"
-                      : "text-black"
-                      }`}
+                    className={`${
+                      isActive("/store-admin/tienda")
+                        ? "text-secondary"
+                        : "text-black"
+                    }`}
                   />
-                  Usuarios
+                  Tienda
                 </Button>
 
                 {/* Productos */}
                 <Button
                   variant="light"
-                  className={`w-full justify-between ${isActiveStarts("/store-admin/productos")
-                    ? "bg-white/40 font-semibold text-secondary"
-                    : ""
-                    }`}
+                  className={`w-full justify-between ${
+                    isActiveStarts("/store-admin/productos")
+                      ? "bg-white/40 font-semibold text-secondary"
+                      : ""
+                  }`}
                   onPress={() =>
                     setOpenSubSection(
                       openSubSection === "productos" ? null : "productos"
@@ -174,18 +174,20 @@ export default function StoreAdminPage() {
                   <span className="flex items-center gap-2">
                     <ShoppingBag
                       size={18}
-                      className={`${isActiveStarts("/store-admin/productos")
-                        ? "text-secondary"
-                        : "text-black"
-                        }`}
+                      className={`${
+                        isActiveStarts("/store-admin/productos")
+                          ? "text-secondary"
+                          : "text-black"
+                      }`}
                     />
                     {!collapsed && "Productos"}
                   </span>
 
                   {!collapsed && (
                     <ChevronDown
-                      className={`transition-transform ${openSubSection === "productos" ? "rotate-180" : ""
-                        }`}
+                      className={`transition-transform ${
+                        openSubSection === "productos" ? "rotate-180" : ""
+                      }`}
                     />
                   )}
                 </Button>
@@ -197,17 +199,19 @@ export default function StoreAdminPage() {
                       as={Link}
                       to="/store-admin/productos/todos"
                       variant="light"
-                      className={`w-full justify-start ${isActive("/store-admin/productos/todos")
-                        ? "bg-primary/20 font-semibold"
-                        : ""
-                        }`}
+                      className={`w-full justify-start ${
+                        isActive("/store-admin/productos/todos")
+                          ? "bg-primary/20 font-semibold"
+                          : ""
+                      }`}
                     >
                       <PackageSearch
                         size={18}
-                        className={`${isActive("/store-admin/productos/todos")
-                          ? "text-secondary"
-                          : "text-black"
-                          }`}
+                        className={`${
+                          isActive("/store-admin/productos/todos")
+                            ? "text-secondary"
+                            : "text-black"
+                        }`}
                       />
                       Ver todos
                     </Button>
@@ -216,17 +220,19 @@ export default function StoreAdminPage() {
                       as={Link}
                       to="/store-admin/productos/nuevo"
                       variant="light"
-                      className={`w-full justify-start ${isActive("/store-admin/productos/nuevo")
-                        ? "bg-primary/20 font-semibold"
-                        : ""
-                        }`}
+                      className={`w-full justify-start ${
+                        isActive("/store-admin/productos/nuevo")
+                          ? "bg-primary/20 font-semibold"
+                          : ""
+                      }`}
                     >
                       <SquarePlus
                         size={18}
-                        className={`${isActive("/store-admin/productos/nuevo")
-                          ? "text-secondary"
-                          : "text-black"
-                          }`}
+                        className={`${
+                          isActive("/store-admin/productos/nuevo")
+                            ? "text-secondary"
+                            : "text-black"
+                        }`}
                       />
                       Añadir producto
                     </Button>
@@ -238,17 +244,19 @@ export default function StoreAdminPage() {
                   as={Link}
                   to="/store-admin/pedidos"
                   variant="light"
-                  className={`w-full justify-start ${isActive("/store-admin/pedidos")
-                    ? "bg-white/40 font-semibold text-secondary"
-                    : ""
-                    }`}
+                  className={`w-full justify-start ${
+                    isActive("/store-admin/pedidos")
+                      ? "bg-white/40 font-semibold text-secondary"
+                      : ""
+                  }`}
                 >
                   <ClipboardList
                     size={18}
-                    className={`${isActive("/store-admin/pedidos")
-                      ? "text-secondary"
-                      : "text-black"
-                      }`}
+                    className={`${
+                      isActive("/store-admin/pedidos")
+                        ? "text-secondary"
+                        : "text-black"
+                    }`}
                   />
                   Pedidos
                 </Button>
@@ -270,8 +278,9 @@ export default function StoreAdminPage() {
               </span>
               {!collapsed && (
                 <ChevronDown
-                  className={`transition-transform ${openSection === "config" ? "rotate-180" : ""
-                    }`}
+                  className={`transition-transform ${
+                    openSection === "config" ? "rotate-180" : ""
+                  }`}
                 />
               )}
             </Button>
@@ -282,17 +291,19 @@ export default function StoreAdminPage() {
                   as={Link}
                   to="/store-admin/apariencia"
                   variant="light"
-                  className={`w-full justify-start ${isActive("/store-admin/apariencia")
-                    ? "bg-white/40 font-semibold text-secondary"
-                    : ""
-                    }`}
+                  className={`w-full justify-start ${
+                    isActive("/store-admin/apariencia")
+                      ? "bg-white/40 font-semibold text-secondary"
+                      : ""
+                  }`}
                 >
                   <Brush
                     size={18}
-                    className={`${isActive("/store-admin/apariencia")
-                      ? "text-secondary"
-                      : "text-black"
-                      }`}
+                    className={`${
+                      isActive("/store-admin/apariencia")
+                        ? "text-secondary"
+                        : "text-black"
+                    }`}
                   />
                   Apariencia
                 </Button>
@@ -301,17 +312,19 @@ export default function StoreAdminPage() {
                   as={Link}
                   to="/store-admin/cuenta"
                   variant="light"
-                  className={`w-full justify-start ${isActive("/store-admin/cuenta")
-                    ? "bg-white/40 font-semibold text-secondary"
-                    : ""
-                    }`}
+                  className={`w-full justify-start ${
+                    isActive("/store-admin/cuenta")
+                      ? "bg-white/40 font-semibold text-secondary"
+                      : ""
+                  }`}
                 >
                   <UserRoundCog
                     size={18}
-                    className={`${isActive("/store-admin/cuenta")
-                      ? "text-secondary"
-                      : "text-black"
-                      }`}
+                    className={`${
+                      isActive("/store-admin/cuenta")
+                        ? "text-secondary"
+                        : "text-black"
+                    }`}
                   />
                   Cuenta
                 </Button>
@@ -331,12 +344,16 @@ export default function StoreAdminPage() {
         <div className="flex-1 p-5 overflow-y-auto">
           <div className="admin-panel-wrapper">
             <div className="bg-white shadow rounded-xl p-5 max-w-[1400px] mx-auto">
-              <StoreProvider initialStore={sellerStore} initialProducts={storeProducts}>
+              <StoreProvider
+                initialStore={sellerStore}
+                initialProducts={storeProducts}
+                initialCategories={allCategoriesList}
+              >
                 <Outlet
                   context={{
+                    user,
                     sellerStore,
                     allCategoriesList,
-                    storeCategoriesList,
                   }}
                 />
               </StoreProvider>
