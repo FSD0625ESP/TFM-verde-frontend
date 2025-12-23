@@ -32,12 +32,12 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Buscador from "../Buscador/Buscador";
+import { m } from "framer-motion";
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const { user, logout, sellerStore } = React.useContext(AuthContext);
   const { cart } = useCart();
-  console.log("👤 seller in Header:", sellerStore);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -65,7 +65,7 @@ export default function App() {
     },
     {
       label: "Mi tienda",
-      href: "/store-admin",
+      href: "/store-admin/dashboard",
       icon: Store,
       sellerRoleRequired: true,
       loginRequired: true,
@@ -131,9 +131,7 @@ export default function App() {
           <Buscador />
         </NavbarItem>
 
-        {/* Links sin icono (texto simple) */
-          console.log("sellerStore in Header:", sellerStore)
-        }
+
         {menuItems
           .filter(
             (item) =>
@@ -143,6 +141,7 @@ export default function App() {
               (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
+
             <NavbarItem
               key={menuItem.href}
               isActive={location.pathname === menuItem.href}
@@ -153,9 +152,10 @@ export default function App() {
                 aria-current="page"
                 className={`text-white text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
                                     ${location.pathname === menuItem.href
-                    ? "font-bold text-white"
+                    ? "font-bold text-black"
                     : ""
                   }
+                   
                                 `}
               >
                 {menuItem.label}
@@ -182,7 +182,7 @@ export default function App() {
                   as={Link}
                   to={menuItem.href}
                   aria-current="page"
-                  className="relative flex flex-col items-center gap-1 text-shadow-xl text-white hover:text-secondary transition-colors duration-200"
+                  className={`relative flex flex-col items-center gap-1 text-shadow-xl ${location.pathname === "/cart" ? "text-black" : "text-white"} hover:text-secondary transition-colors duration-200`}
                 >
                   <div className="relative">
                     <menuItem.icon
@@ -194,7 +194,7 @@ export default function App() {
                       <Chip
                         isOneChar
                         size="sm"
-                        className="absolute -top-2 -right-2 bg-danger text-white font-bold custom-notification-badge-header desktop"
+                        className={`absolute -top-2 -right-2 bg-danger  custom-notification-badge-header desktop`}
                         variant="light"
                       >
                         {/* sum all quantities in cart */}
@@ -213,9 +213,13 @@ export default function App() {
                   as={Link}
                   to={menuItem.href}
                   aria-current="page"
-                  className={`flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200
+                  className={`flex flex-col items-center gap-1 text-shadow-xl text-white hover:text-secondary transition-colors duration-200
                                     ${location.pathname === menuItem.href
                       ? "font-bold text-white"
+                      : ""
+                    }
+                      ${location.pathname.includes("store-admin") && menuItem.href.includes("store-admin")
+                      ? "font-bold text-black"
                       : ""
                     }
                                 `}
@@ -259,11 +263,7 @@ export default function App() {
               <DropdownItem key="profile" startContent={<UserPlus size={18} />}>
                 Perfil
               </DropdownItem>
-              {user.role === "seller" && (
-                <DropdownItem key="store" startContent={<Store size={18} />}>
-                  Mi tienda
-                </DropdownItem>
-              )}
+
               <DropdownItem
                 key="orders"
                 startContent={<ShoppingBag size={18} />}
@@ -356,6 +356,6 @@ export default function App() {
           <></>
         )}
       </NavbarMenu>
-    </Navbar>
+    </Navbar >
   );
 }

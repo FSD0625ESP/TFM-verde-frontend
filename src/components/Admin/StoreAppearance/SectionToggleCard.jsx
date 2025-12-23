@@ -1,6 +1,8 @@
-import { Card, CardHeader, CardBody, Switch, Tooltip } from "@heroui/react";
+import { Card, CardHeader, CardBody, Switch, Tooltip, Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { Info } from "lucide-react";
+import { useState } from "react";
+
 
 export default function SectionToggleCard({
     title,
@@ -11,6 +13,8 @@ export default function SectionToggleCard({
     children,
     info,
 }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -41,16 +45,31 @@ export default function SectionToggleCard({
                             </Tooltip>
                         )}
                         <Switch
-                            checked={isEnabled}
-                            onChange={(e) => onToggle(e.target.checked)}
+                            isSelected={!!isEnabled}
+                            onValueChange={(value) => {
+                                onToggle(value);
+                                if (!value) setIsExpanded(false);
+                            }}
                             color="primary"
                             size="lg"
                         />
                     </div>
                 </CardHeader>
 
-                {/* Contenido condicional */}
                 {isEnabled && children && (
+                    <div className="px-6 pb-2">
+                        <Button
+                            size="sm"
+                            variant="bordered"
+                            onClick={() => setIsExpanded((v) => !v)}
+                        >
+                            {isExpanded ? "Minimizar" : "Mostrar opciones"}
+                        </Button>
+                    </div>
+                )}
+
+                {/* Contenido condicional */}
+                {isEnabled && isExpanded && children && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}

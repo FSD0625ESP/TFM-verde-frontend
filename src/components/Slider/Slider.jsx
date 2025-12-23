@@ -12,15 +12,20 @@ import "swiper/css/effect-fade";
 import { EffectFade, Autoplay, Navigation, Pagination } from "swiper/modules";
 import "./Slider.css";
 import { Card, CardHeader, CardFooter, Image, Button } from "@heroui/react";
+import ListElement from "../ListElement/ListElement";
 
 export default function Slider({ items, type, numSlides }) {
-  console.log("Slider items:", items);
-  console.log("Slider type:", type);
-  console.log("Slider numSlides:", numSlides);
+  const safeItems = Array.isArray(items) ? items : [];
+  if (safeItems.length === 0) return null;
+
+  const shouldLoop = safeItems.length > 1;
+  const swiperKey = `${type || "item"}-${numSlides}-${safeItems.length}`;
+
   return (
     <>
       {numSlides === 1 && (
         <Swiper
+          key={swiperKey}
           navigation={true}
           pagination={{
             clickable: true,
@@ -31,16 +36,15 @@ export default function Slider({ items, type, numSlides }) {
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
-          loop={true}
+          loop={shouldLoop}
           speed={1200}
           modules={[Autoplay, EffectFade, Navigation, Pagination]}
-          className="mySwiper"
+          className="mySwiper slider-single-element"
           style={{ maxWidth: "100%", margin: "0 auto" }}
         >
-          {items.map((i, idx) => (
-            <SwiperSlide>
+          {safeItems.map((i, idx) => (
+            <SwiperSlide key={i?._id || idx}>
               <div
-                key={idx}
                 style={{
                   height: "50vh",
                   minHeight: "400px",
@@ -55,10 +59,10 @@ export default function Slider({ items, type, numSlides }) {
                 }}
               >
                 <div className="slide-content">
-                  <h2 className="text-white font-bold font-medium text-2xl text-center mb-3 drop-shadow-lg">
+                  <h2 className="text-white font-bold text-2xl text-center mb-3 drop-shadow-lg">
                     {type === "store" ? i.name : i.title}
                   </h2>
-                  <p className="text-white font-bold font-medium text-center drop-shadow-lg">
+                  <p className="text-white font-bold text-center drop-shadow-lg">
                     {i.description}
                   </p>
                 </div>
@@ -74,6 +78,7 @@ export default function Slider({ items, type, numSlides }) {
       )}
       {numSlides > 1 && (
         <Swiper
+          key={swiperKey}
           // Default parameters
           slidesPerView={1}
           spaceBetween={16}
@@ -81,73 +86,47 @@ export default function Slider({ items, type, numSlides }) {
           breakpoints={{
             320: {
               slidesPerView: 1,
-              spaceBetween: 0,
+              spaceBetween: 10,
             },
             480: {
               slidesPerView: 1,
               spaceBetween: 10,
             },
-            560: {
+            640: {
               slidesPerView: 2,
               spaceBetween: 16,
             },
-            840: {
+            768: {
               slidesPerView: 3,
               spaceBetween: 16,
             },
-            1200: {
+            1024: {
               slidesPerView: 4,
               spaceBetween: 16,
             },
+            1280: {
+              slidesPerView: 4,
+              spaceBetween: 20,
+            },
           }}
           navigation={true}
+          pagination={{
+            clickable: true,
+          }}
           speed={700}
-          modules={[Navigation]}
-          className="mySwiper"
+          autoplay={{
+            delay: 2500,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          loop={shouldLoop}
+          modules={[Autoplay, Navigation, Pagination]}
+          className="mySwiper slider-list-elements"
           style={{ maxWidth: "100%", margin: "0 auto" }}
         >
-          {items.map((i, idx) => (
-            <SwiperSlide>
-              <Card
-                isFooterBlurred
-                className="slider-card w-full h-[260px] col-span-12 sm:col-span-5"
-                key={idx}
-              >
-                <CardHeader className="absolute z-10 top-1 flex-row items-start">
-                  {type === "product" && i.nuevo && (
-                    <p className="tag tag-nuevo text-tiny uppercase font-bold">
-                      Nuevo
-                    </p>
-                  )}
-                  {type === "product" && i.oferta && (
-                    <p className="tag tag-oferta text-tiny uppercase font-bold">
-                      Oferta
-                    </p>
-                  )}
-                </CardHeader>
-                <Image
-                  removeWrapper
-                  alt="Card example background"
-                  className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-                  src={type === "store" ? `${i.image}` : `${i.images[0]}`}
-                />
-                <CardFooter className="absolute bg-white/60 bottom-0 border-t-1 border-zinc-100/50 z-10 justify-between">
-                  <div>
-                    <h5 className="text-black font-bold">
-                      {type === "store" ? i.name : i.title}
-                    </h5>
-                  </div>
-                  <Button
-                    className="text-tiny text-white"
-                    color="primary"
-                    radius="sm"
-                    size="sm"
-                    shadow="sm"
-                  >
-                    VER
-                  </Button>
-                </CardFooter>
-              </Card>
+          {safeItems.map((i, idx) => (
+            <SwiperSlide key={i._id || idx}>
+              <ListElement item={i} type={type} />
             </SwiperSlide>
           ))}
         </Swiper>

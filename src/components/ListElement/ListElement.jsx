@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 // Para tiendas:
 //  - Usa el diseño de tarjetas de tiendas de Resultados
 
-const ListElement = ({ item, type }) => {
+const ListElement = ({ item, type, showLogo = false }) => {
   const navigate = useNavigate();
   const isProduct = type === "product";
 
@@ -57,7 +57,7 @@ const ListElement = ({ item, type }) => {
               New
             </p>
           </>)}
-          {item.storeId?.logo && (
+          {item.storeId?.logo && showLogo && (
             <div className="store-logo">
               <Image
                 removeWrapper
@@ -187,7 +187,7 @@ const ListElement = ({ item, type }) => {
         ) : (
           <Home size={64} className="text-gray-300" />
         )}
-        {item.logo && (
+        {item.logo && showLogo && (
           <div className="store-logo">
             <Image
               removeWrapper

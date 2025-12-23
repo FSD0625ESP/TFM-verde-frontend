@@ -72,6 +72,7 @@ export const AuthProvider = ({ children }) => {
       }
       console.log("✅ Login exitoso:", data);
       setUser({ ...data.user });
+      console.log("User set in context:", data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
       return data;
     } catch (error) {

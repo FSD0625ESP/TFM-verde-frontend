@@ -21,6 +21,7 @@ import {
   getAllCategories,
   getProductReviewsById,
   addProductReview,
+  trackAnalyticsEvent,
 } from "../services/api";
 import AddToCartButton from "../components/Cart/AddToCartButton";
 
@@ -39,8 +40,6 @@ export default function ProductDetailPage() {
   const [averageRating, setAverageRating] = useState(0);
 
   const { user } = useContext(AuthContext);
-
-  const sessionId = sessionStorage.getItem("sessionId");
 
   function round(value, precision) {
     var multiplier = Math.pow(10, precision || 0);
@@ -112,10 +111,19 @@ export default function ProductDetailPage() {
     fetchProduct();
     fetchProducts();
     fetchProductReviews();
-    //fetchFeaturedProducts();
+    //fetchFeaturedProducts();  
     fetchCategories();
     console.log("useEffect launched");
   }, [productId]);
+
+  // Registrar visita al producto en analytics cuando el producto esté cargado
+  useEffect(() => {
+    if (product && product._id && product.storeId) {
+      const storeId = typeof product.storeId === "object" ? product.storeId._id : product.storeId;
+      console.log("📊 Tracking view_product - storeId:", storeId, "productId:", product._id);
+      trackAnalyticsEvent("view_product", storeId, product._id);
+    }
+  }, [product?._id]);
 
   const [rating, setRating] = useState(0);
   const [formData, setFormData] = useState({

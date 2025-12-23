@@ -389,11 +389,25 @@ const getStoreAppearance = async (storeId) => {
 };
 
 const updateStoreAppearance = async (storeId, appearanceData) => {
-  const response = await api.patch(`/stores/${storeId}/appearance`, {
-    showFeaturedSection: appearanceData.showFeaturedSection,
-    showOfferSection: appearanceData.showOfferSection,
-    showSlider: appearanceData.showSlider,
-  });
+  const payload = {};
+
+  if (appearanceData.showFeaturedSection !== undefined) {
+    payload.showFeaturedSection = appearanceData.showFeaturedSection;
+  }
+  if (appearanceData.showOfferSection !== undefined) {
+    payload.showOfferSection = appearanceData.showOfferSection;
+  }
+  if (appearanceData.showSlider !== undefined) {
+    payload.showSlider = appearanceData.showSlider;
+  }
+  if (appearanceData.sectionsOrder !== undefined) {
+    payload.sectionsOrder = appearanceData.sectionsOrder;
+  }
+  if (appearanceData.sliderImages !== undefined) {
+    payload.sliderImages = appearanceData.sliderImages;
+  }
+
+  const response = await api.patch(`/stores/${storeId}/appearance`, payload);
   return response.data;
 };
 
@@ -516,4 +530,71 @@ export {
   updateOrderStatus,
   deleteOrder,
   contactFormSend,
+  // Analytics
+  trackAnalyticsEvent,
+  getStoreDashboard,
+  getProductStats,
+};
+
+// ==================== ANALYTICS ====================
+
+/**
+ * Registrar un evento de analytics
+ * @param {string} eventType - Tipo de evento: "view_product", "view_store", "add_to_cart", "purchase"
+ * @param {string} storeId - ID de la tienda
+ * @param {string} [productId] - ID del producto (requerido para view_product y add_to_cart)
+ */
+const trackAnalyticsEvent = async (eventType, storeId, productId = null) => {
+  console.log("[Frontend API] Enviando evento analytics:", { eventType, storeId, productId });
+  try {
+    // Obtener sessionId de localStorage (consistente para usuarios anónimos y logueados)
+    const sessionId = localStorage.getItem("sessionId");
+
+    const payload = {
+      eventType,
+      storeId,
+      sessionId,
+    };
+
+    if (productId) {
+      payload.productId = productId;
+    }
+    const response = await api.post("/analytics/track", payload);
+    return response.data;
+  } catch (error) {
+    // No lanzar error para no interrumpir la experiencia del usuario
+    console.warn("Error al registrar analytics:", error.message);
+    return null;
+  }
+};
+
+/**
+ * Obtener dashboard de analytics de una tienda
+ * @param {string} storeId - ID de la tienda
+ * @param {object} options - Opciones de filtrado
+ * @param {string} [options.period] - Período: "24h", "7d", "30d", "90d"
+ * @param {string} [options.startDate] - Fecha inicio (ISO string)
+ * @param {string} [options.endDate] - Fecha fin (ISO string)
+ */
+const getStoreDashboard = async (storeId, options = {}) => {
+  const params = new URLSearchParams();
+  if (options.period) params.append("period", options.period);
+  if (options.startDate) params.append("startDate", options.startDate);
+  if (options.endDate) params.append("endDate", options.endDate);
+
+  const queryString = params.toString();
+  const url = `/analytics/dashboard/${storeId}${queryString ? `?${queryString}` : ""}`;
+
+  const response = await api.get(url);
+  return response.data;
+};
+
+/**
+ * Obtener estadísticas de un producto específico
+ * @param {string} productId - ID del producto
+ * @param {string} [period] - Período: "24h", "7d", "30d", "90d","year"
+ */
+const getProductStats = async (productId, period = "7d") => {
+  const response = await api.get(`/analytics/product/${productId}?period=${period}`);
+  return response.data;
 };
