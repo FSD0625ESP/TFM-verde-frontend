@@ -15,7 +15,7 @@ export const StoreProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("StoreProvider - received categories (all):", allCategories);
+  //console.log("StoreProvider - received categories (all):", allCategories);
 
   // sincronizar store
   useEffect(() => {
@@ -24,7 +24,9 @@ export const StoreProvider = ({
 
   // sincronizar productos
   useEffect(() => {
-    setStoreProducts(initialProducts || []);
+    if (storeProducts.length === 0 && initialProducts?.length) {
+      setStoreProducts(initialProducts);
+    }
   }, [initialProducts]);
 
   // sincronizar categorías
@@ -32,22 +34,9 @@ export const StoreProvider = ({
     setAllCategories(initialCategories || []);
   }, [initialCategories]);
 
-  // 🔥 categorías de la tienda (DERIVADO)
-  /*   const storeCategories = useMemo(() => {
-    if (!storeData?.categories?.length || !allCategories.length) {
-      return [];
-    }
-
-    console.log("storeData.categories:", storeData.categories);
-
-    const filteredCategories = allCategories.filter((cat) =>
-      storeData.categories.some((id) => String(id) === String(cat._id))
-    );
-    console.log("StoreProvider - store categories:", filteredCategories);
-
-    return filteredCategories;
-  }, [storeData?.categories, allCategories]); */
-
+  /* =====================
+     CATEGORIES
+  ===================== */
   const storeCategories = useMemo(() => {
     if (!storeData?.categories?.length || !allCategories.length) {
       return [];
@@ -60,7 +49,7 @@ export const StoreProvider = ({
     const filteredCategories = allCategories.filter((cat) =>
       storeCategoryIds.some((id) => String(id) === String(cat._id))
     );
-    console.log("StoreProvider - store categories:", filteredCategories);
+    //console.log("StoreProvider - store categories:", filteredCategories);
 
     return filteredCategories;
   }, [storeData?.categories, allCategories]);

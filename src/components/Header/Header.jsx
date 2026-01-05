@@ -114,7 +114,7 @@ export default function App() {
         <NavbarBrand>
           {/* <img src={logo} className="w-20 h-auto" alt="Acme Logo" /> */}
           <Logo
-            className="w-18 p-1 h-auto text-white drop-shadow-md hover:drop-shadow-2xl hover:w-19 transition-all cursor-pointer"
+            className="w-16 origin-center p-1 h-auto text-white drop-shadow-md hover:drop-shadow-2xl hover:scale-110 transition-all ease-in cursor-pointer"
             onClick={() => {
               navigate("/");
               setIsMenuOpen(false);
@@ -131,7 +131,8 @@ export default function App() {
           <Buscador />
         </NavbarItem>
 
-        {/* Links sin icono (texto simple) */
+        {
+          /* Links sin icono (texto simple) */
           console.log("sellerStore in Header:", sellerStore)
         }
         {menuItems
@@ -140,7 +141,8 @@ export default function App() {
               !item.icon &&
               (!item.loginRequired || user) &&
               (!item.showOnlyWhenLoggedOut || !user) &&
-              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
+              (!item.sellerRoleRequired ||
+                (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
             <NavbarItem
@@ -152,10 +154,11 @@ export default function App() {
                 to={menuItem.href}
                 aria-current="page"
                 className={`text-black text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
-                                    ${location.pathname === menuItem.href
-                    ? "font-bold text-white"
-                    : ""
-                  }
+                                    ${
+                                      location.pathname === menuItem.href
+                                        ? "font-bold text-white"
+                                        : ""
+                                    }
                                 `}
               >
                 {menuItem.label}
@@ -170,7 +173,8 @@ export default function App() {
               item.icon &&
               (!item.loginRequired || user) &&
               (!item.showOnlyWhenLoggedOut || !user) &&
-              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
+              (!item.sellerRoleRequired ||
+                (user && user.role === "seller" && sellerStore))
           )
           .map((menuItem) => (
             <NavbarItem
@@ -198,9 +202,7 @@ export default function App() {
                         variant="light"
                       >
                         {/* sum all quantities in cart */}
-                        {
-                          cart.reduce((total, item) => total + item.quantity, 0)
-                        }
+                        {cart.reduce((total, item) => total + item.quantity, 0)}
                       </Chip>
                     )}
                   </div>
@@ -214,10 +216,11 @@ export default function App() {
                   to={menuItem.href}
                   aria-current="page"
                   className={`flex flex-col items-center gap-1 text-shadow-xl text-black hover:text-secondary transition-colors duration-200
-                                    ${location.pathname === menuItem.href
-                      ? "font-bold text-white"
-                      : ""
-                    }
+                                    ${
+                                      location.pathname === menuItem.href
+                                        ? "font-bold text-white"
+                                        : ""
+                                    }
                                 `}
                 >
                   <menuItem.icon
@@ -299,7 +302,8 @@ export default function App() {
             (item) =>
               (!item.loginRequired || user) &&
               (!item.showOnlyWhenLoggedOut || !user) &&
-              (!item.sellerRoleRequired || (user && user.role === "seller" && sellerStore))
+              (!item.sellerRoleRequired ||
+                (user && user.role === "seller" && sellerStore))
           )
           .map((item, index) => (
             <NavbarMenuItem key={`nav-menu-item-${index}`}>
@@ -307,10 +311,11 @@ export default function App() {
                 as={Link}
                 to={item.href}
                 onPress={() => setIsMenuOpen(false)}
-                className={`w-full flex items-center gap-3 py-2 transition-colors relative ${location.pathname === item.href
-                  ? "text-primary-500 font-bold"
-                  : "text-foreground"
-                  }`}
+                className={`w-full flex items-center gap-3 py-2 transition-colors relative ${
+                  location.pathname === item.href
+                    ? "text-primary-500 font-bold"
+                    : "text-foreground"
+                }`}
               >
                 {item.icon && <item.icon size={20} />}
                 {item.label}
@@ -322,9 +327,7 @@ export default function App() {
                     variant="light"
                   >
                     {/* sum all quantities in cart */}
-                    {
-                      cart.reduce((total, item) => total + item.quantity, 0)
-                    }
+                    {cart.reduce((total, item) => total + item.quantity, 0)}
                   </Chip>
                 )}
               </HeroLink>

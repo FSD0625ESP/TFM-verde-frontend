@@ -59,6 +59,14 @@ const registerStore = async (storeData) => {
   return response.data;
 };
 
+const updateStoreById = async (storeId, userId, storeData) => {
+  const response = await api.patch(
+    `/stores/update/${storeId}/${userId}`,
+    storeData
+  );
+  return response.data;
+};
+
 // Login con Google: enviar idToken (credential) al backend
 const loginWithGoogle = async (idToken) => {
   const response = await api.post("/users/google", { idToken });
@@ -282,6 +290,13 @@ const uploadProductImage = async (imageFile, productId) => {
   return response.data;
 };
 
+const deleteProductImage = async (productId, public_id) => {
+  const response = await api.delete(`/uploads/product/image`, {
+    data: { productId, public_id },
+  });
+  return response.data;
+};
+
 const clearCart = async () => {
   const response = await api.delete(`/cart/clear`);
   return response.data;
@@ -462,6 +477,7 @@ export {
   getAllStores,
   getStoreById,
   registerStore,
+  updateStoreById,
   getStoreBySellerId,
   searchStores,
   getStoreAppearance,
@@ -484,6 +500,7 @@ export {
   createProduct,
   getRelatedProducts,
   uploadProductImage,
+  deleteProductImage,
   getAllCategories,
   getCart,
   addToCart,

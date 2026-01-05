@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import SliderStorePage from "../components/Slider/SliderStorePage";
 import ListItemSlider from "../components/Slider/ListItemSlider";
-import Gallery from "../components/Gallery/Gallery";
 import Filters from "../components/Filters/Filters";
 import {
   Button,
@@ -50,6 +49,14 @@ export default function ProductDetailPage() {
 
   const { user } = useContext(AuthContext);
   console.log("user id", user?._id);
+
+  // determinar si el usuario es el propietario de la tienda
+  const isStoreOwner =
+    user && store?.ownerId && String(user._id) === String(store.ownerId);
+
+  // determinar si el usuario puede ver el contenido de la tienda
+  const canSeeStoreContent =
+    store?.active === true || (store?.active === false && isStoreOwner);
 
   function round(value, precision) {
     var multiplier = Math.pow(10, precision || 0);
@@ -241,412 +248,494 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      {/* SECCIÓN DE SLIDER PERSONALIZADO */}
-      {storeAppearance?.appearance.showSlider &&
-        storeAppearance?.appearance.sliderImages &&
-        storeAppearance.appearance.sliderImages.length > 0 && (
-          <div className="w-full shadow-md">
-            <SliderStorePage
-              images={storeAppearance.appearance.sliderImages}
-              storeName={store.name}
-              storeDescription={store.description}
-              storeLogo={store.logo}
-            />
-          </div>
-        )}
-      <motion.section
-        className="w-full bg-primary/10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-      >
-        <div className="container px-8 py-4 mx-auto">
-          {store && (
-            <motion.div
-              className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <div className="p-3 justify-self-center">
-                <div className="flex flex-row items-center gap-2">
-                  {averageRating > 0 && (
-                    <Rating
-                      initialValue={averageRating ? averageRating : 0}
-                      readonly
-                      size="lg"
-                    />
-                  )}
-                  {averageRating && (
-                    <span className="text-sm text-gray-600">
-                      ({averageRating}) -{" "}
-                      <a
-                        href="#reviews-section"
-                        className="underline hover:text-primary duration-300"
-                      >
-                        {totalReviews} reseñas
-                      </a>
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-3 justify-self-center">
-                <div className="flex flex-row items-center gap-2">
-                  <a
-                    href={`https://www.instagram.com/${store?.socialLinks?.instagram}`}
-                    target="_blank"
-                  >
-                    <Instagram
-                      className="mr-1 text-primary hover:text-secondary cursor-pointer"
-                      size="24px"
-                      radius="lg"
-                    />
-                  </a>
-                  <a
-                    href={`https://www.facebook.com/${store?.socialLinks?.facebook}`}
-                    target="_blank"
-                  >
-                    <Facebook
-                      className="mr-1 text-primary hover:text-secondary cursor-pointer"
-                      size="24px"
-                      radius="lg"
-                    />
-                  </a>
-                  <a
-                    href={`https://${store?.socialLinks?.web}`}
-                    target="_blank"
-                  >
-                    <Globe
-                      className="mr-1 text-primary hover:text-secondary cursor-pointer"
-                      size="24px"
-                      radius="lg"
-                    />
-                  </a>
-                </div>
-              </div>
-
-              <div className="p-1 justify-self-center">
-                <StartChatButton storeId={store._id} storeName={store.name} />
-              </div>
-            </motion.div>
-          )}
+      {isStoreOwner && store?.active === false && (
+        <div className="bg-warning-100 border border-warning-300 text-warning-800 px-6 py-4 rounded-md my-6 text-center">
+          ⚠️ <strong>Tienda inactiva</strong> — solo tú puedes ver esta tienda y
+          sus productos hasta que vuelva a activarse.
         </div>
-      </motion.section>
-      {/* SECCIÓN DE DESTACADOS */}
-      {storeAppearance?.appearance.showFeaturedSection &&
-        featuredProducts.length > 0 && (
-          <motion.section
-            className="w-full py-12 shadow-sm"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className=" px-8 mx-auto">
-              <div className="mb-8">
-                <motion.h2
-                  className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  Productos Destacados
-                </motion.h2>
-                <motion.p
-                  className="text-gray-600 text-center"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  viewport={{ once: true }}
-                >
-                  Descubre nuestros mejores productos
-                </motion.p>
-              </div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <ListItemSlider
-                  items={featuredProducts}
-                  type="product"
-                  breakpoints={{
-                    320: 1,
-                    640: 2,
-                    840: 3,
-                    1024: 4,
-                    1200: 5,
-                    1400: 6,
-                  }}
-                />
-              </motion.div>
-            </div>
-          </motion.section>
-        )}
-
-      {/* SECCIÓN DE OFERTAS */}
-      {storeAppearance?.appearance.showOfferSection &&
-        offerProducts.length > 0 && (
-          <motion.section
-            className="w-full py-12 bg-danger-50/30 shadow-sm"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className=" px-8 mx-auto">
-              <div className="mb-8">
-                <motion.h2
-                  className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  Ofertas Especiales
-                </motion.h2>
-                <motion.p
-                  className="text-gray-600 text-center "
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  viewport={{ once: true }}
-                >
-                  No te pierdas nuestras mejores ofertas
-                </motion.p>
-              </div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <ListItemSlider
-                  items={offerProducts}
-                  type="product"
-                  breakpoints={{
-                    320: 1,
-                    640: 2,
-                    840: 3,
-                    1024: 4,
-                    1200: 5,
-                    1400: 6,
-                  }}
-                />
-              </motion.div>
-            </div>
-          </motion.section>
-        )}
-
-      {areCategoriesFiltered && (
-        <>
-          <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">
-            Todos nuestros productos
-          </h2>
-          <Filters
-            categoriesList={categoriesList}
-            storesList={[store]}
-            initialMinPrice={minPrice}
-            initialMaxPrice={maxPrice}
-            className="shadow-sm"
-            mode="products"
-            showTabs={false}
-          />
-        </>
       )}
-
-      <motion.section
-        className="container px-8 py-4 mx-auto"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-      >
-        {store && (
-          <div className="w-full">
-            <Accordion
-              motionProps={{
-                variants: {
-                  enter: {
-                    y: 0,
-                    opacity: 1,
-                    height: "auto",
-                    overflowY: "unset",
-                    transition: {
-                      height: {
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                        duration: 1,
-                      },
-                      opacity: {
-                        easings: "ease",
-                        duration: 1,
-                      },
-                    },
-                  },
-                  exit: {
-                    y: -10,
-                    opacity: 0,
-                    height: 0,
-                    overflowY: "hidden",
-                    transition: {
-                      height: {
-                        easings: "ease",
-                        duration: 0.25,
-                      },
-                      opacity: {
-                        easings: "ease",
-                        duration: 0.3,
-                      },
-                    },
-                  },
-                },
-              }}
-            >
-              <AccordionItem
-                key="1"
-                aria-label="Información adicional de la tienda"
-                title="Información adicional de la tienda"
-                className="pt-6"
-              >
-                <p className="pb-4">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Incidunt eveniet expedita voluptatem facere unde itaque odit
-                  commodi praesentium? Amet sed suscipit culpa in commodi maxime
-                  consequuntur adipisci, ratione nulla quae?
-                </p>
-              </AccordionItem>
-              <AccordionItem
-                key="2"
-                aria-label="Condiciones de envío"
-                title="Condiciones de envío"
-              >
-                <p className="pb-4">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Incidunt eveniet expedita voluptatem facere unde itaque odit
-                  commodi praesentium? Amet sed suscipit culpa in commodi maxime
-                  consequuntur adipisci, ratione nulla quae?
-                </p>
-              </AccordionItem>
-              <AccordionItem
-                key="3"
-                aria-label="Información del vendedor"
-                title="Información del vendedor"
-                className="border-b-1 border-gray-300"
-              >
-                <p className="pb-4">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Incidunt eveniet expedita voluptatem facere unde itaque odit
-                  commodi praesentium? Amet sed suscipit culpa in commodi maxime
-                  consequuntur adipisci, ratione nulla quae?
-                </p>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        )}
-
-        <div
-          id="reviews-section"
-          className="grid grid-cols-1 md:grid-cols-2 items-start gap-4 "
-        >
-          <h2 className="text-2xl font-semibold pt-10 col-span-2">
-            Reseñas de la tienda
-          </h2>
-          <div className="flex flex-col p-3">
-            <div className="w-full pt-6 flex flex-col gap-4">
-              {[...Array(5)].map((_, index) => (
-                <div
-                  key={index}
-                  className="flex flex-row justify-start items-end gap-3"
-                >
-                  <Rating initialValue={5 - index} readonly size="lg" />
-                  <span className="text-sm text-gray-600">
-                    {
-                      storeReviews.filter(
-                        (review) => review.rating === 5 - index
-                      ).length
-                    }{" "}
-                    reseñas
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {user && (
-              <div className="w-full pt-8">
-                <form onSubmit={onSubmit} className="space-y-4 w-full">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-5">
-                    Deja tu reseña
-                  </h3>
-                  <Rating
-                    initialValue={0}
-                    onRatingChange={(value) => {
-                      setRating(value);
-                      setFormData((prev) => ({
-                        ...prev,
-                        ratingValue: value,
-                      }));
-                    }}
-                    size="lg"
-                  />
-                  <p className="rating-error text-tiny text-danger mb-5 -mt-3 hidden">
-                    Es obligatorio seleccionar una puntuación
-                  </p>
-                  <Textarea
-                    label="Valoración"
-                    placeholder="Escribe tu valoración..."
-                    value={formData.comment}
-                    onChange={handleInputChange("comment")}
-                    validate={validateComment}
-                    isRequired
-                    variant="flat"
-                    classNames={{
-                      inputWrapper:
-                        "bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white",
-                      input: "bg-white",
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    color="primary"
-                    radius="lg"
-                    size="lg"
-                    className="w-full"
-                  >
-                    Enviar
-                  </Button>
-                </form>
+      {canSeeStoreContent && (
+        <>
+          {/* SECCIÓN DE SLIDER PERSONALIZADO */}
+          {storeAppearance?.appearance.showSlider &&
+            storeAppearance?.appearance.sliderImages &&
+            storeAppearance.appearance.sliderImages.length > 0 && (
+              <div className="w-full shadow-md">
+                <SliderStorePage
+                  images={storeAppearance.appearance.sliderImages}
+                  storeName={store.name}
+                  storeDescription={store.description}
+                  storeLogo={store.logo}
+                />
               </div>
             )}
-          </div>
+          <motion.section
+            className="w-full bg-primary/10"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className="container px-8 py-4 mx-auto">
+              {store && (
+                <motion.div
+                  className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="p-3 justify-self-center">
+                    <div className="flex flex-row items-center gap-2">
+                      {averageRating > 0 && (
+                        <Rating
+                          initialValue={averageRating ? averageRating : 0}
+                          readonly
+                          size="lg"
+                        />
+                      )}
+                      {averageRating && (
+                        <span className="text-sm text-gray-600">
+                          ({averageRating}) -{" "}
+                          <a
+                            href="#reviews-section"
+                            className="underline hover:text-primary duration-300"
+                          >
+                            {totalReviews} reseñas
+                          </a>
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-          <div className="flex flex-col p-3">
-            {storeReviews.map((review) => (
-              <div key={review.id} className="pt-8">
-                <div className="flex flex-col gap-2">
-                  <Rating initialValue={review.rating} readonly size="lg" />
-                  {review.userId && (
-                    <p className="text-gray-600">
-                      <span className="font-bold">
-                        {review.userId.firstName} {review.userId.lastName}
-                      </span>
-                      {" - "}
-                      {format(parseISO(review.createdAt), "dd-MM-yyyy")}
+                  <div className="p-3 justify-self-center">
+                    <div className="flex flex-row items-center gap-2">
+                      <a
+                        href={`https://www.instagram.com/${store?.socialLinks?.instagram}`}
+                        target="_blank"
+                      >
+                        <Instagram
+                          className="mr-1 text-primary hover:text-secondary cursor-pointer"
+                          size="24px"
+                          radius="lg"
+                        />
+                      </a>
+                      <a
+                        href={`https://www.facebook.com/${store?.socialLinks?.facebook}`}
+                        target="_blank"
+                      >
+                        <Facebook
+                          className="mr-1 text-primary hover:text-secondary cursor-pointer"
+                          size="24px"
+                          radius="lg"
+                        />
+                      </a>
+                      <a
+                        href={`https://${store?.socialLinks?.web}`}
+                        target="_blank"
+                      >
+                        <Globe
+                          className="mr-1 text-primary hover:text-secondary cursor-pointer"
+                          size="24px"
+                          radius="lg"
+                        />
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="p-1 justify-self-center">
+                    <StartChatButton
+                      storeId={store._id}
+                      storeName={store.name}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </motion.section>
+          {/* SECCIÓN DE DESTACADOS */}
+          {storeAppearance?.appearance.showFeaturedSection &&
+            featuredProducts.length > 0 && (
+              <motion.section
+                className="w-full py-12 shadow-sm"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <div className=" px-8 mx-auto">
+                  <div className="mb-8">
+                    <motion.h2
+                      className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: 0.1 }}
+                      viewport={{ once: true }}
+                    >
+                      Productos Destacados
+                    </motion.h2>
+                    <motion.p
+                      className="text-gray-600 text-center"
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      viewport={{ once: true }}
+                    >
+                      Descubre nuestros mejores productos
+                    </motion.p>
+                  </div>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <ListItemSlider
+                      items={featuredProducts}
+                      type="product"
+                      breakpoints={{
+                        320: 1,
+                        640: 2,
+                        840: 3,
+                        1024: 4,
+                        1200: 5,
+                        1400: 6,
+                      }}
+                    />
+                  </motion.div>
+                </div>
+              </motion.section>
+            )}
+
+          {/* SECCIÓN DE OFERTAS */}
+          {storeAppearance?.appearance.showOfferSection &&
+            offerProducts.length > 0 && (
+              <motion.section
+                className="w-full py-12 bg-danger-50/30 shadow-sm"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <div className=" px-8 mx-auto">
+                  <div className="mb-8">
+                    <motion.h2
+                      className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: 0.1 }}
+                      viewport={{ once: true }}
+                    >
+                      Ofertas Especiales
+                    </motion.h2>
+                    <motion.p
+                      className="text-gray-600 text-center "
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      viewport={{ once: true }}
+                    >
+                      No te pierdas nuestras mejores ofertas
+                    </motion.p>
+                  </div>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <ListItemSlider
+                      items={offerProducts}
+                      type="product"
+                      breakpoints={{
+                        320: 1,
+                        640: 2,
+                        840: 3,
+                        1024: 4,
+                        1200: 5,
+                        1400: 6,
+                      }}
+                    />
+                  </motion.div>
+                </div>
+              </motion.section>
+            )}
+
+          {areCategoriesFiltered && (
+            <>
+              <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">
+                Todos nuestros productos
+              </h2>
+              <Filters
+                categoriesList={categoriesList}
+                storesList={[store]}
+                initialMinPrice={minPrice}
+                initialMaxPrice={maxPrice}
+                className="shadow-sm"
+                mode="products"
+                showTabs={false}
+              />
+            </>
+          )}
+
+          <motion.section
+            className="container px-8 py-4 mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            {store && (
+              <div className="w-full accordion-section">
+                <Accordion
+                  motionProps={{
+                    variants: {
+                      enter: {
+                        y: 0,
+                        opacity: 1,
+                        height: "auto",
+                        overflowY: "unset",
+                        transition: {
+                          height: {
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                            duration: 1,
+                          },
+                          opacity: {
+                            easings: "ease",
+                            duration: 1,
+                          },
+                        },
+                      },
+                      exit: {
+                        y: -10,
+                        opacity: 0,
+                        height: 0,
+                        overflowY: "hidden",
+                        transition: {
+                          height: {
+                            easings: "ease",
+                            duration: 0.25,
+                          },
+                          opacity: {
+                            easings: "ease",
+                            duration: 0.3,
+                          },
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <AccordionItem
+                    key="1"
+                    aria-label="Información adicional de la tienda"
+                    title="Información adicional de la tienda"
+                    className="pt-6"
+                  >
+                    <p className="pb-4">
+                      {store?.longDescription
+                        ? store.longDescription
+                        : "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Incidunt eveniet expedita voluptatem facere unde itaque odit commodi praesentium? Amet sed suscipit culpa in commodi maxime consequuntur adipisci, ratione nulla quae?"}
                     </p>
+                  </AccordionItem>
+                  <AccordionItem
+                    key="2"
+                    aria-label="Condiciones de envío"
+                    title="Condiciones de envío"
+                  >
+                    <p className="pb-4">
+                      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                      Incidunt eveniet expedita voluptatem facere unde itaque
+                      odit commodi praesentium? Amet sed suscipit culpa in
+                      commodi maxime consequuntur adipisci, ratione nulla quae?
+                    </p>
+                  </AccordionItem>
+                  <AccordionItem
+                    key="3"
+                    aria-label="Información del vendedor"
+                    title="Información del vendedor"
+                    className="border-b-1 border-gray-300"
+                  >
+                    <div className="px-3 pb-4 border-t border-gray-100">
+                      <dl className="divide-y divide-gray-100">
+                        <div className="px-4 py-2 sm:grid md:grid-cols-4 sm:gap-2 md:px-2 bg-gray-200">
+                          <dt className="text-sm/6 font-medium text-gray-900">
+                            Nombre del vendedor
+                          </dt>
+                          <dd className="mt-1 text-sm/6 text-gray-700 md:col-span-3 md:mt-0">
+                            {store?.billingInfo?.name
+                              ? store.billingInfo.name
+                              : "Nombre del vendedor no disponible"}
+                          </dd>
+                        </div>
+                        <div className="px-4 py-2 sm:grid md:grid-cols-4 sm:gap-2 md:px-2">
+                          <dt className="text-sm/6 font-medium text-gray-900">
+                            Dirección
+                          </dt>
+                          <dd className="mt-1 text-sm/6 text-gray-700 md:col-span-3 md:mt-0">
+                            {store?.billingInfo?.address
+                              ? store.billingInfo.address
+                              : "Dirección no disponible"}
+                          </dd>
+                        </div>
+                        <div className="px-4 py-2 sm:grid md:grid-cols-4 sm:gap-2 md:px-2 bg-gray-200">
+                          <dt className="text-sm/6 font-medium text-gray-900">
+                            Teléfono
+                          </dt>
+                          <dd className="mt-1 text-sm/6 text-gray-700 md:col-span-3 md:mt-0">
+                            {store?.billingInfo?.phone ? (
+                              <a
+                                href={`tel:${store.billingInfo.phone}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline hover:text-primary duration-300"
+                              >
+                                {store.billingInfo.phone}
+                              </a>
+                            ) : (
+                              "Teléfono no disponible"
+                            )}
+                          </dd>
+                        </div>
+                        <div className="px-4 py-2 sm:grid md:grid-cols-4 sm:gap-2 md:px-2">
+                          <dt className="text-sm/6 font-medium text-gray-900">
+                            Correo electrónico
+                          </dt>
+                          <dd className="mt-1 text-sm/6 text-gray-700 md:col-span-3 md:mt-0">
+                            {store?.billingInfo?.email ? (
+                              <a
+                                href={`mailto:${store.billingInfo.email}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline hover:text-primary duration-300"
+                              >
+                                {store.billingInfo.email}
+                              </a>
+                            ) : (
+                              "Correo electrónico no disponible"
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            )}
+
+            <div
+              id="reviews-section"
+              className="grid grid-cols-1 md:grid-cols-2 items-start gap-4 "
+            >
+              <div>
+                <h2 className="text-2xl font-semibold pt-10 col-span-2">
+                  Reseñas de la tienda
+                </h2>
+                <div className="flex flex-col p-3">
+                  <div className="w-full pt-6 flex flex-col gap-4">
+                    {[...Array(5)].map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-row justify-start items-end gap-3"
+                      >
+                        <Rating initialValue={5 - index} readonly size="lg" />
+                        <span className="text-sm text-gray-600">
+                          {
+                            storeReviews.filter(
+                              (review) => review.rating === 5 - index
+                            ).length
+                          }{" "}
+                          reseñas
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {user && (
+                    <div className="w-full pt-8">
+                      <form onSubmit={onSubmit} className="space-y-4 w-full">
+                        <h3 className="text-lg font-semibold text-gray-700 mb-5">
+                          Deja tu reseña
+                        </h3>
+                        <Rating
+                          initialValue={0}
+                          onRatingChange={(value) => {
+                            setRating(value);
+                            setFormData((prev) => ({
+                              ...prev,
+                              ratingValue: value,
+                            }));
+                          }}
+                          size="lg"
+                        />
+                        <p className="rating-error text-tiny text-danger mb-5 -mt-3 hidden">
+                          Es obligatorio seleccionar una puntuación
+                        </p>
+                        <Textarea
+                          label="Valoración"
+                          placeholder="Escribe tu valoración..."
+                          value={formData.comment}
+                          onChange={handleInputChange("comment")}
+                          validate={validateComment}
+                          isRequired
+                          variant="flat"
+                          classNames={{
+                            inputWrapper:
+                              "bg-white data-[hover=true]:bg-white group-data-[focus=true]:bg-white",
+                            input: "bg-white",
+                          }}
+                        />
+                        <Button
+                          type="submit"
+                          color="primary"
+                          radius="lg"
+                          size="lg"
+                          className="w-full"
+                        >
+                          Enviar
+                        </Button>
+                      </form>
+                    </div>
                   )}
-                  <span className="text-gray-600">{review.comment}</span>
                 </div>
               </div>
-            ))}
-          </div>
+
+              <div>
+                <div className="flex flex-col p-3">
+                  {storeReviews.map((review) => (
+                    <div key={review.id} className="pt-8">
+                      <div className="flex flex-col gap-2">
+                        <Rating
+                          initialValue={review.rating}
+                          readonly
+                          size="lg"
+                        />
+                        {review.userId && (
+                          <p className="text-gray-600">
+                            <span className="font-bold">
+                              {review.userId.firstName} {review.userId.lastName}
+                            </span>
+                            {" - "}
+                            {format(parseISO(review.createdAt), "dd-MM-yyyy")}
+                          </p>
+                        )}
+                        <span className="text-gray-600">{review.comment}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        </>
+      )}
+      {store?.active === false && !isStoreOwner && (
+        <div className="bg-white p-6 rounded-md shadow-md text-center text-gray-700 mt-10">
+          Esta tienda está temporalmente inactiva y no es posible ver sus
+          productos.
         </div>
-      </motion.section>
+      )}
     </>
   );
 }

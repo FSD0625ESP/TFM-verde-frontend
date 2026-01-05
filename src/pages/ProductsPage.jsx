@@ -13,6 +13,7 @@ export default function ProductsPage() {
     try {
       const data = await getAllFeaturedProducts();
       setFeaturedProductsList(data);
+      console.log("featuredProducts", data);
     } catch (error) {
       console.error("Error fetching featured products:", error);
     }
@@ -42,7 +43,7 @@ export default function ProductsPage() {
     fetchFeaturedProducts();
     fetchStores();
     fetchCategories();
-    console.log("useEffect launched");
+    console.log("useEffect launched in ProductsPage");
   }, []);
 
   return (

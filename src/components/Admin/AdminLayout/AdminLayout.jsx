@@ -17,7 +17,7 @@ import {
 import { getAllCategories, getAllProductsByStoreId } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
 import { StoreProvider, StoreContext } from "../contexts/StoreContext.jsx";
-export default function StoreAdminPage() {
+export default function StoreLayout() {
   const location = useLocation();
   const { user, sellerStore } = useContext(AuthContext);
 
@@ -366,7 +366,7 @@ export default function StoreAdminPage() {
           </header>
 
           {/* AQUÍ SE RENDERIZAN TODAS LAS PÁGINAS /store-admin/... */}
-          <div className="flex-1 p-5 overflow-hidden">
+          <div className="flex-1 p-5">
             <div className="admin-panel-wrapper">
               <div className="bg-white shadow rounded-xl p-5 max-w-[1400px] mx-auto">
                 <Outlet

@@ -50,8 +50,9 @@ export default function Slider({ items, type, numSlides }) {
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
-                  backgroundImage: `url(${type === "store" ? i.image : i.images[0]
-                    })`,
+                  backgroundImage: `url(${
+                    type === "store" ? i.image : i.images?.[0].url
+                  })`,
                 }}
               >
                 <div className="slide-content">
@@ -129,7 +130,7 @@ export default function Slider({ items, type, numSlides }) {
                   removeWrapper
                   alt="Card example background"
                   className="z-0 w-full h-full scale-125 -translate-y-6 object-cover"
-                  src={type === "store" ? `${i.image}` : `${i.images[0]}`}
+                  src={type === "store" ? `${i.image}` : `${i.images?.[0].url}`}
                 />
                 <CardFooter className="absolute bg-white/60 bottom-0 border-t-1 border-zinc-100/50 z-10 justify-between">
                   <div>
