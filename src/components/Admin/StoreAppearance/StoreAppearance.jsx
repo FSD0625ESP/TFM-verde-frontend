@@ -1,13 +1,5 @@
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Divider,
-  Button,
-  Tabs,
-  Tab,
-} from "@heroui/react";
-import { useContext, useState } from "react";
+import { Card, CardBody, Button, Tabs, Tab } from "@heroui/react";
+import { useContext, useEffect, useState } from "react";
 import { Palette, Image as ImageIcon, Zap, Sparkles } from "lucide-react";
 import { StoreContext } from "../../../contexts/StoreContext.jsx";
 import StoreImageSelector from "./StoreImageSelector";
@@ -15,37 +7,109 @@ import StoreSliderManager from "./StoreSliderManager";
 import SectionToggleCard from "./SectionToggleCard";
 import FeaturedProductsSelector from "./FeaturedProductsSelector";
 import OfferProductsSelector from "./OfferProductsSelector";
-import * as api from "../../../services/api";
-import { motion } from "framer-motion";
+import * as apiClient from "../../../services/api";
+import { motion as Motion } from "framer-motion";
 
-export default function StoreAppearance({ sellerStore }) {
-  const { storeData, toggleFeaturedSection, toggleOfferSection, toggleSlider } =
-    useContext(StoreContext);
+export default function StoreAppearance() {
+  const {
+    storeData,
+    setStoreData,
+    toggleFeaturedSection,
+    toggleOfferSection,
+    toggleSlider,
+  } = useContext(StoreContext);
 
   const [activeTab, setActiveTab] = useState("general");
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingSections, setIsSavingSections] = useState(false);
+  const [isSavingSlider, setIsSavingSlider] = useState(false);
+  const [sectionsOrder, setSectionsOrder] = useState(
+    storeData?.appearance?.sectionsOrder ?? ["featured", "offers"]
+  );
 
-  const handleSaveChanges = async () => {
-    setIsSaving(true);
+  useEffect(() => {
+    if (Array.isArray(storeData?.appearance?.sectionsOrder)) {
+      setSectionsOrder(storeData.appearance.sectionsOrder);
+    }
+  }, [storeData?.appearance?.sectionsOrder]);
+
+  useEffect(() => {
+    const storeId = storeData?._id;
+    if (!storeId) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await apiClient.getStoreAppearance(storeId);
+        if (!isMounted || !data?.appearance) return;
+        setStoreData((prev) => ({
+          ...prev,
+          appearance: {
+            ...prev.appearance,
+            ...data.appearance,
+          },
+        }));
+      } catch (error) {
+        console.error("❌ Error al cargar apariencia:", error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [storeData?._id, setStoreData]);
+
+  const handleSaveSections = async () => {
+    if (!storeData?._id) return;
+    setIsSavingSections(true);
     try {
-      const appearanceData = {
+      const response = await apiClient.updateStoreAppearance(storeData._id, {
         showFeaturedSection: storeData?.appearance?.showFeaturedSection ?? true,
         showOfferSection: storeData?.appearance?.showOfferSection ?? true,
-        showSlider: storeData?.appearance?.showSlider ?? false,
-      };
+        sectionsOrder,
+      });
 
-      await api.updateStoreAppearance(storeData._id, appearanceData);
-
-      console.log("✅ Cambios guardados correctamente");
+      if (response?.appearance) {
+        setStoreData((prev) => ({
+          ...prev,
+          appearance: {
+            ...prev.appearance,
+            ...response.appearance,
+          },
+        }));
+      }
     } catch (error) {
       console.error("❌ Error al guardar:", error);
     } finally {
-      setIsSaving(false);
+      setIsSavingSections(false);
+    }
+  };
+
+  const handleSaveSlider = async () => {
+    if (!storeData?._id) return;
+    setIsSavingSlider(true);
+    try {
+      const response = await apiClient.updateStoreAppearance(storeData._id, {
+        showSlider: storeData?.appearance?.showSlider ?? false,
+      });
+
+      if (response?.appearance) {
+        setStoreData((prev) => ({
+          ...prev,
+          appearance: {
+            ...prev.appearance,
+            ...response.appearance,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("❌ Error al guardar slider:", error);
+    } finally {
+      setIsSavingSlider(false);
     }
   };
 
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -104,11 +168,64 @@ export default function StoreAppearance({ sellerStore }) {
             </div>
           }
         >
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-6 mt-4"
           >
+            <Card>
+              <CardBody className="flex flex-col gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold">Orden de secciones</h3>
+                  <p className="text-sm text-gray-600">
+                    Elige qué sección aparece primero
+                  </p>
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    color={
+                      sectionsOrder?.[0] === "featured" ? "primary" : "default"
+                    }
+                    variant={
+                      sectionsOrder?.[0] === "featured" ? "solid" : "bordered"
+                    }
+                    className={
+                      sectionsOrder?.[0] === "featured" ? "text-white" : ""
+                    }
+                    onClick={() => setSectionsOrder(["featured", "offers"])}
+                  >
+                    Destacados antes
+                  </Button>
+                  <Button
+                    color={
+                      sectionsOrder?.[0] === "offers" ? "primary" : "default"
+                    }
+                    variant={
+                      sectionsOrder?.[0] === "offers" ? "solid" : "bordered"
+                    }
+                    className={
+                      sectionsOrder?.[0] === "offers" ? "text-white" : ""
+                    }
+                    onClick={() => setSectionsOrder(["offers", "featured"])}
+                  >
+                    Ofertas antes
+                  </Button>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    color="primary"
+                    className="font-medium text-white"
+                    isLoading={isSavingSections}
+                    onClick={handleSaveSections}
+                  >
+                    {isSavingSections ? "Guardando..." : "Guardar secciones"}
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+
             {/* Sección Destacados */}
             <SectionToggleCard
               title="Sección de Destacados"
@@ -119,6 +236,10 @@ export default function StoreAppearance({ sellerStore }) {
               info="Los productos destacados se mostrarán en una sección especial en tu tienda"
             >
               <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  La selección de productos se actualiza en el momento en que
+                  los seleccionas o los quitas.
+                </p>
                 <FeaturedProductsSelector />
               </div>
             </SectionToggleCard>
@@ -132,9 +253,15 @@ export default function StoreAppearance({ sellerStore }) {
               icon={Zap}
               info="Los productos marcados como 'en oferta' se mostrarán aquí"
             >
-              <OfferProductsSelector />
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  La selección de productos se actualiza en el momento en que
+                  los seleccionas o los quitas.
+                </p>
+                <OfferProductsSelector />
+              </div>
             </SectionToggleCard>
-          </motion.div>
+          </Motion.div>
         </Tab>
 
         {/* Tab: Slider */}
@@ -147,7 +274,7 @@ export default function StoreAppearance({ sellerStore }) {
             </div>
           }
         >
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mt-4"
@@ -162,33 +289,20 @@ export default function StoreAppearance({ sellerStore }) {
             >
               <StoreSliderManager />
             </SectionToggleCard>
-          </motion.div>
+
+            <div className="flex justify-end pt-4">
+              <Button
+                color="primary"
+                className="font-medium text-white"
+                isLoading={isSavingSlider}
+                onClick={handleSaveSlider}
+              >
+                {isSavingSlider ? "Guardando..." : "Guardar slider"}
+              </Button>
+            </div>
+          </Motion.div>
         </Tab>
       </Tabs>
-
-      {/* Footer con botones de acción */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="flex gap-3 justify-end pt-4 border-t"
-      >
-        <Button
-          variant="bordered"
-          className="font-medium"
-          onClick={() => window.location.reload()}
-        >
-          Descartar cambios
-        </Button>
-        <Button
-          color="primary"
-          className="font-medium text-white"
-          isLoading={isSaving}
-          onClick={handleSaveChanges}
-        >
-          {isSaving ? "Guardando..." : "Guardar cambios"}
-        </Button>
-      </motion.div>
-    </motion.div>
+    </Motion.div>
   );
 }

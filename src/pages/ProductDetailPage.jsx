@@ -29,6 +29,8 @@ import "./accordion.css";
 import { AuthContext } from "../contexts/AuthContext";
 import { useSocket } from "../contexts/SocketContext";
 
+import { trackAnalyticsEvent } from "../services/api";
+
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
   const { id: productId } = useParams();
@@ -141,9 +143,28 @@ export default function ProductDetailPage() {
   useEffect(() => {
     fetchProduct();
     fetchProducts();
+    fetchProductReviews();
+    //fetchFeaturedProducts();
     fetchCategories();
     console.log("useEffect launched");
-  }, []);
+  }, [productId]);
+
+  // Registrar visita al producto en analytics cuando el producto esté cargado
+  useEffect(() => {
+    if (product && product._id && product.storeId) {
+      const storeId =
+        typeof product.storeId === "object"
+          ? product.storeId._id
+          : product.storeId;
+      console.log(
+        "📊 Tracking view_product - storeId:",
+        storeId,
+        "productId:",
+        product._id
+      );
+      trackAnalyticsEvent("view_product", storeId, product._id);
+    }
+  }, [product?._id]);
 
   useEffect(() => {
     if (product?.storeId?._id) {

@@ -1,5 +1,5 @@
-import { Card, CardHeader, CardBody, Button, Chip, Tooltip, image } from "@heroui/react";
-import { X, Plus, Image as ImageIcon } from "lucide-react";
+import { Card, CardHeader, CardBody, Button, Chip, Tooltip } from "@heroui/react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useRef, useState } from "react";
 import { StoreContext } from "../../../contexts/StoreContext.jsx";
@@ -24,11 +24,23 @@ registerPlugin(
     FilePondPluginImagePreview
 );
 
+const MotionDiv = motion.div;
+
 export default function StoreSliderManager() {
     const { storeData, updateSliderImages, removeSliderImage } = useContext(StoreContext);
     const sliderImages = storeData?.appearance?.sliderImages || [];
     const pondRef = useRef();
     const [isUploading, setIsUploading] = useState(false);
+    const [dragFromIndex, setDragFromIndex] = useState(null);
+    const [dragOverIndex, setDragOverIndex] = useState(null);
+    const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+    const moveItem = (arr, fromIndex, toIndex) => {
+        const copy = [...arr];
+        const [moved] = copy.splice(fromIndex, 1);
+        copy.splice(toIndex, 0, moved);
+        return copy;
+    };
 
     const handleUpdateFiles = (fileItems) => {
         const newImages = fileItems
@@ -41,8 +53,37 @@ export default function StoreSliderManager() {
         }
     };
 
+    const handleDelete = async (imageUrl) => {
+        if (!storeData?._id) return;
+        try {
+            // Optimista
+            removeSliderImage(imageUrl);
+
+            const result = await api.deleteSliderImage(storeData._id, imageUrl);
+            if (result?.sliderImages) {
+                updateSliderImages(result.sliderImages);
+            }
+        } catch (err) {
+            console.error("Error al eliminar imagen del slider:", err);
+        }
+    };
+
+    const persistOrder = async (nextImages, prevImages) => {
+        if (!storeData?._id) return;
+        setIsSavingOrder(true);
+        try {
+            await api.updateStoreAppearance(storeData._id, { sliderImages: nextImages });
+        } catch (err) {
+            console.error("Error al guardar orden del slider:", err);
+            // Revertir si falla
+            if (prevImages) updateSliderImages(prevImages);
+        } finally {
+            setIsSavingOrder(false);
+        }
+    };
+
     return (
-        <motion.div
+        <MotionDiv
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -75,7 +116,7 @@ export default function StoreSliderManager() {
                             imageResizeTargetHeight={600}
                             maxFileSize="5MB"
                             server={{
-                                process: async (fieldName, file, metadata, load, error, progress) => {
+                                process: async (fieldName, file, metadata, load, error) => {
                                     try {
                                         setIsUploading(true);
                                         const result = await api.uploadSliderImage(file, storeData._id);
@@ -90,9 +131,13 @@ export default function StoreSliderManager() {
                         />
                     </div>
 
+                    {isUploading && (
+                        <p className="text-xs text-gray-500">Subiendo imagen...</p>
+                    )}
+
                     {/* Grid de imágenes del slider */}
                     {sliderImages.length > 0 && (
-                        <motion.div
+                        <MotionDiv
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.1 }}
@@ -100,15 +145,59 @@ export default function StoreSliderManager() {
                         >
                             <AnimatePresence>
                                 {sliderImages.map((imageUrl, index) => (
-                                    <motion.div
+                                    <MotionDiv
                                         key={index}
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.8 }}
                                         transition={{ duration: 0.2 }}
                                         className="relative group"
+                                        draggable={!isUploading && !isSavingOrder}
+                                        onDragStart={(e) => {
+                                            if (isUploading || isSavingOrder) return;
+                                            setDragFromIndex(index);
+                                            setDragOverIndex(index);
+                                            try {
+                                                e.dataTransfer.effectAllowed = "move";
+                                                e.dataTransfer.setData("text/plain", String(index));
+                                            } catch {
+                                                // noop
+                                            }
+                                        }}
+                                        onDragOver={(e) => {
+                                            if (isUploading || isSavingOrder) return;
+                                            e.preventDefault();
+                                            if (dragOverIndex !== index) setDragOverIndex(index);
+                                        }}
+                                        onDrop={(e) => {
+                                            if (isUploading || isSavingOrder) return;
+                                            e.preventDefault();
+                                            const from = dragFromIndex;
+                                            const to = index;
+                                            setDragFromIndex(null);
+                                            setDragOverIndex(null);
+
+                                            if (from === null || from === undefined) return;
+                                            if (from === to) return;
+                                            if (from < 0 || to < 0) return;
+                                            if (from >= sliderImages.length || to >= sliderImages.length) return;
+
+                                            const prev = sliderImages;
+                                            const next = moveItem(sliderImages, from, to);
+                                            updateSliderImages(next);
+                                            persistOrder(next, prev);
+                                        }}
+                                        onDragEnd={() => {
+                                            setDragFromIndex(null);
+                                            setDragOverIndex(null);
+                                        }}
                                     >
-                                        <div className="relative h-32 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                        <div
+                                            className={`relative h-32 rounded-lg overflow-hidden bg-gray-100 border ${dragOverIndex === index && dragFromIndex !== null
+                                                ? "border-primary"
+                                                : "border-gray-200"
+                                                } ${dragFromIndex === index ? "opacity-80" : ""}`}
+                                        >
                                             <img
                                                 src={imageUrl}
                                                 alt={`Slider ${index + 1}`}
@@ -116,7 +205,7 @@ export default function StoreSliderManager() {
                                             />
 
                                             {/* Overlay con botón eliminar */}
-                                            <motion.div
+                                            <MotionDiv
                                                 initial={{ opacity: 0 }}
                                                 whileHover={{ opacity: 1 }}
                                                 transition={{ duration: 0.15 }}
@@ -127,33 +216,37 @@ export default function StoreSliderManager() {
                                                         isIconOnly
                                                         size="sm"
                                                         className="bg-danger text-white hover:bg-danger-600"
-                                                        onClick={() => removeSliderImage(imageUrl)}
+                                                        onClick={() => handleDelete(imageUrl)}
                                                     >
                                                         <X size={16} />
                                                     </Button>
                                                 </Tooltip>
-                                            </motion.div>
+                                            </MotionDiv>
 
                                             {/* Número de posición */}
                                             <div className="absolute top-1 left-1 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
                                                 {index + 1}
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </MotionDiv>
                                 ))}
                             </AnimatePresence>
-                        </motion.div>
+                        </MotionDiv>
+                    )}
+
+                    {isSavingOrder && (
+                        <p className="text-xs text-gray-500">Guardando orden...</p>
                     )}
 
                     {/* Estado vacío */}
                     {sliderImages.length === 0 && (
-                        <motion.div
+                        <MotionDiv
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             className="text-center py-8"
                         >
                             <p className="text-gray-500">No hay imágenes en el slider</p>
-                        </motion.div>
+                        </MotionDiv>
                     )}
 
                     {/* Info de imágenes */}
@@ -180,7 +273,7 @@ export default function StoreSliderManager() {
                     </div>
                 </CardBody>
             </Card>
-        </motion.div>
+        </MotionDiv>
     );
 }
 

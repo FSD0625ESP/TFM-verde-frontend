@@ -1,6 +1,6 @@
-import { Card, CardBody, Image, Button, Tooltip, addToast } from "@heroui/react";
+import { Card, CardBody, Image, Button, addToast } from "@heroui/react";
 import { X, Save } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { useContext, useRef, useState, useEffect } from "react";
 import { StoreContext } from "../../../contexts/StoreContext.jsx";
 import { uploadStoreImage } from "../../../services/api";
@@ -24,10 +24,12 @@ registerPlugin(
 
 export default function StoreImageSelector() {
     const { storeData, setStoreData } = useContext(StoreContext);
-    console.log("storeData in StoreImageSelector:", storeData);
 
     const [previewImage, setPreviewImage] = useState(null);
     const [previewLogo, setPreviewLogo] = useState(null);
+
+    const [pendingImageFile, setPendingImageFile] = useState(null);
+    const [pendingLogoFile, setPendingLogoFile] = useState(null);
 
     const [isSaving, setIsSaving] = useState(false);
 
@@ -40,28 +42,29 @@ export default function StoreImageSelector() {
         setPreviewLogo(storeData?.logo || null);
     }, [storeData?.image, storeData?.logo]);
 
-    /** -----------------------------------------
-     * FilePond — siempre devuelve URL limpia
-     * ---------------------------------------- */
-    const processFile = async (file, load, error, type) => {
-        try {
-            const isLogo = type === "logo";
-            const result = await uploadStoreImage(file, storeData._id, isLogo);
+    const imageObjectUrlRef = useRef(null);
+    const logoObjectUrlRef = useRef(null);
 
-            if (!result?.url) {
-                throw new Error("No se recibió URL del servidor");
-            }
-
-            // Actualizar preview inmediatamente
-            if (type === "image") setPreviewImage(result.url);
-            if (type === "logo") setPreviewLogo(result.url);
-
-            load(result.url); // Filepond serverId
-        } catch (err) {
-            console.error(err);
-            error("Error subiendo archivo");
+    const setPreviewFromFile = (file, type) => {
+        const url = file ? URL.createObjectURL(file) : null;
+        if (type === "image") {
+            if (imageObjectUrlRef.current) URL.revokeObjectURL(imageObjectUrlRef.current);
+            imageObjectUrlRef.current = url;
+            setPreviewImage(url || storeData?.image || null);
+        }
+        if (type === "logo") {
+            if (logoObjectUrlRef.current) URL.revokeObjectURL(logoObjectUrlRef.current);
+            logoObjectUrlRef.current = url;
+            setPreviewLogo(url || storeData?.logo || null);
         }
     };
+
+    useEffect(() => {
+        return () => {
+            if (imageObjectUrlRef.current) URL.revokeObjectURL(imageObjectUrlRef.current);
+            if (logoObjectUrlRef.current) URL.revokeObjectURL(logoObjectUrlRef.current);
+        };
+    }, []);
 
     /** -----------------------------------------
      * Eliminar imagen + limpiar FilePond
@@ -69,10 +72,12 @@ export default function StoreImageSelector() {
     const removePicture = (type) => {
         if (type === "image") {
             setPreviewImage(null);
+            setPendingImageFile(null);
             imagePondRef.current?.removeFiles();
         }
         if (type === "logo") {
             setPreviewLogo(null);
+            setPendingLogoFile(null);
             logoPondRef.current?.removeFiles();
         }
     };
@@ -81,13 +86,10 @@ export default function StoreImageSelector() {
      * Guardar cambios en contexto
      * ---------------------------------------- */
     const handleSaveChanges = async () => {
+        if (!storeData?._id) return;
         setIsSaving(true);
         try {
-            const changed =
-                previewImage !== storeData?.image ||
-                previewLogo !== storeData?.logo;
-
-            if (!changed) {
+            if (!pendingImageFile && !pendingLogoFile) {
                 addToast({
                     title: "Sin cambios",
                     color: "warning",
@@ -95,11 +97,29 @@ export default function StoreImageSelector() {
                 return;
             }
 
+            let nextImageUrl = null;
+            let nextLogoUrl = null;
+
+            if (pendingImageFile) {
+                const result = await uploadStoreImage(pendingImageFile, storeData._id, false);
+                nextImageUrl = result?.url || null;
+            }
+
+            if (pendingLogoFile) {
+                const result = await uploadStoreImage(pendingLogoFile, storeData._id, true);
+                nextLogoUrl = result?.url || null;
+            }
+
             setStoreData((prev) => ({
                 ...prev,
-                image: previewImage,
-                logo: previewLogo,
+                ...(nextImageUrl ? { image: nextImageUrl } : {}),
+                ...(nextLogoUrl ? { logo: nextLogoUrl } : {}),
             }));
+
+            if (nextImageUrl) setPreviewImage(nextImageUrl);
+            if (nextLogoUrl) setPreviewLogo(nextLogoUrl);
+            setPendingImageFile(null);
+            setPendingLogoFile(null);
 
             addToast({
                 title: "Imágenes actualizadas",
@@ -120,7 +140,7 @@ export default function StoreImageSelector() {
      * ---------------------------------------- */
     return (
         <>
-            <motion.section
+            <Motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -179,12 +199,15 @@ export default function StoreImageSelector() {
                             allowMultiple={false}
                             acceptedFileTypes={["image/*"]}
                             maxFileSize="5MB"
-                            server={{
-                                process: (fieldName, file, metadata, load, error) =>
-                                    processFile(file, load, error, "image"),
+                            instantUpload={false}
+                            allowProcess={false}
+                            onupdatefiles={(items) => {
+                                const file = items?.[0]?.file || null;
+                                setPendingImageFile(file);
+                                setPreviewFromFile(file, "image");
                             }}
                         />
-                        <div className="mt-4 p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                        <div className="mt-4 p-3 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
                             <h4 className="text-xs font-semibold text-blue-900 mb-2">Especificaciones</h4>
                             <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
                                 <div className="flex items-start gap-1">
@@ -234,12 +257,15 @@ export default function StoreImageSelector() {
                             allowMultiple={false}
                             acceptedFileTypes={["image/*"]}
                             maxFileSize="2MB"
-                            server={{
-                                process: (fieldName, file, metadata, load, error) =>
-                                    processFile(file, load, error, "logo"),
+                            instantUpload={false}
+                            allowProcess={false}
+                            onupdatefiles={(items) => {
+                                const file = items?.[0]?.file || null;
+                                setPendingLogoFile(file);
+                                setPreviewFromFile(file, "logo");
                             }}
                         />
-                        <div className="mt-4 p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                        <div className="mt-4 p-3 bg-linear-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
                             <h4 className="text-xs font-semibold text-purple-900 mb-2">Especificaciones</h4>
                             <div className="grid grid-cols-2 gap-2 text-xs text-purple-800">
                                 <div className="flex items-start gap-1">
@@ -265,7 +291,7 @@ export default function StoreImageSelector() {
 
 
 
-            </motion.section>
+            </Motion.section>
             <div className="my-4 flex justify-center" >
                 <Button
                     color="primary"
@@ -273,7 +299,7 @@ export default function StoreImageSelector() {
                     onClick={handleSaveChanges}
                     isLoading={isSaving}
                 >
-                    Subir imágenes
+                    {isSaving ? "Subiendo..." : "Subir imágenes"}
                 </Button>
             </div>
         </>

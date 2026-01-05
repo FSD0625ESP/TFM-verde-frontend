@@ -44,9 +44,11 @@ import PaymentPage from "./pages/PaymentPage.jsx";
 
 // Rutas de la rama
 import StoreAppearance from "./components/Admin/StoreAppearance/StoreAppearance.jsx";
+import Dashboard from "./components/Admin/Dashboard/Dashboard.jsx";
 
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { AlertProvider } from "./contexts/AlertContext.jsx";
+import { generateUUID } from "./utils/utils.js";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -55,6 +57,26 @@ function App() {
   const [totalUnread, setTotalUnread] = useState(0);
 
   const isUserLoggedIn = () => user !== null;
+
+  // Gestión del sessionId para analytics
+  // - Siempre usamos localStorage para persistencia consistente
+  // - Si el usuario está logueado, el sessionId es su _id (permite trackear usuarios entre sesiones)
+  // - Si es anónimo, generamos un UUID que persiste en el navegador
+  useEffect(() => {
+    const currentSessionId = localStorage.getItem("sessionId");
+
+    if (user && user._id) {
+      // Usuario logueado: usar su ID como sessionId
+      if (currentSessionId !== user._id) {
+        localStorage.setItem("sessionId", user._id);
+      }
+    } else if (!currentSessionId) {
+      // Usuario anónimo sin sessionId: generar uno nuevo
+      const newSessionId = generateUUID();
+      localStorage.setItem("sessionId", newSessionId);
+    }
+    // Si es anónimo pero ya tiene sessionId, mantenerlo
+  }, [user]);
 
   const handleToggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -141,8 +163,9 @@ function App() {
             >
               <Route
                 index
-                element={<div>Bienvenido al panel de administración</div>}
+                element={<Dashboard />}
               />
+              <Route path="dashboard" element={<Dashboard />} />
 
               <Route path="tienda" element={<StoreForm />} />
 

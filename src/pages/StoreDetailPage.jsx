@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import SliderStorePage from "../components/Slider/SliderStorePage";
@@ -25,6 +25,7 @@ import {
   getStoreAppearance,
   getStoreFeaturedProducts,
   getStoreOfferProducts,
+  trackAnalyticsEvent,
 } from "../services/api";
 
 import "./accordion.css";
@@ -48,7 +49,6 @@ export default function ProductDetailPage() {
   const [offerProducts, setOfferProducts] = useState([]);
 
   const { user } = useContext(AuthContext);
-  console.log("user id", user?._id);
 
   // determinar si el usuario es el propietario de la tienda
   const isStoreOwner =
@@ -63,30 +63,28 @@ export default function ProductDetailPage() {
     return Math.round(value * multiplier) / multiplier;
   }
 
-  const fetchStore = async () => {
+  const fetchStore = useCallback(async () => {
     try {
       const data = await getStoreById(storeId);
       setStore(data);
-      console.log("fetchStore - store", data);
     } catch (error) {
       console.error("Error al obtener la tienda:", error);
     }
-  };
+  }, [storeId]);
 
-  const fetchStoreProducts = async () => {
+  const fetchStoreProducts = useCallback(async () => {
     try {
       const data = await getAllProductsByStoreId(storeId);
       setProductsListByStore(data);
     } catch (error) {
       console.error("Error al obtener los productos de la tienda:", error);
     }
-  };
+  }, [storeId]);
 
-  const fetchStoreReviews = async () => {
+  const fetchStoreReviews = useCallback(async () => {
     try {
       const data = await getStoreReviewsById(storeId);
       setStoreReviews(data);
-      console.log("storeReviews", data);
       setTotalReviews(data.length);
       setAverageRating(
         round(
@@ -97,56 +95,34 @@ export default function ProductDetailPage() {
     } catch (error) {
       console.error("Error al obtener las reseñas de la tienda:", error);
     }
-  };
+  }, [storeId]);
 
-  const fetchStoreAppearance = async () => {
+  const fetchStoreAppearance = useCallback(async () => {
     try {
       const data = await getStoreAppearance(storeId);
       setStoreAppearance(data);
-      console.log("storeAppearance", data);
     } catch (error) {
       console.error("Error al obtener la apariencia de la tienda:", error);
     }
-  };
+  }, [storeId]);
 
-  const fetchFeaturedProducts = async () => {
+  const fetchFeaturedProducts = useCallback(async () => {
     try {
       const data = await getStoreFeaturedProducts(storeId);
       setFeaturedProducts(data.products || []);
-      console.log("featuredProducts", data);
     } catch (error) {
       console.error("Error al obtener productos destacados:", error);
     }
-  };
+  }, [storeId]);
 
-  const fetchOfferProducts = async () => {
+  const fetchOfferProducts = useCallback(async () => {
     try {
       const data = await getStoreOfferProducts(storeId);
       setOfferProducts(data.products || []);
-      console.log("offerProducts", data);
     } catch (error) {
       console.error("Error al obtener productos en oferta:", error);
     }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const allCategories = await getAllCategories();
-      const categoriesFromStore = store?.categories || [];
-      const filteredCategories = allCategories.filter((category) =>
-        productsListByStore.some((product) =>
-          product.categories.includes(category._id)
-        )
-      );
-      setCategoriesList(filteredCategories);
-      setAreCategoriesFiltered(true);
-      console.log("categoriesList filtered", filteredCategories);
-      console.log("categoriesList from store", categoriesFromStore);
-      console.log("categoriesList not filtered", allCategories);
-    } catch (error) {
-      console.error("Error al obtener las categorías:", error);
-    }
-  };
+  }, [storeId]);
 
   useEffect(() => {
     fetchStore();
@@ -155,17 +131,61 @@ export default function ProductDetailPage() {
     fetchStoreAppearance();
     fetchFeaturedProducts();
     fetchOfferProducts();
-    console.log("useEffect launched");
-  }, []);
+
+    // Registrar visita a la tienda en analytics
+    if (storeId) {
+      trackAnalyticsEvent("view_store", storeId);
+    }
+  }, [
+    storeId,
+    fetchStore,
+    fetchStoreProducts,
+    fetchStoreReviews,
+    fetchStoreAppearance,
+    fetchFeaturedProducts,
+    fetchOfferProducts,
+  ]);
 
   // Se ejecuta cuando store cambia y ya tiene datos
   useEffect(() => {
-    if (store && store.categories) {
-      fetchCategories();
-    }
-  }, [store]);
+    if (productsListByStore.length === 0) return;
 
-  const [rating, setRating] = useState(0);
+    let isMounted = true;
+    (async () => {
+      try {
+        const allCategories = await getAllCategories();
+
+        const productCategoryIds = new Set(
+          productsListByStore
+            .flatMap((product) => product?.categories || [])
+            .map((c) => {
+              if (!c) return null;
+              if (typeof c === "string") return c;
+              if (typeof c === "object" && c._id) return c._id;
+              return c;
+            })
+            .filter(Boolean)
+            .map((id) => String(id))
+        );
+
+        const filteredCategories = allCategories.filter((category) =>
+          productCategoryIds.has(String(category?._id))
+        );
+
+        if (!isMounted) return;
+        setCategoriesList(filteredCategories);
+        setAreCategoriesFiltered(true);
+      } catch (error) {
+        console.error("Error al obtener las categorías:", error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [productsListByStore]);
+
+  const [_rating, setRating] = useState(0);
   const [formData, setFormData] = useState({
     userId: user?._id,
     storeId: store?._id,
@@ -253,6 +273,144 @@ export default function ProductDetailPage() {
           ⚠️ <strong>Tienda inactiva</strong> — solo tú puedes ver esta tienda y
           sus productos hasta que vuelva a activarse.
         </div>
+      )}
+
+      {(() => {
+        const sectionsOrder = Array.isArray(
+          storeAppearance?.appearance?.sectionsOrder
+        )
+          ? storeAppearance.appearance.sectionsOrder
+          : ["featured", "offers"];
+
+        const featuredSection =
+          storeAppearance?.appearance.showFeaturedSection &&
+          featuredProducts.length > 0 ? (
+            <motion.section
+              className="w-full py-12 shadow-sm"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className=" px-8 mx-auto">
+                <div className="mb-8">
+                  <motion.h2
+                    className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    Productos Destacados
+                  </motion.h2>
+                  <motion.p
+                    className="text-gray-600 text-center"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    Descubre nuestros mejores productos
+                  </motion.p>
+                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <ListItemSlider
+                    items={featuredProducts}
+                    type="product"
+                    breakpoints={{
+                      320: 1,
+                      640: 2,
+                      840: 3,
+                      1024: 4,
+                      1200: 5,
+                      1400: 6,
+                    }}
+                  />
+                </motion.div>
+              </div>
+            </motion.section>
+          ) : null;
+
+        const offersSection =
+          storeAppearance?.appearance.showOfferSection &&
+          offerProducts.length > 0 ? (
+            <motion.section
+              className="w-full py-12 bg-danger-50/30 shadow-sm"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className=" px-8 mx-auto">
+                <div className="mb-8">
+                  <motion.h2
+                    className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    Ofertas Especiales
+                  </motion.h2>
+                  <motion.p
+                    className="text-gray-600 text-center "
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    No te pierdas nuestras mejores ofertas
+                  </motion.p>
+                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <ListItemSlider
+                    items={offerProducts}
+                    type="product"
+                    breakpoints={{
+                      320: 1,
+                      640: 2,
+                      840: 3,
+                      1024: 4,
+                      1200: 5,
+                      1400: 6,
+                    }}
+                  />
+                </motion.div>
+              </div>
+            </motion.section>
+          ) : null;
+
+        return sectionsOrder.map((key) => {
+          if (key === "offers") return offersSection;
+          return featuredSection;
+        });
+      })()}
+
+      {areCategoriesFiltered && (
+        <>
+          <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">
+            Todos nuestros productos
+          </h2>
+          <Filters
+            categoriesList={categoriesList}
+            storesList={[store]}
+            initialMinPrice={minPrice}
+            initialMaxPrice={maxPrice}
+            className="shadow-sm"
+            mode="products"
+            showTabs={false}
+          />
+        </>
       )}
       {canSeeStoreContent && (
         <>

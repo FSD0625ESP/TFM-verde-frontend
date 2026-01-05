@@ -115,3 +115,24 @@
   );
   z-index: 1;
 }
+
+/* Slider con ListElements */
+.slider-list-elements {
+  padding-bottom: 2.5rem;
+}
+.swiper-pagination-bullet-active {
+  background-color: var(--secondary-color);
+}
+.slider-list-elements .swiper-slide {
+  height: auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.slider-list-elements .swiper-slide > * {
+  width: 100%;
+}
+
+.slider-list-elements .swiper-pagination {
+  bottom: 0;
+}
