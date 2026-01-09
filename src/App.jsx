@@ -32,6 +32,7 @@ import Profile from "./pages/Profile";
 import Legal from "./pages/LegalPage/Legal.jsx";
 import Orders from "./pages/Orders";
 import StoreAdminPage from "./pages/StoreAdminPage.jsx";
+import StoreForm from "./components/Admin/StoreForm/StoreForm.jsx";
 import ProductForm from "./components/Admin/ProductForm/ProductForm.jsx";
 import AdminProductList from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
@@ -166,7 +167,7 @@ function App() {
               />
               <Route path="dashboard" element={<Dashboard />} />
 
-              <Route path="tienda" element={<div>Página de la tienda</div>} />
+              <Route path="tienda" element={<StoreForm />} />
 
               <Route path="productos">
                 <Route path="todos" element={<AdminProductListAux />} />

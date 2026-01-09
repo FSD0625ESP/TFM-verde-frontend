@@ -8,8 +8,8 @@ import {
   AccordionItem,
   Textarea,
   addToast,
+  Chip,
 } from "@heroui/react";
-import ListElement from "../components/ListElement/ListElement";
 import RelatedProducts from "../components/RelatedProducts/RelatedProducts";
 import Rating from "../components/Rating/Rating";
 import { format, parseISO } from "date-fns";
@@ -18,14 +18,17 @@ import {
   getProductById,
   //getAllFeaturedProducts,
   getProductReviewsById,
+  getStoreById,
   addProductReview,
-  trackAnalyticsEvent,
 } from "../services/api";
 import AddToCartButton from "../components/Cart/AddToCartButton";
 
 import "./accordion.css";
 
 import { AuthContext } from "../contexts/AuthContext";
+import { useSocket } from "../contexts/SocketContext";
+
+import { trackAnalyticsEvent } from "../services/api";
 
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
@@ -36,11 +39,36 @@ export default function ProductDetailPage() {
   const [productReviews, setProductReviews] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
+  const [ratingFormSent, setRatingFormSent] = useState(false);
 
   const { user } = useContext(AuthContext);
 
-  const round = useCallback((value, precision = 0) => {
-    const multiplier = Math.pow(10, precision);
+  const { socket, isConnected } = useSocket();
+  const [viewersCount, setViewersCount] = useState(0);
+
+  // Efecto para unirse al canal del producto (WEBSOCKET: emitir "join_product") y escuchar actualizaciones
+  useEffect(() => {
+    if (!socket || !isConnected || !productId) return;
+
+    socket.emit("join_product", { productId });
+
+    const handleUpdate = ({ productId: incomingId, count }) => {
+      if (incomingId === productId) {
+        setViewersCount(count);
+      }
+    };
+
+    socket.on("product_viewers_update", handleUpdate);
+
+    return () => {
+      socket.emit("leave_product", { productId });
+      socket.off("product_viewers_update", handleUpdate);
+    };
+  }, [socket, isConnected, productId]);
+
+  // función para redondear a n decimales - usada para el cálculo de la valoración media
+  const round = useCallback((value, precision) => {
+    var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
   }, []);
 
@@ -73,23 +101,42 @@ export default function ProductDetailPage() {
     }
   }, [productId, round]);
 
-  /*
-  const [featuredProductsList, setFeaturedProductsList] = useState([]);
-  const fetchFeaturedProducts = async () => {
+
+  const [categoriesList, setCategoriesList] = useState([]);
+  const fetchCategories = async () => {
     try {
-      const data = await getAllFeaturedProducts();
-      setFeaturedProductsList(data);
+      const data = await getAllCategories();
+      setCategoriesList(data);
     } catch (error) {
-      console.error("Error al obtener los productos destacados:", error);
+      console.error("Error al obtener las categorías:", error);
     }
   };
-*/
+
+  const [store, setStore] = useState({});
+  const fetchStore = async () => {
+    try {
+      const data = await getStoreById(product?.storeId._id);
+      setStore(data);
+      console.log("fetchStore - store", data);
+    } catch (error) {
+      console.error("Error al obtener los datos de la tienda:", error);
+    }
+  };
+
+  /* determinar si el usuario puede valorar el producto
+    - debe estar logueado
+    - NO debe ser el propietario de la tienda
+  */
+  const canReview =
+    user && store?.ownerId && String(user._id) !== String(store.ownerId);
 
   useEffect(() => {
     fetchProduct();
     fetchProductReviews();
-    //fetchFeaturedProducts();  
-  }, [fetchProduct, fetchProductReviews]);
+    //fetchFeaturedProducts();
+    fetchCategories();
+    console.log("useEffect launched");
+  }, [fetchProduct, fetchProductReviews, productId]);
 
   // Registrar visita al producto en analytics cuando el producto esté cargado
   useEffect(() => {
@@ -98,6 +145,22 @@ export default function ProductDetailPage() {
       trackAnalyticsEvent("view_product", storeId, product._id);
     }
   }, [product]);
+  const storeId =
+    typeof product.storeId === "object"
+      ? product.storeId._id
+      : product.storeId;
+
+  trackAnalyticsEvent("view_product", storeId, product._id);
+
+
+  useEffect(() => {
+    if (product?.storeId?._id) {
+      fetchProductReviews();
+      fetchStore();
+    }
+  }, [product]);
+
+  const [rating, setRating] = useState(0);
   const [formData, setFormData] = useState({
     userId: user?._id,
     productId: product?._id,
@@ -158,6 +221,14 @@ export default function ProductDetailPage() {
         duration: 5000,
       });
       fetchProductReviews();
+      // reset del formulario
+      setRatingFormSent(true);
+      setRating(0);
+      setFormData((prev) => ({ ...prev, ratingValue: 0, comment: "" }));
+      //bloquear el formulario para que no pueda valorar más de una vez
+      e.target.querySelectorAll("input, textarea, button").forEach((el) => {
+        el.disabled = true;
+      });
     } catch (error) {
       console.error(error);
       addToast({
@@ -169,12 +240,10 @@ export default function ProductDetailPage() {
       });
     }
   };
-  console.log("Product:", product);
   return (
     <>
       <section className="container grid px-8 py-8 mx-auto">
         {product && (
-          /*<div className=" flex flex-row flex-grow flex-1 gap-4 items-start position-relative">*/
           <div className="w-full grid grid-cols-1 md:grid-cols-2 items-start gap-4 position-relative">
             <div className="gallery md:sticky md:top-[100px] bg-primary/10 p-3 rounded-lg">
               {product.images && <Gallery images={product.images} />}
@@ -182,30 +251,36 @@ export default function ProductDetailPage() {
 
             <div className="w-full flex flex-col p-3">
               <div className="w-full flex flex-row gap-2">
-                {averageRating > 0 && (
+                {totalReviews && totalReviews > 0 && (
                   <Rating
                     initialValue={averageRating ? averageRating : 0}
                     readonly
                     size="lg"
                   />
                 )}
-                {averageRating && (
-                  <span className="text-sm text-gray-600">
-                    Valoraciones: ({averageRating}) -{" "}
-                    <a
-                      href="#reviews"
-                      className="underline hover:text-primary duration-300"
-                      onClick={() => {
-                        // abrir el desplegable si no esta abierto de las reseñas
-                        ratingRef.current?.scrollIntoView({ behavior: "smooth" });
-                        // simular click en el accordion si no esta abierto sabiendo que current es null
-                        ratingRef.current?.click()
-                      }}
-                    >
-                      {totalReviews} reseñas
-                    </a>
-                  </span>
-                )}
+                <span className="text-sm text-gray-600 mt-0.5">
+                  {averageRating ? (
+                    <>
+                      Valoración: {averageRating} -{" "}
+                      <a
+                        href="#reviews"
+                        className="underline hover:text-primary duration-300"
+                        onClick={() => {
+                          // abrir el desplegable si no esta abierto de las reseñas
+                          ratingRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                          });
+                          // simular click en el accordion si no esta abierto sabiendo que current es null
+                          ratingRef.current?.click();
+                        }}
+                      >
+                        {totalReviews} reseñas
+                      </a>
+                    </>
+                  ) : (
+                    "Sin valoraciones"
+                  )}
+                </span>
               </div>
               <div className="flex flex-row items-center gap-2 py-2">
                 <h2 className="text-3xl font-semibold">{product.title}</h2>
@@ -223,24 +298,60 @@ export default function ProductDetailPage() {
                 )}
               </div>
               <p className="text-base text-gray-600">{product.description}</p>
-              <div className="flex flex-row items-end gap-2 py-2">
-                <span className="text-black font-semibold text-xl">
-                  {product.price}$
-                </span>
-                <span className="text-sm text-gray-600">
-                  {product.stock > 0
-                    ? ` (en stock: ${product.stock}u)`
-                    : "Agotado"}
-                </span>
+              <div className="flex flex-row items-center gap-2 py-2">
+                <span className="text-sm text-gray-600">Categoría:</span>
+                {product.categories &&
+                  product.categories.length > 0 &&
+                  product.categories.map((cat) => (
+                    <Chip
+                      key={cat._id}
+                      size="sm"
+                      variant="flat"
+                      color="primary"
+                    >
+                      {cat.name}
+                    </Chip>
+                  ))}
               </div>
               <div className="flex flex-row items-center gap-2 py-2">
-                {/* <Button color="primary" radius="lg" size="lg">
-                  COMPRAR
-                 
-                </Button> */}
-                <AddToCartButton productId={product._id} > <ShoppingBag className="mr-2" /> Comprar </AddToCartButton>
+                <span className="text-sm text-black font-semibold text-xl">
+                  {product.price} €
+                </span>
+                <Chip
+                  size="sm"
+                  variant={product.stock > 4 ? "flat" : "solid"}
+                  color={
+                    product.stock > 0
+                      ? product.stock > 4
+                        ? "default"
+                        : "warning"
+                      : "danger"
+                  }
+                  className={`${product.stock > 4 ? "bg-white" : "text-white"}`}
+                >
+                  {product.stock > 0
+                    ? ` ${product.stock > 4
+                      ? `${product.stock} unidades`
+                      : "pocas unidades"
+                    }`
+                    : "Agotado"}
+                </Chip>
               </div>
-              <div className="w-full">
+              <div className="flex flex-row items-center gap-2 py-2">
+                <AddToCartButton productId={product._id}>
+                  {" "}
+                  <ShoppingBag className="mr-2" /> Comprar{" "}
+                </AddToCartButton>
+              </div>
+              <div className="flex flex-row items-center gap-2 py-2">
+                {viewersCount > 1 && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                    <User size={16} />
+                    {viewersCount - 1} personas viendo este producto ahora
+                  </div>
+                )}
+              </div>
+              <div className="w-full accordion-section">
                 <Accordion
                   motionProps={{
                     variants: {
@@ -287,12 +398,7 @@ export default function ProductDetailPage() {
                     title="Descripción del producto"
                     className="pt-6"
                   >
-                    <p className="pb-4">
-                      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                      Incidunt eveniet expedita voluptatem facere unde itaque
-                      odit commodi praesentium? Amet sed suscipit culpa in
-                      commodi maxime consequuntur adipisci, ratione nulla quae?
-                    </p>
+                    <p className="pb-4">{product.longDescription}</p>
                   </AccordionItem>
                   <AccordionItem
                     id="accordion-item-2"
@@ -349,7 +455,7 @@ export default function ProductDetailPage() {
                   </AccordionItem>
                 </Accordion>
               </div>
-              {user && (
+              {canReview && (
                 <div className="w-full pt-8">
                   <form onSubmit={onSubmit} className="space-y-4 w-full">
                     <h3 className="text-lg font-semibold text-gray-700 mb-5">
@@ -364,6 +470,7 @@ export default function ProductDetailPage() {
                         }));
                       }}
                       size="lg"
+                      readonly={ratingFormSent}
                     />
                     <p className="rating-error text-tiny text-danger mb-5 -mt-3 hidden">
                       Es obligatorio seleccionar una puntuación
@@ -388,6 +495,7 @@ export default function ProductDetailPage() {
                       radius="lg"
                       size="lg"
                       className="w-full"
+                      isDisabled={ratingFormSent}
                     >
                       Enviar
                     </Button>
@@ -395,22 +503,23 @@ export default function ProductDetailPage() {
                 </div>
               )}
             </div>
-          </div>
+          </div >
         )}
+      </section >
 
-      </section>
-
-      {product.categories && product.categories.length > 0 && (
-        <section className="w-full bg-gray-50 py-8 mt-8  mx-auto">
-          <div className="container  px-8 mx-auto overflow-hidden">
-            <RelatedProducts
-              productId={productId}
-              categories={relatedCategories}
-              limit={8}
-            />
-          </div>
-        </section>
-      )}
+      {
+        product.categories && product.categories.length > 0 && (
+          <section className="w-full bg-gray-50 py-8 mt-8  mx-auto">
+            <div className="container  px-8 mx-auto overflow-hidden">
+              <RelatedProducts
+                productId={productId}
+                categories={relatedCategories}
+                limit={8}
+              />
+            </div>
+          </section>
+        )
+      }
     </>
   );
 }

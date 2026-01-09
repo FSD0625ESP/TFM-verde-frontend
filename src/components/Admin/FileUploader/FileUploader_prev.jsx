@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 import { FilePond, registerPlugin } from "react-filepond";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@heroui/button";
 
 import ImageEditorModal from "../../Admin/ImageEditorModal/ImageEditorModal";
 
@@ -8,46 +10,56 @@ import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 import FilePondPluginFileValidateSize from "filepond-plugin-file-validate-size";
 import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-import FilePondPluginImageEdit from "filepond-plugin-image-edit";
 
 // CSS
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-import "filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css";
 import "./FileUploader.css";
 
 registerPlugin(
   FilePondPluginFileValidateType,
   FilePondPluginFileValidateSize,
   FilePondPluginImageExifOrientation,
-  FilePondPluginImagePreview,
-  FilePondPluginImageEdit
+  FilePondPluginImagePreview
 );
 
-export default function FileUploader({ images, setImages }) {
+export default function FileUploader({ images, setImages, imageSizePreset }) {
   const pondRef = useRef(null);
   const [editorFile, setEditorFile] = useState(null); // File para editar
   const [currentItem, setCurrentItem] = useState(null); // FilePond fileItem
 
-  // Reemplaza un archivo en FilePond: eliminar y volver a añadir (fuerza regenerar thumbnail)
-  const updateFileInPond = async (fileItem, newFile) => {
-    const pond = pondRef.current;
-    if (!pond) return;
+  const SIZE_PRESETS = {
+    square: {
+      label: "Cuadrada",
+      minWidth: 800,
+      minHeight: 800,
+      aspectRatio: 1,
+    },
+    product: {
+      label: "Producto",
+      minWidth: 800,
+      minHeight: 600,
+      aspectRatio: 5 / 4,
+    },
+    hero: {
+      label: "Hero",
+      minWidth: 1600,
+      minHeight: 900,
+      aspectRatio: 16 / 9,
+    },
+  };
 
-    // Encuentra el índice del fileItem en pond
-    const files = pond.getFiles(); // array de FilePond fileItems
-    const idx = files.findIndex((f) => f.id === fileItem.id);
-    if (idx === -1) return;
+  const activePreset = SIZE_PRESETS[imageSizePreset] || SIZE_PRESETS.square;
 
-    // Guardar posición y metadata si quieres preservarlas (opcional)
-    // 1) eliminar archivo antiguo
-    await pond.removeFile(fileItem.id);
+  const lastOrderRef = useRef([]);
 
-    // 2) añadir nuevo (type local para que se trate como archivo cliente)
-    // addFile devuelve una promesa que se resuelve cuando FilePond ha procesado el archivo
-    await pond.addFile(newFile, { type: "local" });
+  const hasOrderChanged = (images) => {
+    const ids = images.map((img) => img.id);
+    const last = lastOrderRef.current;
 
-    // Nota: onupdatefiles se disparará y actualizará el estado 'images'
+    if (ids.length !== last.length) return true;
+
+    return ids.some((id, i) => id !== last[i]);
   };
 
   // Convertir imagen remota a File antes de abrir editor
@@ -57,75 +69,57 @@ export default function FileUploader({ images, setImages }) {
     return new File([blob], filename || "remote.jpg", { type: blob.type });
   };
 
-  // Actualiza estado images desde FilePond
-  const handleUpdateFiles = (fileItems) => {
-    const mapped = fileItems.map((item) => ({
-      //id: item.id,
-      //file: item.file || null,
-      //preview: item.file ? URL.createObjectURL(item.file) : null,
-      id: item.id,
-      file: item.file instanceof File ? item.file : null,
-      source: item.source || null,
-      preview:
-        item.source || (item.file ? URL.createObjectURL(item.file) : null),
-    }));
+  const syncImagesFromFilePond = (fileItems) => {
+    if (!fileItems) return;
 
-    setImages(mapped);
-    // console.log("handleUpdateFiles", mapped);
-  };
+    setImages((prev) => {
+      // liberar previews blob antiguos
+      prev.forEach((img) => {
+        if (img.preview && img.preview.startsWith("blob:")) {
+          URL.revokeObjectURL(img.preview);
+        }
+      });
 
-  // Activar editor desde FilePond native (onactivatefile)
-  const handleActivateFile = async (fileItem) => {
-    if (!fileItem) return;
+      return fileItems.map((item) => {
+        let preview = null;
 
-    let fileObj = fileItem.file;
+        if (item.file instanceof File) {
+          preview = URL.createObjectURL(item.file);
+        } else if (typeof item.source === "string") {
+          preview = item.source;
+        }
 
-    if (!fileObj && fileItem.source) {
-      fileObj = await fetchRemoteFile(fileItem.source);
-    }
-
-    setCurrentItem(fileItem);
-    setEditorFile(fileObj);
+        return {
+          id: item.id,
+          file: item.file instanceof File ? item.file : null,
+          source: typeof item.source === "string" ? item.source : null,
+          preview,
+        };
+      });
+    });
   };
 
   // Activar editor desde miniatura externa (cuando el usuario pulsa "Editar" de la lista)
-  /* 
-  const handleActivateFromPreview = (file) => {
-    if (!pondRef.current) return;
-
-    const pondFiles = pondRef.current.getFiles();
-    const fileItem = pondFiles.find((f) => f.file === file);
-    if (!fileItem) {
-      // Si no encuentra por referencia, intenta por nombre/size como fallback
-      const fallback = pondFiles.find(
-        (f) => f.file?.name === file.name && f.file?.size === file.size
-      );
-      if (!fallback) return;
-      setCurrentItem(fallback);
-      setEditorFile(fallback.file);
-      return;
-    }
-
-    setCurrentItem(fileItem);
-    setEditorFile(fileItem.file);
-  };
-   */
   const handleActivateFromPreview = async (file, source) => {
     if (!pondRef.current) return;
 
     let fileObj = file;
 
     // Si es remoto, convertir URL a File
-    if (!file && source) {
-      fileObj = await fetchRemoteFile(source);
+    if (!fileObj && source) {
+      fileObj = await fetchRemoteFile(source); // esto devuelve un File
     }
+
+    // si no hay fileObj, salir antes de acceder a .name
+    if (!fileObj) return;
 
     const pondFiles = pondRef.current.getFiles();
     const fileItem =
       pondFiles.find((f) => f.file === fileObj) ||
       pondFiles.find(
-        (f) => f.file?.name === fileObj.name && f.file?.size === fileObj.size
-      );
+        (f) => f.file?.name === fileObj.name && f.file?.size === fileObj.size // fallback local
+      ) ||
+      pondFiles.find((f) => f.source === source); // <-- búsqueda remota
 
     if (!fileItem) return;
 
@@ -133,31 +127,37 @@ export default function FileUploader({ images, setImages }) {
     setEditorFile(fileObj);
   };
 
-  // Guardar edición: recibimos blob desde modal -> convertimos a File y reemplazamos en FilePond
-  const handleSaveEdit = async (blob) => {
+  // Guardar edición: actualizar el File en images
+  const handleSaveEdit = (blob) => {
     if (!currentItem || !blob) return;
 
     const newFile = new File([blob], currentItem.file?.name || "edited.jpg", {
-      type: blob.type || "image/jpeg",
+      type: "image/jpeg",
       lastModified: Date.now(),
     });
 
-    // Reemplazamos dentro de FilePond (elimina + añade para forzar regenerado de miniatura)
-    await updateFileInPond(currentItem, newFile);
-
-    // Actualizamos estado React (images). onupdatefiles se disparará pero actualizamos para seguridad.
     setImages((prev) =>
       prev.map((img) =>
         img.id === currentItem.id
-          ? { ...img, file: newFile, preview: URL.createObjectURL(newFile) }
+          ? {
+              ...img,
+              file: newFile, // ⬅ ahora ES LOCAL
+              source: null, // ⬅ deja de ser remoto
+              replaces: img.source, // URL antigua
+              preview: URL.createObjectURL(newFile),
+            }
           : img
       )
     );
 
-    // Cerrar modal
     setEditorFile(null);
     setCurrentItem(null);
   };
+
+  // Detectar si el orden ha cambiado respecto al render anterior
+  const orderChanged = hasOrderChanged(images);
+  // Guardamos el orden actual para la próxima comparación
+  lastOrderRef.current = images.map((img) => img.id);
 
   return (
     <div className="my-4">
@@ -165,7 +165,6 @@ export default function FileUploader({ images, setImages }) {
 
       <FilePond
         ref={pondRef}
-        //files={images.map((img) => img.file)} // pasar File[] directamente (mejor)
         files={images
           .map((img) =>
             img.file instanceof File
@@ -181,60 +180,58 @@ export default function FileUploader({ images, setImages }) {
         imagePreviewHeight={150}
         maxFiles={10}
         acceptedFileTypes={["image/*"]}
-        labelIdle='Arrastra imágenes o <span class="filepond--label-action">explora</span>'
+        labelIdle='Arrastra imágenes o <span className="filepond--label-action">explora</span>'
         allowFileSizeValidation={true}
-        maxFileSize="5MB"
-        allowImageEdit={true}
-        imageEditInstantEdit={false}
-        imageEditEditor={{
-          open: (file, instructions, options) => {
-            // file es el blob original del FilePond FileItem
-            setEditorFile(file); // abre el modal
-            setCurrentItem(options.file); // asigna el FileItem activo
-
-            // FilePond espera una promesa; la dejamos pendiente hasta que guardes
-            return new Promise(() => {});
-          },
-        }}
-        onupdatefiles={handleUpdateFiles}
-        onremovefile={handleUpdateFiles}
-        onactivatefile={handleActivateFile}
+        maxFileSize="8MB"
+        onupdatefiles={syncImagesFromFilePond}
+        onremovefile={syncImagesFromFilePond}
+        onreorderfiles={syncImagesFromFilePond}
       />
 
       {/* Miniaturas externas con botón Editar (más robusto que inyectar en DOM de FilePond) */}
-      {images && images.length > 0 && (
-        <div className="mt-4 grid grid-cols-4 gap-3">
-          {images.map((img) => (
-            <div
+      <motion.div className="mt-4 grid grid-cols-4 gap-3">
+        <AnimatePresence initial={false}>
+          {images.map((img, index) => (
+            <motion.div
               key={img.id}
-              className="relative border rounded overflow-hidden"
+              layout={orderChanged} // ⬅️ SOLO anima si hay reorder
+              initial={false} // ⬅️ evita animaciones innecesarias
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="relative border rounded overflow-hidden bg-gray-100"
+              style={{
+                aspectRatio: activePreset.aspectRatio,
+              }}
             >
+              {/* Número de orden */}
+              <div className="absolute top-1 left-1 z-10 bg-primary bg-opacity/70 text-white text-xs px-2 py-0.5 rounded">
+                {index + 1}
+              </div>
+
               <img
                 src={
-                  //img.preview ?? (img.file ? URL.createObjectURL(img.file) : "")
                   img.preview ||
                   (img.file instanceof File
                     ? URL.createObjectURL(img.file)
                     : "")
                 }
                 alt="thumb"
-                className="w-full h-28 object-cover"
+                className="w-full h-full object-cover"
               />
-              <button
+              <Button
                 type="button"
-                className="absolute bottom-1 left-1/2 transform -translate-x-1/2 bg-secondary bg-opacity-60 text-white text-xs px-2 py-1 rounded cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault(); // NO ENVÍA FORMULARIO
-                  e.stopPropagation(); // NO INTERFIERE CON FilePond
-                  handleActivateFromPreview(img.file);
+                className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-secondary text-white text-xs px-2 py-0 outline-0 h-8 rounded cursor-pointer"
+                onPress={(e) => {
+                  handleActivateFromPreview(img.file, img.source);
                 }}
               >
-                Editar
-              </button>
-            </div>
+                EDITAR
+              </Button>
+            </motion.div>
           ))}
-        </div>
-      )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Modal de edición */}
       {editorFile && (
@@ -245,6 +242,7 @@ export default function FileUploader({ images, setImages }) {
             setCurrentItem(null);
           }}
           onSave={handleSaveEdit}
+          imagePreset={SIZE_PRESETS[imageSizePreset] || SIZE_PRESETS["square"]}
         />
       )}
     </div>

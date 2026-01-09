@@ -1,4 +1,30 @@
-h2 svg path {
-  stroke: #26a69a;
-  stroke-width: 2px;
+.accordion-section {
+  h2 {
+    transition: all 0.3s ease;
+  }
+
+  h2 button {
+    cursor: pointer !important;
+  }
+
+  h2 svg path {
+    stroke: #26a69a;
+    stroke-width: 2px;
+  }
+
+  h2:hover,
+  h2:active {
+    background-color: hsl(175.2, 41%, 88%);
+    padding: 0 1rem;
+
+    & button span {
+      color: #26a69a !important;
+    }
+  }
+
+  h2[data-open="true"] {
+    & button span {
+      color: #26a69a !important;
+    }
+  }
 }

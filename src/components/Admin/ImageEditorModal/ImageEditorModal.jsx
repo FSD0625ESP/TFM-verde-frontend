@@ -9,6 +9,7 @@ import {
   Button,
 } from "@heroui/react";
 
+/*
 const CROP_PRESETS = {
   square: {
     label: "Cuadrada",
@@ -29,23 +30,28 @@ const CROP_PRESETS = {
     aspectRatio: 16 / 9,
   },
 };
+*/
 
 export default function ImageEditorModal({
   file,
   onSave,
   onClose,
-  preset = "square",
+  imagePreset = "square",
 }) {
   const imageRef = useRef(null);
   const cropperRef = useRef(null);
   const okTimeoutRef = useRef(null);
 
-  const activePreset = CROP_PRESETS[preset] ?? CROP_PRESETS.square;
+  console.log("ImageEditorModal - received preset:", imagePreset);
+
+  //const activePreset = CROP_PRESETS[imagePreset] ?? CROP_PRESETS.square;
+
+  const activePreset = imagePreset;
 
   const MIN_WIDTH = activePreset.minWidth;
   const MIN_HEIGHT = activePreset.minHeight;
 
-  const SCALE_FACTOR = 1.5;
+  const SCALE_FACTOR = 2;
 
   const MAX_WIDTH = Math.round(MIN_WIDTH * SCALE_FACTOR);
   const MAX_HEIGHT = Math.round(MIN_HEIGHT * SCALE_FACTOR);
@@ -60,7 +66,7 @@ export default function ImageEditorModal({
 
   useEffect(() => {
     setAspectRatio(activePreset.aspectRatio);
-  }, [preset]);
+  }, [imagePreset]);
 
   useEffect(() => {
     if (!file) return;

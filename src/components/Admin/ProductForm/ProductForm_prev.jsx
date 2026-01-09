@@ -19,7 +19,6 @@ import {
   Button,
   Checkbox,
   addToast,
-  Spinner,
 } from "@heroui/react";
 
 import FileUploader from "../FileUploader/FileUploader";
@@ -39,7 +38,6 @@ export default function ProductForm({
   // si se pasa un producto por url, se edita, si no se crea
   const navigate = useNavigate();
   const { id: productId } = useParams();
-  const uploaderRef = useRef(null);
 
   const {
     storeProducts,
@@ -48,7 +46,6 @@ export default function ProductForm({
     setStoreProductsList,
   } = useContext(StoreContext);
 
-  // si se pasa un producto por url, se edita, si no se crea
   const resolvedProduct = useMemo(() => {
     if (product) return product;
     if (!productId) return null;
@@ -73,10 +70,10 @@ export default function ProductForm({
   submitLabel = productId ? "Guardar cambios" : "Guardar producto";
 
   categoriesList = storeCategories;
+  console.log("ProductForm - categoriesList", categoriesList);
 
   const [formData, setFormData] = useState({
     title: "",
-    slug: "",
     description: "",
     price: "",
     stock: "",
@@ -101,13 +98,13 @@ export default function ProductForm({
 
   const initialImagesRef = useRef([]);
 
-  // si no hay productId, resetear todo
   useEffect(() => {
     if (!productId) {
       initialImagesRef.current = [];
       setFormData(EMPTY_FORM);
       setProductImages([]);
       setTextDirty(false);
+      setImagesTouched(false);
       return;
     }
   }, [productId]);
@@ -117,7 +114,6 @@ export default function ProductForm({
 
     initialImagesRef.current = resolvedProduct.images.map((img) => ({
       public_id: img.public_id,
-      source: img.url,
     }));
 
     setProductImages(
@@ -148,7 +144,6 @@ export default function ProductForm({
 
     setFormData({
       title: resolvedProduct.title ?? "",
-      slug: resolvedProduct.slug ?? "",
       description: resolvedProduct.description ?? "",
       longDescription: resolvedProduct.longDescription ?? "",
       price: resolvedProduct.price != null ? String(resolvedProduct.price) : "",
@@ -207,9 +202,7 @@ export default function ProductForm({
   };
 
   const validateImages = () => {
-    //if (productImages.length === 0) return "Selecciona al menos una imagen";
-    const finalImages = uploaderRef.current?.getImages() ?? [];
-    if (finalImages.length === 0) return "Selecciona al menos una imagen";
+    if (productImages.length === 0) return "Selecciona al menos una imagen";
     return true;
   };
 
@@ -233,7 +226,7 @@ export default function ProductForm({
     const categoriesOk = validateCategories(formData.categories) === true;
     const priceOk = validatePrice(formData.price) === true;
     const stockOk = validateStock(formData.stock) === true;
-    const imagesOk = validateImages() === true;
+    const imagesOk = validateImages(productImages) === true;
 
     if (!titleOk) {
       addToast({
@@ -302,48 +295,20 @@ export default function ProductForm({
     return true;
   };
 
-  // comparar imágenes iniciales con finales
-  const imagesHaveChanged = (initial = [], final = []) => {
-    const initialIds = initial.map((i) => i.public_id).sort();
-    const finalIds = final
-      .filter((i) => i.public_id) // 👈 SOLO existentes
-      .map((i) => i.public_id)
-      .sort();
-
-    // borradas o reordenadas
-    if (JSON.stringify(initialIds) !== JSON.stringify(finalIds)) {
-      return true;
-    }
-
-    // nuevas o editadas
-    const hasNewFiles = final.some((i) => i.file instanceof File);
-    return hasNewFiles;
-  };
-
-  const getFinalImages = () => {
-    return uploaderRef.current?.getImages() ?? [];
-  };
+  // detectar si el formulario ha cambiado respecto al estado inicial
+  const [imagesTouched, setImagesTouched] = useState(false);
+  const imagesHaveChanged = () => imagesTouched;
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     if (!validateFormBeforeSubmit()) return;
 
-    const finalImages = getFinalImages();
-
-    //console.log("INITIAL IMAGES", initialImagesRef.current);
-    //console.log("FINAL IMAGES", finalImages);
-
-    //return;
-
-    const imagesChanged = imagesHaveChanged(
-      initialImagesRef.current,
-      finalImages
-    );
+    const imagesChanged = imagesHaveChanged();
 
     if (!textDirty && !imagesChanged) {
       addToast({
-        title: "El producto no ha cambiado",
-        description: "No se han guardado cambios",
+        title: "Nada que guardar",
+        description: "No se ha modificado el producto",
         color: "warning",
       });
       return;
@@ -351,7 +316,6 @@ export default function ProductForm({
 
     let payload = {
       title: formData.title,
-      slug: formData.slug,
       description: formData.description,
       longDescription: formData.longDescription,
       price: Number(formData.price),
@@ -372,10 +336,16 @@ export default function ProductForm({
           const productData = await updateProductById(productId, payload);
           //console.log("Producto actualizado:", productData);
           updateProduct(productId, productData.product);
+          addToast({
+            title: "Éxito",
+            description: "Producto actualizado correctamente",
+            color: "success",
+          });
         }
-
         if (imagesChanged) {
-          await uploadImages(productId, finalImages);
+          await uploadImages(productId);
+        } else {
+          navigate("/store-admin/productos/todos");
         }
       } catch (err) {
         console.error(err);
@@ -414,40 +384,53 @@ export default function ProductForm({
     }
   };
 
-  const uploadImages = async (productId, finalImages) => {
+  const getImageChanges = () => {
+    const newImages = productImages
+      .filter((img) => img.file instanceof File && !img.public_id)
+      .map((img) => img.file);
+
+    const deletedImages = initialImagesRef.current.filter(
+      (img) =>
+        !productImages.some((p) => p.public_id && p.public_id === img.public_id)
+    );
+
+    return { newImages, deletedImages };
+  };
+
+  const uploadImages = async (productId) => {
     try {
       if (!productId) throw new Error("ID de producto no válido");
 
-      const initialIds = initialImagesRef.current.map((i) => i.public_id);
-      const finalIds = finalImages.map((i) => i.public_id).filter(Boolean);
+      const { newImages, deletedImages } = getImageChanges();
 
-      const deleted = initialIds.filter((id) => !finalIds.includes(id));
-      const added = finalImages.filter((i) => i.file instanceof File);
-
-      for (const id of deleted) {
-        await deleteProductImage(productId, id);
+      if (!newImages.length && !deletedImages.length) {
+        console.log("Sin cambios en imágenes");
+        return;
       }
 
-      for (const img of added) {
-        await uploadProductImage(img.file, productId);
+      // eliminar
+      for (const img of deletedImages) {
+        await deleteProductImage(productId, img.public_id);
       }
 
-      // volver a pedir el producto actualizado
+      // subir nuevas
+      for (const file of newImages) {
+        await uploadProductImage(file, productId);
+      }
+
+      // 🔴 CLAVE: volver a pedir el producto actualizado
       const updated = await updateProductById(productId, {});
 
-      // actualizar store
+      // 🔴 actualizar store
       updateProduct(productId, updated.product);
 
-      // sincronizar referencia inicial
+      // 🔴 sincronizar referencia inicial
       initialImagesRef.current = updated.product.images.map((img) => ({
         public_id: img.public_id,
-        source: img.url,
       }));
 
-      // resetear estado dirty
+      // 🔴 resetear estado dirty
       setTextDirty(false);
-      // resetear FileUploader
-      uploaderRef.current?.reset();
 
       addToast({
         title: "Éxito",
@@ -455,6 +438,7 @@ export default function ProductForm({
         color: "success",
       });
 
+      setImagesTouched(false);
       navigate("/store-admin/productos/todos");
     } catch (err) {
       console.error(err);
@@ -476,21 +460,7 @@ export default function ProductForm({
   };
 
   return (
-    <div className="relative z-0">
-      {/* overlay con spinner */}
-      {submitting && (
-        <div className="absolute z-50 top-[-1rem] left-[-1rem] left-0 w-[calc(100%+2rem)] h-[calc(100%+2rem)] flex items-center justify-center bg-white/10 filter backdrop-blur-xs">
-          <Spinner
-            classNames={{ label: "text-foreground mt-3 text-sm" }}
-            label="actualizando tienda..."
-            labelColor="primary"
-            variant="gradient"
-            color="primary"
-            size="lg"
-          />
-        </div>
-      )}
-
+    <>
       <h3 className="text-xl font-semibold mb-2">
         {productId && resolvedProduct
           ? `Editar Producto: ${resolvedProduct.title}`
@@ -611,8 +581,11 @@ export default function ProductForm({
             </Checkbox>
             <FileUploader
               images={productImages}
+              setImages={(imgs) => {
+                setProductImages(imgs);
+                setImagesTouched(true); // 👈 SOLO AQUÍ
+              }}
               imageSizePreset="square"
-              ref={uploaderRef}
             />
           </div>
         </div>
@@ -639,6 +612,6 @@ export default function ProductForm({
           </Button>
         </div>
       </form>
-    </div>
+    </>
   );
 }

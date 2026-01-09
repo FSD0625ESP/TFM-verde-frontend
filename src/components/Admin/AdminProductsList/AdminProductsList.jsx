@@ -220,7 +220,7 @@ export default function AdminProductsListAux() {
             <User
               avatarProps={{
                 radius: "lg",
-                src: product.images?.[0],
+                src: product.images?.[0]?.url,
                 className: "w-12 h-12",
               }}
               name={product.title}
@@ -631,12 +631,12 @@ export default function AdminProductsListAux() {
           table: "border-separate border-spacing-y-2 ",
           tr: "relative hover:shadow-lg hover:shadow-black/30 transition-all duration-300 ",
         }}
-        selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        //selectedKeys={selectedKeys}
+        //selectionMode="multiple"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
+        //onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>

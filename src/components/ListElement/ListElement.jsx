@@ -1,6 +1,14 @@
 import React from "react";
 import "./ListElement.css";
-import { Card, CardBody, Image, Button, Chip, Badge, Tooltip } from "@heroui/react";
+import {
+  Card,
+  CardBody,
+  Image,
+  Button,
+  Chip,
+  Badge,
+  Tooltip,
+} from "@heroui/react";
 import { MapPin, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMagneticBorder } from "../../hooks/useMagneticBorder";
@@ -22,7 +30,7 @@ const ListElement = ({ item, type, showLogo = false }) => {
   const handleClick = () => {
     if (isProduct) {
       const storeName = item.storeId?.slug;
-      const productName = item.slug
+      const productName = item.slug;
       navigate(
         `/product/${encodeURIComponent(storeName)}/${encodeURIComponent(
           productName
@@ -50,17 +58,19 @@ const ListElement = ({ item, type, showLogo = false }) => {
         <div ref={borderRef} className="magnetic-border" />
         <div className="relative h-48 overflow-hidden bg-gray-100">
           <Image
-            src={item.images?.[0] || "/placeholder.png"}
+            src={item.images?.[0].url || "/placeholder.png"}
             alt={item.title || item.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
             radius="none"
           />
 
-          {isNew && (<>
-            <p className="card-tag text-xs text-white bg-danger uppercase font-bold absolute z-10 top-2 left-2">
-              New
-            </p>
-          </>)}
+          {isNew && (
+            <>
+              <p className="card-tag text-xs text-white bg-danger uppercase font-bold absolute z-10 top-2 left-2">
+                New
+              </p>
+            </>
+          )}
           {item.storeId?.logo && showLogo && (
             <div className="store-logo">
               <Image
@@ -94,7 +104,12 @@ const ListElement = ({ item, type, showLogo = false }) => {
           </h4>
 
           {/* Descripción con tooltip para ver el texto completo */}
-          <Tooltip content={item.description} color="foreground" placement="top" delay={300}>
+          <Tooltip
+            content={item.description}
+            color="foreground"
+            placement="top"
+            delay={300}
+          >
             <p className="text-sm text-gray-600 line-clamp-2 cursor-help">
               {item.description}
             </p>
@@ -114,7 +129,8 @@ const ListElement = ({ item, type, showLogo = false }) => {
                 </Chip>
               ))}
               {item.categories.length > 2 && (
-                <Tooltip color="foreground"
+                <Tooltip
+                  color="foreground"
                   content={
                     <div className="flex flex-col gap-1">
                       {item.categories.slice(2).map((cat) => (
@@ -210,7 +226,12 @@ const ListElement = ({ item, type, showLogo = false }) => {
         </h4>
 
         {/* Descripción con tooltip para ver el texto completo */}
-        <Tooltip content={item.description} color="foreground" placement="top" delay={300}>
+        <Tooltip
+          content={item.description}
+          color="foreground"
+          placement="top"
+          delay={300}
+        >
           <p className="text-sm text-gray-600 line-clamp-2 cursor-help">
             {item.description}
           </p>
@@ -251,15 +272,13 @@ const ListElement = ({ item, type, showLogo = false }) => {
         )}
 
         {/* Dueño (si existe, como en ResultsPage) */}
-        {
-          item.ownerId && (
-            <div className="flex items-center gap-2 text-sm text-gray-600 border-t pt-2">
-              <span className="truncate">
-                por {item.ownerId?.firstName} {item.ownerId?.lastName}
-              </span>
-            </div>
-          )
-        }
+        {item.ownerId && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 border-t pt-2">
+            <span className="truncate">
+              por {item.ownerId?.firstName} {item.ownerId?.lastName}
+            </span>
+          </div>
+        )}
 
         <Button
           fullWidth
@@ -273,8 +292,8 @@ const ListElement = ({ item, type, showLogo = false }) => {
         >
           Visitar tienda
         </Button>
-      </CardBody >
-    </Card >
+      </CardBody>
+    </Card>
   );
 };
 

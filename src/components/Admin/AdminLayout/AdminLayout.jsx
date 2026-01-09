@@ -12,13 +12,12 @@ import {
   ClipboardList,
   Brush,
   UserRoundCog,
-  BarChart3,
 } from "lucide-react";
 
 import { getAllCategories, getAllProductsByStoreId } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
 import { StoreProvider, StoreContext } from "../contexts/StoreContext.jsx";
-export default function StoreAdminPage() {
+export default function StoreLayout() {
   const location = useLocation();
   const { user, sellerStore } = useContext(AuthContext);
 
@@ -131,28 +130,6 @@ export default function StoreAdminPage() {
 
         {/* NAV */}
         <nav className="flex-1 overflow-y-auto p-2">
-          {/* --- Dashboard Link --- */}
-          <Button
-            as={Link}
-            to="/store-admin/dashboard"
-            variant="light"
-            className={`w-full justify-start mb-2 ${
-              isActive("/store-admin/dashboard") || isActive("/store-admin/")
-                ? "bg-white/40 font-semibold text-secondary"
-                : ""
-            }`}
-          >
-            <BarChart3
-              size={18}
-              className={`${
-                isActive("/store-admin/dashboard") || isActive("/store-admin/")
-                  ? "text-secondary"
-                  : "text-black"
-              }`}
-            />
-            {!collapsed && "Dashboard"}
-          </Button>
-
           {/* --- Sección Gestión --- */}
           <div>
             <Button
@@ -378,20 +355,20 @@ export default function StoreAdminPage() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col min-h-screen">
-        <header className="bg-primary/20 shadow p-4 flex items-center gap-4">
-          <h2 className="text-2xl font-semibold">{sellerStore?.name}</h2>
-        </header>
+      <main className="flex-1 flex flex-col">
+        <StoreProvider
+          initialStore={sellerStore}
+          initialProducts={storeProducts}
+          initialCategories={allCategoriesList}
+        >
+          <header className="bg-primary/20 shadow p-4 flex items-center gap-4">
+            <h2 className="text-2xl font-semibold">{sellerStore?.name}</h2>
+          </header>
 
-        {/* AQUÍ SE RENDERIZAN TODAS LAS PÁGINAS /store-admin/... */}
-        <div className="flex-1 p-5">
-          <div className="admin-panel-wrapper">
-            <div className="bg-white shadow rounded-xl p-5 max-w-[1600px] mx-auto">
-              <StoreProvider
-                initialStore={sellerStore}
-                initialProducts={storeProducts}
-                initialCategories={allCategoriesList}
-              >
+          {/* AQUÍ SE RENDERIZAN TODAS LAS PÁGINAS /store-admin/... */}
+          <div className="flex-1 p-5">
+            <div className="admin-panel-wrapper">
+              <div className="bg-white shadow rounded-xl p-5 max-w-[1400px] mx-auto">
                 <Outlet
                   context={{
                     user,
@@ -399,10 +376,10 @@ export default function StoreAdminPage() {
                     allCategoriesList,
                   }}
                 />
-              </StoreProvider>
+              </div>
             </div>
           </div>
-        </div>
+        </StoreProvider>
       </main>
     </div>
   );

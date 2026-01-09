@@ -21,12 +21,12 @@ export default function Gallery({ images }) {
     <div id="gallery">
       <Swiper
         // Default parameters
-        initialSlide={1}
+        initialSlide={0}
         slidesPerView={1}
         spaceBetween={20}
         navigation={true}
         speed={700}
-        loop={true}
+        loop={false}
         zoom={true}
         thumbs={{ swiper: thumbsSwiper }}
         modules={[Navigation, Thumbs, FreeMode, Zoom]}
@@ -34,11 +34,14 @@ export default function Gallery({ images }) {
         style={{ maxWidth: "100%", margin: "0 auto 10px auto" }}
       >
         {images.map((img, idx) => {
-          console.log("img", img);
           return (
-            <SwiperSlide>
-              <div key={idx} className="swiper-zoom-container ">
-                <img src={img} className="rounded-lg" />
+            <SwiperSlide key={img.public_id}>
+              <div className="swiper-zoom-container ">
+                <img
+                  src={img.url}
+                  className="rounded-lg"
+                  alt={`Image ${idx}`}
+                />
               </div>
             </SwiperSlide>
           );
@@ -47,8 +50,8 @@ export default function Gallery({ images }) {
 
       <Swiper
         onSwiper={setThumbsSwiper}
-        initialSlide={1}
-        loop={true}
+        initialSlide={0}
+        loop={false}
         spaceBetween={10}
         slidesPerView={5}
         freeMode={true}
@@ -57,10 +60,13 @@ export default function Gallery({ images }) {
         className="myThumbsSwiper"
       >
         {images.map((img, idx) => {
-          console.log("img", img);
           return (
-            <SwiperSlide>
-              <img key={`thumb-${idx}`} alt={`Thumbnail ${idx}`} src={img} className="rounded-lg" />
+            <SwiperSlide key={`thumb-${img.public_id}`}>
+              <img
+                alt={`Thumbnail ${idx}`}
+                src={img.url}
+                className="rounded-lg"
+              />
             </SwiperSlide>
           );
         })}
