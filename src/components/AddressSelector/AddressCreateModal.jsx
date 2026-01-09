@@ -15,7 +15,7 @@ export default function AddressCreateModal({
         city: "",
         state: "",
         postalCode: "",
-        country: "España",
+        country: "",
         phoneNumber: "",
         isDefault: false,
     });
@@ -35,7 +35,7 @@ export default function AddressCreateModal({
                 city: "",
                 state: "",
                 postalCode: "",
-                country: "España",
+                country: "",
                 phoneNumber: "",
                 isDefault: false,
             });

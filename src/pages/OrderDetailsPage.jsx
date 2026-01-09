@@ -4,14 +4,17 @@ import { getOrderById } from "../services/api";
 import { Button, Spinner, Chip } from "@heroui/react";
 import { Truck, CheckCircle, Clock, Package, ArrowLeft } from "lucide-react";
 import OrderTracker from "../components/OrderTracker/OrderTracker";
-import LocationMap from "../components/LocationMap/LocationMap";
+import DeliveryMap from "../components/Delivery/DeliveryMap";
+import { useSocket } from "../contexts/SocketContext";
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isConnected, joinOrder, startOrderShipping, onOrderUpdate } = useSocket();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [startingShipping, setStartingShipping] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -29,6 +32,32 @@ export default function OrderDetailsPage() {
     };
     if (id) fetch();
   }, [id]);
+
+  // Join al room del pedido para recibir cambios de estado en tiempo real
+  useEffect(() => {
+    if (!id) return;
+    if (!isConnected) return;
+    joinOrder(id);
+  }, [id, isConnected, joinOrder]);
+
+  useEffect(() => {
+    const cleanup = onOrderUpdate((payload) => {
+      if (!payload?.orderId) return;
+      if (payload.orderId !== id) return;
+      if (payload.status) {
+        setOrder((prev) => (prev ? { ...prev, status: payload.status } : prev));
+      }
+      setStartingShipping(false);
+    });
+    return cleanup;
+  }, [id, onOrderUpdate]);
+
+  const handleStartShipping = () => {
+    if (!order?._id) return;
+    if (!isConnected) return;
+    setStartingShipping(true);
+    startOrderShipping(order._id);
+  };
 
   const getStatusInfo = (status) => {
     const statusMap = {
@@ -53,7 +82,7 @@ export default function OrderDetailsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow">
           <p className="text-red-600 font-semibold">{error}</p>
           <div className="mt-4">
@@ -85,8 +114,8 @@ export default function OrderDetailsPage() {
   const total = subtotal + shipping + tax;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow p-8">
+    <div className=" py-12 px-4">
+      <div className="container mx-auto bg-white rounded-2xl shadow p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold">
@@ -111,6 +140,16 @@ export default function OrderDetailsPage() {
               <ArrowLeft size={16} />
               <span className="ml-2">Volver</span>
             </Button>
+
+            {order.status === "pending" && (
+              <Button
+                onPress={handleStartShipping}
+                isDisabled={!isConnected || startingShipping}
+                className="bg-teal-600 text-white"
+              >
+                {startingShipping ? "Iniciando…" : "Marcar como En camino"}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -195,7 +234,7 @@ export default function OrderDetailsPage() {
         </div>
 
         <div>
-          <LocationMap status={order.status} address={order.addressId} />
+          <DeliveryMap orderId={order._id} />
         </div>
       </div>
     </div>

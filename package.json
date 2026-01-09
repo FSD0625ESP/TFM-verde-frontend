@@ -31,6 +31,7 @@
     "filepond-plugin-image-transform": "^3.8.7",
     "framer-motion": "^12.23.22",
     "lucide-react": "^0.546.0",
+    "mapbox-gl": "^3.14.0",
     "pintura": "^0.3.10",
     "prop-types": "^15.8.1",
     "react": "^19.1.1",

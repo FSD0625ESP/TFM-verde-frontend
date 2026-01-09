@@ -3,6 +3,8 @@ import "./ListElement.css";
 import { Card, CardBody, Image, Button, Chip, Badge, Tooltip } from "@heroui/react";
 import { MapPin, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useMagneticBorder } from "../../hooks/useMagneticBorder";
+
 
 // type: "product" | "store"
 // Para productos conserva:
@@ -15,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 const ListElement = ({ item, type, showLogo = false }) => {
   const navigate = useNavigate();
   const isProduct = type === "product";
+  const borderRef = useMagneticBorder();
 
   const handleClick = () => {
     if (isProduct) {
@@ -40,10 +43,11 @@ const ListElement = ({ item, type, showLogo = false }) => {
 
     return (
       <Card
-        className="element-card shadow-sm border-1 max-w-[400px]  border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+        className="element-card relative shadow-sm border-1 max-w-[400px]  border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
         onClick={handleClick}
       >
         {/* Imagen principal */}
+        <div ref={borderRef} className="magnetic-border" />
         <div className="relative h-48 overflow-hidden bg-gray-100">
           <Image
             src={item.images?.[0] || "/placeholder.png"}
@@ -164,10 +168,11 @@ const ListElement = ({ item, type, showLogo = false }) => {
   // Tarjeta de tienda (diseño ResultsPage)
   return (
     <Card
-      className="element-card shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+      className="element-card relative shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
       onClick={handleClick}
     >
       {/* Imagen principal */}
+      <div ref={borderRef} className="magnetic-border" />
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
         {item.image ? (
           <Image

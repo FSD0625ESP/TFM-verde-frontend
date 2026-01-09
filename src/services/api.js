@@ -379,6 +379,12 @@ const deleteOrder = async (id) => {
   return response.data;
 };
 
+// ========== DELIVERIES API (tracking) ==========
+const getDeliveryByOrderId = async (orderId) => {
+  const response = await api.get(`/deliveries/order/${orderId}`);
+  return response.data;
+};
+
 // ============================================
 // STORE APPEARANCE API
 // ============================================
@@ -529,6 +535,7 @@ export {
   createOrder,
   updateOrderStatus,
   deleteOrder,
+  getDeliveryByOrderId,
   contactFormSend,
   // Analytics
   trackAnalyticsEvent,

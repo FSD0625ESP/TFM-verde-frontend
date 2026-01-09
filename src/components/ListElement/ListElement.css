@@ -72,3 +72,50 @@
   border: 2px solid white;
   background-color: white;
 }
+.magnetic-border {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  box-sizing: border-box;
+  padding: 3px;
+  border-radius: inherit;
+
+  --mx: 50%;
+  --my: 50%;
+  --i: 0;
+
+  /* Gradiente centrado en el ratón */
+  background: radial-gradient(
+    280px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(38, 166, 154, min(1, calc(var(--i, 0) * 1.8))),
+    transparent 70%
+  );
+
+  opacity: min(1, calc(var(--i, 0) * 1.1));
+  transition: opacity 120ms linear;
+
+  /* Recorte para que SOLO sea borde */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  will-change: background;
+}
+
+@supports not ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
+  .magnetic-border {
+    -webkit-mask: none;
+    mask: none;
+    /* Fallback: no recorta a borde, pero deja ver el efecto */
+    background: radial-gradient(
+      120px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(38, 166, 154, min(1, calc(var(--i, 0) * 1.8))),
+      transparent 70%
+    );
+  }
+}
+
+/* Solo visible cuando estás sobre la card */
+.element-card:hover .card-blur-effect {
+  opacity: 1;
+}

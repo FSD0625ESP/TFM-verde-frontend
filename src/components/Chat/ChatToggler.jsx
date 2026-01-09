@@ -47,13 +47,13 @@ const ChatToggler = ({ isOpen, onToggle, unreadCount = 0 }) => {
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-1"
+                        className="absolute -top-3 right-1"
                     >
                         <Badge
                             content={unreadCount > 99 ? '99+' : unreadCount}
                             color="danger"
                             size="sm"
-                            className="border-2 border-white"
+                            className="border-2 border-white p-3 text-white shadow-lg"
                         />
                     </motion.div>
                 )}

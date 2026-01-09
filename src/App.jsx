@@ -13,6 +13,7 @@ import ChatToggler from "./components/Chat/ChatToggler.jsx";
 import ChatsDropdown from "./components/Chat/ChatsDropdown.jsx";
 import ChatContainer from "./components/Chat/ChatContainer.jsx";
 import { AuthContext } from "./contexts/AuthContext.jsx";
+import { useSocket } from "./contexts/SocketContext";
 import { useContext, useState, useEffect } from "react";
 import Contacto from "./pages/ConocenosPage/Contacto.jsx";
 import QuienesSomos from "./pages/ConocenosPage/QuienesSomos.jsx";
@@ -51,9 +52,9 @@ import { generateUUID } from "./utils/utils.js";
 
 function App() {
   const { user } = useContext(AuthContext);
+  const { unreadCount } = useSocket();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
-  const [totalUnread, setTotalUnread] = useState(0);
 
   const isUserLoggedIn = () => user !== null;
 
@@ -84,7 +85,6 @@ function App() {
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
-    setTotalUnread((prev) => Math.max(0, prev - (chat.unreadCount || 0)));
   };
 
   const handleCloseChat = () => {
@@ -93,8 +93,6 @@ function App() {
   };
 
   const handleBackToList = () => setSelectedChat(null);
-
-  const handleUnreadUpdate = (count) => setTotalUnread(count);
 
   useEffect(() => {
     const handleOpenChat = (event) => {
@@ -106,6 +104,8 @@ function App() {
     window.addEventListener("openChat", handleOpenChat);
     return () => window.removeEventListener("openChat", handleOpenChat);
   }, []);
+
+
 
   return (
     <AlertProvider>
@@ -231,14 +231,13 @@ function App() {
             <ChatToggler
               isOpen={isChatOpen || selectedChat !== null}
               onToggle={handleToggleChat}
-              unreadCount={totalUnread}
+              unreadCount={unreadCount}
             />
 
             {!selectedChat && (
               <ChatsDropdown
                 isOpen={isChatOpen}
                 onSelectChat={handleSelectChat}
-                onUnreadUpdate={handleUnreadUpdate}
               />
             )}
 

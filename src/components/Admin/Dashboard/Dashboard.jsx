@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { Card, CardBody, CardHeader, Spinner, Select, SelectItem } from "@heroui/react";
-import { Eye, ShoppingCart, TrendingUp, Package, DollarSign, Receipt } from "lucide-react";
+import { Eye, ShoppingCart, TrendingUp, Package, DollarSign, Receipt, Trophy } from "lucide-react";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { getStoreDashboard } from "../../../services/api";
 
@@ -28,24 +28,24 @@ export default function Dashboard() {
     const [period, setPeriod] = useState("7d");
     const [dashboardData, setDashboardData] = useState(null);
 
-    const fetchDashboard = async () => {
-        if (!sellerStore?._id) return;
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            const data = await getStoreDashboard(sellerStore._id, { period });
-            setDashboardData(data);
-        } catch (err) {
-            console.error("Error al cargar dashboard:", err);
-            setError("Error al cargar las estadísticas");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchDashboard = async () => {
+            if (!sellerStore?._id) return;
+
+            setLoading(true);
+            setError(null);
+
+            try {
+                const data = await getStoreDashboard(sellerStore._id, { period });
+                setDashboardData(data);
+            } catch (err) {
+                console.error("Error al cargar dashboard:", err);
+                setError("Error al cargar las estadísticas");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchDashboard();
     }, [sellerStore?._id, period]);
 
@@ -160,7 +160,10 @@ export default function Dashboard() {
             {/* Tabla de productos más vistos */}
             <Card>
                 <CardHeader>
-                    <h2 className="text-lg font-semibold">👁️ Productos más vistos</h2>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Eye className="w-5 h-5" />
+                        Productos más vistos
+                    </h2>
                 </CardHeader>
                 <CardBody>
                     <TopProductsTable products={dashboardData?.topProducts || []} />
@@ -170,7 +173,10 @@ export default function Dashboard() {
             {/* Tabla de productos más vendidos */}
             <Card>
                 <CardHeader>
-                    <h2 className="text-lg font-semibold">🏆 Productos más vendidos</h2>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Trophy className="w-5 h-5" />
+                        Productos más vendidos
+                    </h2>
                 </CardHeader>
                 <CardBody>
                     <TopSellingProductsTable products={ordersData?.topSellingProducts || []} />

@@ -1,5 +1,5 @@
-import { useEffect, useState, useContext, useRef } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useContext, useRef, useMemo, useCallback } from "react";
+import { Link, useParams } from "react-router-dom";
 import Slider from "../components/Slider/Slider";
 import Gallery from "../components/Gallery/Gallery";
 import {
@@ -16,9 +16,7 @@ import { format, parseISO } from "date-fns";
 import { ShoppingBag, User } from "lucide-react";
 import {
   getProductById,
-  getAllProducts,
   //getAllFeaturedProducts,
-  getAllCategories,
   getProductReviewsById,
   addProductReview,
   trackAnalyticsEvent,
@@ -41,21 +39,21 @@ export default function ProductDetailPage() {
 
   const { user } = useContext(AuthContext);
 
-  function round(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
+  const round = useCallback((value, precision = 0) => {
+    const multiplier = Math.pow(10, precision);
     return Math.round(value * multiplier) / multiplier;
-  }
+  }, []);
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const data = await getProductById(productId);
       setProduct(data);
     } catch (error) {
       console.error("Error al obtener el producto:", error);
     }
-  };
+  }, [productId]);
 
-  const fetchProductReviews = async () => {
+  const fetchProductReviews = useCallback(async () => {
     try {
       const data = await getProductReviewsById(productId);
       setProductReviews(data);
@@ -73,17 +71,7 @@ export default function ProductDetailPage() {
     } catch (error) {
       console.error("Error al obtener las reviews del producto:", error);
     }
-  };
-
-  const [productsList, setProductsList] = useState([]);
-  const fetchProducts = async () => {
-    try {
-      const data = await getAllProducts();
-      setProductsList(data);
-    } catch (error) {
-      console.error("Error al obtener los productos:", error);
-    }
-  };
+  }, [productId, round]);
 
   /*
   const [featuredProductsList, setFeaturedProductsList] = useState([]);
@@ -97,41 +85,31 @@ export default function ProductDetailPage() {
   };
 */
 
-  const [categoriesList, setCategoriesList] = useState([]);
-  const fetchCategories = async () => {
-    try {
-      const data = await getAllCategories();
-      setCategoriesList(data);
-    } catch (error) {
-      console.error("Error al obtener las categorías:", error);
-    }
-  };
-
   useEffect(() => {
     fetchProduct();
-    fetchProducts();
     fetchProductReviews();
     //fetchFeaturedProducts();  
-    fetchCategories();
-    console.log("useEffect launched");
-  }, [productId]);
+  }, [fetchProduct, fetchProductReviews]);
 
   // Registrar visita al producto en analytics cuando el producto esté cargado
   useEffect(() => {
     if (product && product._id && product.storeId) {
       const storeId = typeof product.storeId === "object" ? product.storeId._id : product.storeId;
-      console.log("📊 Tracking view_product - storeId:", storeId, "productId:", product._id);
       trackAnalyticsEvent("view_product", storeId, product._id);
     }
-  }, [product?._id]);
-
-  const [rating, setRating] = useState(0);
+  }, [product]);
   const [formData, setFormData] = useState({
     userId: user?._id,
     productId: product?._id,
     ratingValue: 0,
     comment: "",
   });
+
+  const relatedCategories = useMemo(() => {
+    const cats = product?.categories;
+    if (!Array.isArray(cats)) return [];
+    return cats.map((cat) => cat?._id || cat).filter(Boolean);
+  }, [product?.categories]);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -246,7 +224,7 @@ export default function ProductDetailPage() {
               </div>
               <p className="text-base text-gray-600">{product.description}</p>
               <div className="flex flex-row items-end gap-2 py-2">
-                <span className="text-sm text-black font-semibold text-xl">
+                <span className="text-black font-semibold text-xl">
                   {product.price}$
                 </span>
                 <span className="text-sm text-gray-600">
@@ -380,7 +358,6 @@ export default function ProductDetailPage() {
                     <Rating
                       initialValue={0}
                       onRatingChange={(value) => {
-                        setRating(value);
                         setFormData((prev) => ({
                           ...prev,
                           ratingValue: value,
@@ -428,7 +405,7 @@ export default function ProductDetailPage() {
           <div className="container  px-8 mx-auto overflow-hidden">
             <RelatedProducts
               productId={productId}
-              categories={product.categories.map(cat => cat._id || cat)}
+              categories={relatedCategories}
               limit={8}
             />
           </div>

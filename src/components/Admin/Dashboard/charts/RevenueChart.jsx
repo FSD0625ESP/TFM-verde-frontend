@@ -1,4 +1,5 @@
 import { Card, CardBody, CardHeader } from "@heroui/react";
+import { DollarSign } from "lucide-react";
 import {
     Area,
     Bar,
@@ -17,7 +18,10 @@ export default function RevenueChart({ data }) {
         return (
             <Card className="w-full">
                 <CardHeader>
-                    <h2 className="text-lg font-semibold">💰 Ingresos y Pedidos Diarios</h2>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <DollarSign className="w-5 h-5" />
+                        Ingresos y Pedidos Diarios
+                    </h2>
                 </CardHeader>
                 <CardBody>
                     <div className="flex items-center justify-center h-64 text-gray-500">
@@ -31,7 +35,10 @@ export default function RevenueChart({ data }) {
     return (
         <Card className="w-full">
             <CardHeader>
-                <h2 className="text-lg font-semibold">💰 Ingresos y Pedidos Diarios</h2>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <DollarSign className="w-5 h-5" />
+                    Ingresos y Pedidos Diarios
+                </h2>
             </CardHeader>
             <CardBody>
                 <ResponsiveContainer width="100%" height={300}>
