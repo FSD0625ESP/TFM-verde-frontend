@@ -275,143 +275,8 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {(() => {
-        const sectionsOrder = Array.isArray(
-          storeAppearance?.appearance?.sectionsOrder
-        )
-          ? storeAppearance.appearance.sectionsOrder
-          : ["featured", "offers"];
 
-        const featuredSection =
-          storeAppearance?.appearance.showFeaturedSection &&
-          featuredProducts.length > 0 ? (
-            <motion.section
-              className="w-full py-12 shadow-sm"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className=" px-8 mx-auto">
-                <div className="mb-8">
-                  <motion.h2
-                    className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    viewport={{ once: true }}
-                  >
-                    Productos Destacados
-                  </motion.h2>
-                  <motion.p
-                    className="text-gray-600 text-center"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    Descubre nuestros mejores productos
-                  </motion.p>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  viewport={{ once: true }}
-                >
-                  <ListItemSlider
-                    items={featuredProducts}
-                    type="product"
-                    breakpoints={{
-                      320: 1,
-                      640: 2,
-                      840: 3,
-                      1024: 4,
-                      1200: 5,
-                      1400: 6,
-                    }}
-                  />
-                </motion.div>
-              </div>
-            </motion.section>
-          ) : null;
 
-        const offersSection =
-          storeAppearance?.appearance.showOfferSection &&
-          offerProducts.length > 0 ? (
-            <motion.section
-              className="w-full py-12 bg-danger-50/30 shadow-sm"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className=" px-8 mx-auto">
-                <div className="mb-8">
-                  <motion.h2
-                    className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    viewport={{ once: true }}
-                  >
-                    Ofertas Especiales
-                  </motion.h2>
-                  <motion.p
-                    className="text-gray-600 text-center "
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    No te pierdas nuestras mejores ofertas
-                  </motion.p>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  viewport={{ once: true }}
-                >
-                  <ListItemSlider
-                    items={offerProducts}
-                    type="product"
-                    breakpoints={{
-                      320: 1,
-                      640: 2,
-                      840: 3,
-                      1024: 4,
-                      1200: 5,
-                      1400: 6,
-                    }}
-                  />
-                </motion.div>
-              </div>
-            </motion.section>
-          ) : null;
-
-        return sectionsOrder.map((key) => {
-          if (key === "offers") return offersSection;
-          return featuredSection;
-        });
-      })()}
-
-      {areCategoriesFiltered && (
-        <>
-          <h2 className="text-2xl font-semibold mb-4 mt-10 text-center text-shadow-md">
-            Todos nuestros productos
-          </h2>
-          <Filters
-            categoriesList={categoriesList}
-            storesList={[store]}
-            initialMinPrice={minPrice}
-            initialMaxPrice={maxPrice}
-            className="shadow-sm"
-            mode="products"
-            showTabs={false}
-          />
-        </>
-      )}
       {canSeeStoreContent && (
         <>
           {/* SECCIÓN DE SLIDER PERSONALIZADO */}
@@ -427,197 +292,202 @@ export default function ProductDetailPage() {
                 />
               </div>
             )}
-          <motion.section
-            className="w-full bg-primary/10"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className="container px-8 py-4 mx-auto">
-              {store && (
-                <motion.div
-                  className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
-                  initial={{ opacity: 0, y: 20 }}
+          <div className="container px-8 py-4 mx-auto">
+            {store && (
+              <motion.div
+                className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <div className="p-3 justify-self-center">
+                  <div className="flex flex-row items-center gap-2">
+                    {averageRating > 0 && (
+                      <Rating
+                        initialValue={averageRating ? averageRating : 0}
+                        readonly
+                        size="lg"
+                      />
+                    )}
+                    {averageRating && (
+                      <span className="text-sm text-gray-600">
+                        ({averageRating}) -{" "}
+                        <a
+                          href="#reviews-section"
+                          className="underline hover:text-primary duration-300"
+                        >
+                          {totalReviews} reseñas
+                        </a>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-3 justify-self-center">
+                  <div className="flex flex-row items-center gap-2">
+                    <a
+                      href={`https://www.instagram.com/${store?.socialLinks?.instagram}`}
+                      target="_blank"
+                    >
+                      <Instagram
+                        className="mr-1 text-primary hover:text-secondary cursor-pointer"
+                        size="24px"
+                        radius="lg"
+                      />
+                    </a>
+                    <a
+                      href={`https://www.facebook.com/${store?.socialLinks?.facebook}`}
+                      target="_blank"
+                    >
+                      <Facebook
+                        className="mr-1 text-primary hover:text-secondary cursor-pointer"
+                        size="24px"
+                        radius="lg"
+                      />
+                    </a>
+                    <a
+                      href={`https://${store?.socialLinks?.web}`}
+                      target="_blank"
+                    >
+                      <Globe
+                        className="mr-1 text-primary hover:text-secondary cursor-pointer"
+                        size="24px"
+                        radius="lg"
+                      />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-1 justify-self-center">
+                  <StartChatButton
+                    storeId={store._id}
+                    storeName={store.name}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </div>
+          {(() => {
+            const sectionsOrder = Array.isArray(
+              storeAppearance?.appearance?.sectionsOrder
+            )
+              ? storeAppearance.appearance.sectionsOrder
+              : ["featured", "offers"];
+
+            const featuredSection =
+              storeAppearance?.appearance.showFeaturedSection &&
+                featuredProducts.length > 0 ? (
+                <motion.section
+                  className="w-full py-12 shadow-sm"
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.6 }}
                   viewport={{ once: true }}
                 >
-                  <div className="p-3 justify-self-center">
-                    <div className="flex flex-row items-center gap-2">
-                      {averageRating > 0 && (
-                        <Rating
-                          initialValue={averageRating ? averageRating : 0}
-                          readonly
-                          size="lg"
-                        />
-                      )}
-                      {averageRating && (
-                        <span className="text-sm text-gray-600">
-                          ({averageRating}) -{" "}
-                          <a
-                            href="#reviews-section"
-                            className="underline hover:text-primary duration-300"
-                          >
-                            {totalReviews} reseñas
-                          </a>
-                        </span>
-                      )}
+                  <div className=" px-8 mx-auto">
+                    <div className="mb-8">
+                      <motion.h2
+                        className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        viewport={{ once: true }}
+                      >
+                        Productos Destacados
+                      </motion.h2>
+                      <motion.p
+                        className="text-gray-600 text-center"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        viewport={{ once: true }}
+                      >
+                        Descubre nuestros mejores productos
+                      </motion.p>
                     </div>
-                  </div>
-
-                  <div className="p-3 justify-self-center">
-                    <div className="flex flex-row items-center gap-2">
-                      <a
-                        href={`https://www.instagram.com/${store?.socialLinks?.instagram}`}
-                        target="_blank"
-                      >
-                        <Instagram
-                          className="mr-1 text-primary hover:text-secondary cursor-pointer"
-                          size="24px"
-                          radius="lg"
-                        />
-                      </a>
-                      <a
-                        href={`https://www.facebook.com/${store?.socialLinks?.facebook}`}
-                        target="_blank"
-                      >
-                        <Facebook
-                          className="mr-1 text-primary hover:text-secondary cursor-pointer"
-                          size="24px"
-                          radius="lg"
-                        />
-                      </a>
-                      <a
-                        href={`https://${store?.socialLinks?.web}`}
-                        target="_blank"
-                      >
-                        <Globe
-                          className="mr-1 text-primary hover:text-secondary cursor-pointer"
-                          size="24px"
-                          radius="lg"
-                        />
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="p-1 justify-self-center">
-                    <StartChatButton
-                      storeId={store._id}
-                      storeName={store.name}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </motion.section>
-          {/* SECCIÓN DE DESTACADOS */}
-          {storeAppearance?.appearance.showFeaturedSection &&
-            featuredProducts.length > 0 && (
-              <motion.section
-                className="w-full py-12 shadow-sm"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <div className=" px-8 mx-auto">
-                  <div className="mb-8">
-                    <motion.h2
-                      className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                      viewport={{ once: true }}
-                    >
-                      Productos Destacados
-                    </motion.h2>
-                    <motion.p
-                      className="text-gray-600 text-center"
+                    <motion.div
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
                       viewport={{ once: true }}
                     >
-                      Descubre nuestros mejores productos
-                    </motion.p>
+                      <ListItemSlider
+                        items={featuredProducts}
+                        type="product"
+                        breakpoints={{
+                          320: 1,
+                          640: 2,
+                          840: 3,
+                          1024: 4,
+                          1200: 5,
+                          1400: 6,
+                        }}
+                      />
+                    </motion.div>
                   </div>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    <ListItemSlider
-                      items={featuredProducts}
-                      type="product"
-                      breakpoints={{
-                        320: 1,
-                        640: 2,
-                        840: 3,
-                        1024: 4,
-                        1200: 5,
-                        1400: 6,
-                      }}
-                    />
-                  </motion.div>
-                </div>
-              </motion.section>
-            )}
+                </motion.section>
+              ) : null;
 
-          {/* SECCIÓN DE OFERTAS */}
-          {storeAppearance?.appearance.showOfferSection &&
-            offerProducts.length > 0 && (
-              <motion.section
-                className="w-full py-12 bg-danger-50/30 shadow-sm"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <div className=" px-8 mx-auto">
-                  <div className="mb-8">
-                    <motion.h2
-                      className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                      viewport={{ once: true }}
-                    >
-                      Ofertas Especiales
-                    </motion.h2>
-                    <motion.p
-                      className="text-gray-600 text-center "
+            const offersSection =
+              storeAppearance?.appearance.showOfferSection &&
+                offerProducts.length > 0 ? (
+                <motion.section
+                  className="w-full py-12 bg-danger-50/30 shadow-sm"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <div className=" px-8 mx-auto">
+                    <div className="mb-8">
+                      <motion.h2
+                        className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        viewport={{ once: true }}
+                      >
+                        Ofertas Especiales
+                      </motion.h2>
+                      <motion.p
+                        className="text-gray-600 text-center "
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        viewport={{ once: true }}
+                      >
+                        No te pierdas nuestras mejores ofertas
+                      </motion.p>
+                    </div>
+                    <motion.div
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
                       viewport={{ once: true }}
                     >
-                      No te pierdas nuestras mejores ofertas
-                    </motion.p>
+                      <ListItemSlider
+                        items={offerProducts}
+                        type="product"
+                        breakpoints={{
+                          320: 1,
+                          640: 2,
+                          840: 3,
+                          1024: 4,
+                          1200: 5,
+                          1400: 6,
+                        }}
+                      />
+                    </motion.div>
                   </div>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    <ListItemSlider
-                      items={offerProducts}
-                      type="product"
-                      breakpoints={{
-                        320: 1,
-                        640: 2,
-                        840: 3,
-                        1024: 4,
-                        1200: 5,
-                        1400: 6,
-                      }}
-                    />
-                  </motion.div>
-                </div>
-              </motion.section>
-            )}
+                </motion.section>
+              ) : null;
+
+            return sectionsOrder.map((key) => {
+              if (key === "offers") return offersSection;
+              return featuredSection;
+            });
+          })()}
 
           {areCategoriesFiltered && (
             <>
@@ -635,7 +505,6 @@ export default function ProductDetailPage() {
               />
             </>
           )}
-
           <motion.section
             className="container px-8 py-4 mx-auto"
             initial={{ opacity: 0, y: 30 }}
@@ -886,8 +755,12 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </motion.section>
+
+
         </>
       )}
+
+
       {store?.active === false && !isStoreOwner && (
         <div className="bg-white p-6 rounded-md shadow-md text-center text-gray-700 mt-10">
           Esta tienda está temporalmente inactiva y no es posible ver sus
