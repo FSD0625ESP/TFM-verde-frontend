@@ -234,20 +234,37 @@ const deleteChat = async (chatId) => {
 // Cart API helpers
 // -----------------------------
 const getCart = async () => {
-  const response = await api.get(`/cart`);
+  const sessionId = localStorage.getItem("sessionId") || null;
+  const response = await api.get(`/cart`, {
+    params: { sessionId },
+  });
   return response.data;
 };
 
 const addToCart = async ({ productId, quantity = 1 }) => {
-  const response = await api.post(`/cart/add`, { productId, quantity });
+  const sessionId = localStorage.getItem("sessionId") || null;
+  const response = await api.post(`/cart/add`, { productId, quantity, sessionId });
   return response.data;
 };
 
 const removeFromCart = async ({ productId }) => {
+  const sessionId = localStorage.getItem("sessionId") || null;
   console.log("API: removing product from cart", productId);
   const response = await api.delete(`/cart/remove`, {
-    data: { productId },
+    data: { productId, sessionId },
   });
+  return response.data;
+};
+const clearCart = async () => {
+  const sessionId = localStorage.getItem("sessionId") || null;
+  const response = await api.delete(`/cart/clear`, {
+    data: { sessionId },
+  });
+  return response.data;
+};
+
+const replaceAnonymousCart = async (sessionId) => {
+  const response = await api.post(`/cart/replace`, { sessionId });
   return response.data;
 };
 
@@ -297,10 +314,7 @@ const deleteProductImage = async (productId, public_id) => {
   return response.data;
 };
 
-const clearCart = async () => {
-  const response = await api.delete(`/cart/clear`);
-  return response.data;
-};
+
 const createProduct = async (productData) => {
   const response = await api.post("/products/add", productData);
   return response.data;
@@ -369,10 +383,20 @@ const updateUserProfile = async (firstName, lastName, phone = null) => {
 };
 
 // ========== ORDERS API ==========
+const getAdminOrders = async (params = {}) => {
+  const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', search = '' } = params;
+  const response = await api.get("/orders/admin", {
+    params: { page, limit, sortBy, sortOrder, search }
+  });
+  return response.data;
+};
+
 const getOrders = async () => {
   const response = await api.get("/orders");
   return response.data;
 };
+
+
 
 const getOrderById = async (id) => {
   const response = await api.get(`/orders/${id}`);
@@ -526,6 +550,7 @@ export {
   addToCart,
   removeFromCart,
   clearCart,
+  replaceAnonymousCart,
   getUserChats,
   getChatById,
   getOrCreateChat,
@@ -558,6 +583,7 @@ export {
   trackAnalyticsEvent,
   getStoreDashboard,
   getProductStats,
+  getAdminOrders,
 };
 
 // ==================== ANALYTICS ====================
@@ -569,7 +595,6 @@ export {
  * @param {string} [productId] - ID del producto (requerido para view_product y add_to_cart)
  */
 const trackAnalyticsEvent = async (eventType, storeId, productId = null) => {
-  console.log("[Frontend API] Enviando evento analytics:", { eventType, storeId, productId });
   try {
     // Obtener sessionId de localStorage (consistente para usuarios anónimos y logueados)
     const sessionId = localStorage.getItem("sessionId");

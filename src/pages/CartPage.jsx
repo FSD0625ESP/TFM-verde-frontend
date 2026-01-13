@@ -5,6 +5,7 @@ import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useAlert } from "../contexts/AlertContext";
+import AddToCartButton from "../components/Cart/AddToCartButton";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -16,10 +17,11 @@ export default function CartPage() {
     return acc + (product?.price || 0) * (item.quantity || 0);
   }, 0);
 
+
   return (
     <div className="text-gray-800 py-8 flex flex-col">
       {/* Container principal blanco con padding */}
-      <div className="container mx-auto px-6 bg-white rounded-md shadow-sm flex-grow flex flex-col">
+      <div className="container mx-auto px-6 pb-6 bg-white rounded-md shadow-sm flex-grow flex flex-col">
         <header className="text-center mb-8 pt-8">
           <h1 className="text-4xl font-bold mb-2">Tu carrito</h1>
           <p className="text-lg text-gray-700">
@@ -60,11 +62,11 @@ export default function CartPage() {
                 return (
                   <div
                     key={item._id}
-                    className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 shadow-sm rounded-lg"
+                    className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 shadow-sm rounded-lg "
                   >
                     <div className="flex items-center gap-4">
                       <img
-                        src={product.images?.[0] || "/placeholder.png"}
+                        src={product.images?.[0].url || "/placeholder.png"}
                         alt={product.title}
                         className="w-20 h-20 object-cover rounded-md"
                       />
@@ -78,6 +80,12 @@ export default function CartPage() {
                         <p className="text-gray-500">
                           Cantidad: {item.quantity}
                         </p>
+                        <AddToCartButton
+                          productId={product._id}
+                          quantity={1}
+                          showQuantity={true}
+                          buttonText="Agregar más"
+                        />
                       </div>
                     </div>
 

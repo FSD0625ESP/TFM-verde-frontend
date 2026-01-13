@@ -9,6 +9,7 @@ export const StoreProvider = ({
   initialCategories = [],
 }) => {
   const [storeData, setStoreData] = useState(initialStore || {});
+  const [ordersData, setOrdersData] = useState([]);
   const [storeProducts, setStoreProducts] = useState(initialProducts || []);
   const [allCategories, setAllCategories] = useState(initialCategories || []);
 

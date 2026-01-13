@@ -5,6 +5,7 @@ import {
   addToCart as apiAddToCart,
   removeFromCart as apiRemoveFromCart,
   clearCart as apiClearCart,
+  replaceAnonymousCart as apiReplaceAnonymousCart,
 } from "../services/api";
 import { addToast } from "@heroui/react";
 import { AuthContext } from "./AuthContext";
@@ -14,8 +15,9 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const [cart, setCart] = useState([]);
+  const [isReplacingCart, setIsReplacingCart] = useState(false);
 
-  // 1️⃣ Cargar carrito al iniciar
+  // 1️⃣ Cargar carrito al iniciar o cuando el usuario cambie
   useEffect(() => {
     const loadCart = async () => {
       try {
@@ -25,6 +27,7 @@ export const CartProvider = ({ children }) => {
         console.error("Error loading cart:", err);
       }
     };
+
     loadCart();
   }, [user]);
 
@@ -102,7 +105,7 @@ export const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart }}
+      value={{ cart, addToCart, removeFromCart, clearCart, isReplacingCart }}
     >
       {children}
     </CartContext.Provider>

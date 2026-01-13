@@ -5,7 +5,7 @@ import {
     Checkbox,
     Textarea,
 } from "@heroui/react";
-import { registerUser, registerStore } from "../../services/api";
+import { registerUser, registerStore, replaceAnonymousCart } from "../../services/api";
 import { addToast } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import { User, Store, CreditCard } from "lucide-react";
@@ -111,6 +111,8 @@ const Register = () => {
 
         setLoading(true);
         try {
+            const oldSessionId = localStorage.getItem("sessionId");
+
             // 1️⃣ Registro del usuario
             const userRes = await registerUser(
                 formData.firstName,
@@ -134,13 +136,23 @@ const Register = () => {
                 }
             });
 
+            // 3️⃣ Reemplazar carrito anónimo si existía
+            if (oldSessionId && oldSessionId !== userRes.user._id) {
+                try {
+                    await replaceAnonymousCart(oldSessionId);
+                    console.log("✅ Carrito anónimo reemplazado tras registro seller");
+                } catch (cartError) {
+                    console.error("Error al reemplazar carrito:", cartError);
+                }
+            }
+
             addToast({
                 title: "Registro exitoso",
                 description: "Tu cuenta y tienda fueron creadas correctamente.",
                 color: "success",
                 duration: 5000,
             });
-            navigate("/");
+            window.location.href = "/";
         } catch (error) {
             console.error(error);
             addToast({

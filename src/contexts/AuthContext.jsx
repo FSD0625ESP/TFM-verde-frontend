@@ -85,6 +85,7 @@ export const AuthProvider = ({ children }) => {
       .then(() => {
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("sessionId");
         window.location.href = "/";
       })
       .catch((error) => {

@@ -38,6 +38,7 @@ import AdminProductList from "./components/Admin/AdminProductsList/AdminProducts
 import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+import AdminOrders from "./components/Admin/Orders/Orders.jsx";
 
 // Rutas de HEAD
 import OrderDetailsPage from "./pages/OrderDetailsPage.jsx";
@@ -175,7 +176,7 @@ function App() {
                 <Route path="editar/:id" element={<ProductForm />} />
               </Route>
 
-              <Route path="pedidos" element={<div>Página Pedidos</div>} />
+              <Route path="pedidos" element={<AdminOrders />} />
               <Route path="apariencia" element={<StoreAppearance />} />
               <Route path="cuenta" element={<div>Página Cuenta</div>} />
             </Route>

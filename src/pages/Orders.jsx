@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { Card, CardBody, Button, Spinner, Chip } from "@heroui/react";
+import { Card, CardBody, Button, Spinner, Chip, Select, SelectItem } from "@heroui/react";
 import { getOrders as fetchOrdersAPI } from "../services/api";
 import {
   Package,
@@ -15,6 +15,9 @@ import { useNavigate } from "react-router-dom";
 export default function Orders() {
   const { user } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
+  const [ordersAux, setOrdersAux] = useState([]);
+  const [dateFilter, setDateFilter] = useState(new Set(["all"]));
+  const [statusFilter, setStatusFilter] = useState(new Set(["all"]));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
@@ -35,6 +38,7 @@ export default function Orders() {
       const response = await fetchOrdersAPI();
       console.log("📦 Órdenes recibidas:", response);
       setOrders(response || []);
+      setOrdersAux(response || []);
       setError(null);
     } catch (err) {
       console.error(
@@ -45,6 +49,62 @@ export default function Orders() {
       setOrders([]);
     } finally {
       setLoading(false);
+    }
+  };
+  const handleDateFilterChange = (keys) => {
+    const value = Array.from(keys)[0];
+    setDateFilter(keys);
+    if (value === "all") {
+      setOrders(ordersAux);
+    } else {
+      const now = new Date();
+      let filteredOrders = [];
+      if (value === "last7") {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        filteredOrders = ordersAux.filter(
+          (order) => new Date(order.createdAt) >= sevenDaysAgo
+        );
+      } else if (value === "last30") {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+        filteredOrders = ordersAux.filter(
+          (order) => new Date(order.createdAt) >= thirtyDaysAgo
+        );
+      }
+      if (statusFilter.size > 0 && !statusFilter.has("all")) {
+        filteredOrders = filteredOrders.filter(
+          (order) => statusFilter.has(order.status)
+        );
+      }
+      setOrders(filteredOrders);
+    }
+  };
+  const handleStatusFilterChange = (keys) => {
+    const value = Array.from(keys)[0];
+    setStatusFilter(keys);
+    if (value === "all") {
+      setOrders(ordersAux);
+    } else {
+      let filteredOrders = ordersAux.filter(
+        (order) => order.status === value
+      );
+      filteredOrders = filteredOrders.filter(order => {
+        if (dateFilter.has("all")) {
+          return true;
+        } else if (dateFilter.has("last7")) {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(new Date().getDate() - 7);
+          return new Date(order.createdAt) >= sevenDaysAgo;
+        }
+        else if (dateFilter.has("last30")) {
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(new Date().getDate() - 30);
+          return new Date(order.createdAt) >= thirtyDaysAgo;
+        }
+        return true;
+      });
+      setOrders(filteredOrders);
     }
   };
 
@@ -162,14 +222,37 @@ export default function Orders() {
               registrado{orders.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <Button
-            isIconOnly
-            className="bg-white border-2 border-teal-600 text-teal-600 hover:bg-teal-50"
-            onPress={fetchOrders}
-            isLoading={loading}
-          >
-            <RefreshCw size={20} />
-          </Button>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <Button
+              isIconOnly
+              className="bg-white border-2 border-teal-600 text-teal-600 hover:bg-teal-50"
+              onPress={fetchOrders}
+              isLoading={loading}
+            >
+              <RefreshCw size={20} />
+            </Button>
+            <Select
+              className="flex w-full flex-wrap w-40 md:flex-nowrap gap-4"
+              selectedKeys={statusFilter}
+              onSelectionChange={handleStatusFilterChange}
+            >
+              <SelectItem key="pending">Pendiente</SelectItem>
+              <SelectItem key="shipped">En camino</SelectItem>
+              <SelectItem key="delivered">Entregado</SelectItem>
+              <SelectItem key="canceled">Cancelado</SelectItem>
+              <SelectItem key="returned">Devuelto</SelectItem>
+            </Select>
+
+            <Select
+              className="flex w-full flex-wrap w-40 md:flex-nowrap gap-4"
+              selectedKeys={dateFilter}
+              onSelectionChange={handleDateFilterChange}
+            >
+              <SelectItem key="all">All</SelectItem>
+              <SelectItem key="last30">Last 30 Days</SelectItem>
+              <SelectItem key="last7">Last 7 Days</SelectItem>
+            </Select>
+          </div>
         </div>
 
         {/* Error Alert */}
@@ -266,9 +349,8 @@ export default function Orders() {
                           <button className="text-gray-600 hover:text-gray-900 ml-2 shrink-0">
                             <ChevronDown
                               size={24}
-                              className={`transition-transform ${
-                                isExpanded ? "rotate-180" : ""
-                              }`}
+                              className={`transition-transform ${isExpanded ? "rotate-180" : ""
+                                }`}
                             />
                           </button>
                         </div>
