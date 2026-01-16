@@ -1,4 +1,5 @@
 import { Card, CardBody, CardHeader } from "@heroui/react";
+import { Smartphone } from "lucide-react";
 import {
     PieChart,
     Pie,
@@ -14,7 +15,10 @@ export default function DevicesChart({ data }) {
         return (
             <Card>
                 <CardHeader>
-                    <h2 className="text-lg font-semibold">📱 Dispositivos</h2>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Smartphone className="w-5 h-5" />
+                        Dispositivos
+                    </h2>
                 </CardHeader>
                 <CardBody>
                     <div className="flex items-center justify-center h-64 text-gray-500">
@@ -28,7 +32,10 @@ export default function DevicesChart({ data }) {
     return (
         <Card>
             <CardHeader>
-                <h2 className="text-lg font-semibold">📱 Dispositivos</h2>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Smartphone className="w-5 h-5" />
+                    Dispositivos
+                </h2>
             </CardHeader>
             <CardBody>
                 <ResponsiveContainer width="100%" height={250}>

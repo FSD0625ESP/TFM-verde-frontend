@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Input, Button, Checkbox } from "@heroui/react";
-import { registerUser, loginWithGoogle } from "../../services/api";
+import { registerUser, loginWithGoogle, replaceAnonymousCart } from "../../services/api";
 import { GoogleLogin } from "@react-oauth/google";
 import { addToast } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
@@ -84,6 +84,7 @@ const Register = () => {
         }
 
         try {
+            const oldSessionId = localStorage.getItem("sessionId");
             const response = await registerUser(
                 formData.firstName,
                 formData.lastName,
@@ -91,13 +92,24 @@ const Register = () => {
                 formData.password,
                 "customer"
             );
-            navigate("/");
+
+            // Reemplazar carrito anónimo si existía
+            if (oldSessionId && oldSessionId !== response.user._id) {
+                try {
+                    await replaceAnonymousCart(oldSessionId);
+                    console.log("✅ Carrito anónimo reemplazado tras registro");
+                } catch (cartError) {
+                    console.error("Error al reemplazar carrito:", cartError);
+                }
+            }
+
             addToast({
                 title: "Registro exitoso",
                 description: response.msg || "Usuario registrado correctamente.",
                 color: "success",
                 duration: 5000,
             });
+            window.location.href = "/";
         } catch (error) {
             addToast({
                 title: "Error de registro",
@@ -217,13 +229,25 @@ const Register = () => {
                     text="continue_with"
                     onSuccess={async (credentialResponse) => {
                         try {
-                            await loginWithGoogle(credentialResponse.credential);
-                            navigate("/");
+                            const oldSessionId = localStorage.getItem("sessionId");
+                            const googleData = await loginWithGoogle(credentialResponse.credential);
+
+                            // Reemplazar carrito anónimo si existía
+                            if (oldSessionId && oldSessionId !== googleData.user._id) {
+                                try {
+                                    await replaceAnonymousCart(oldSessionId);
+                                    console.log("✅ Carrito anónimo reemplazado (Google Register)");
+                                } catch (cartError) {
+                                    console.error("Error al reemplazar carrito:", cartError);
+                                }
+                            }
+
                             addToast({
                                 title: "Login con Google exitoso",
                                 color: "success",
                                 duration: 5000,
                             });
+                            window.location.href = "/";
                         } catch (error) {
                             addToast({
                                 title: "Error con Google",

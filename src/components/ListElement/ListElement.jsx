@@ -11,6 +11,8 @@ import {
 } from "@heroui/react";
 import { MapPin, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useMagneticBorder } from "../../hooks/useMagneticBorder";
+import AddToCartButton from "../Cart/AddToCartButton";
 
 // type: "product" | "store"
 // Para productos conserva:
@@ -23,11 +25,14 @@ import { useNavigate } from "react-router-dom";
 const ListElement = ({ item, type, showLogo = false }) => {
   const navigate = useNavigate();
   const isProduct = type === "product";
+  const borderRef = useMagneticBorder();
 
-  const handleClick = () => {
+  const handleClick = (dontNavigate = false) => {
+    if (dontNavigate) return;
     if (isProduct) {
       const storeName = item.storeId?.slug;
       const productName = item.slug;
+      console.log("Navigating to product:", `/product/${storeName}/${productName}/${item._id}`);
       navigate(
         `/product/${encodeURIComponent(storeName)}/${encodeURIComponent(
           productName
@@ -48,10 +53,12 @@ const ListElement = ({ item, type, showLogo = false }) => {
 
     return (
       <Card
-        className="element-card shadow-sm border-1 max-w-[400px]  border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
-        onClick={handleClick}
+        className="element-card relative shadow-sm border-1 max-w-[400px]  border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+        isPressable={true}
+        onClick={() => handleClick()}
       >
         {/* Imagen principal */}
+        <div ref={borderRef} className="magnetic-border" />
         <div className="relative h-48 overflow-hidden bg-gray-100">
           <Image
             src={item.images?.[0].url || "/placeholder.png"}
@@ -106,7 +113,7 @@ const ListElement = ({ item, type, showLogo = false }) => {
             placement="top"
             delay={300}
           >
-            <p className="text-sm text-gray-600 line-clamp-2 cursor-help">
+            <p className="text-sm text-gray-600 line-clamp-2 cursor-help min-h-10">
               {item.description}
             </p>
           </Tooltip>
@@ -160,17 +167,14 @@ const ListElement = ({ item, type, showLogo = false }) => {
                 €{Number(item.price).toFixed(2)}
               </span>
             )}
-            <Button
-              size="sm"
-              color="primary"
-              className="bg-primary text-white"
+
+            <AddToCartButton
               onClick={(e) => {
                 e.stopPropagation();
-                handleClick();
               }}
-            >
-              Ver
-            </Button>
+              className="relative z-10"
+              productId={item._id} quantity={1} showQuantity={false} buttonText="Comprar" />
+
           </div>
         </CardBody>
       </Card>
@@ -180,10 +184,11 @@ const ListElement = ({ item, type, showLogo = false }) => {
   // Tarjeta de tienda (diseño ResultsPage)
   return (
     <Card
-      className="element-card shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+      className="element-card relative shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
       onClick={handleClick}
     >
       {/* Imagen principal */}
+      <div ref={borderRef} className="magnetic-border" />
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
         {item.image ? (
           <Image

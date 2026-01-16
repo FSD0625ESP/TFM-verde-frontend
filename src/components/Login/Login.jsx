@@ -7,6 +7,7 @@ import { Eye, EyeOff, TriangleAlert } from "lucide-react";
 import { AuthContext } from "../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { replaceAnonymousCart } from "../../services/api";
 
 export default function Login({ switchForm }) {
   const { user, login, loginWithGoogleContext } = React.useContext(AuthContext);
@@ -23,16 +24,28 @@ export default function Login({ switchForm }) {
     const email = formData.get("email");
     const password = formData.get("password");
     try {
-      await login(email, password);
+      const oldSessionId = localStorage.getItem("sessionId");
+      const loginData = await login(email, password);
       console.log("Login successful");
       setAction("login successful");
+
+      // Reemplazar carrito anónimo si existía
+      if (oldSessionId && oldSessionId !== loginData.user._id) {
+        try {
+          await replaceAnonymousCart(oldSessionId);
+          console.log("✅ Carrito anónimo reemplazado");
+        } catch (cartError) {
+          console.error("Error al reemplazar carrito:", cartError);
+        }
+      }
+
       addToast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido de vuelta",
         color: "success",
         duration: 3000,
       });
-      navigate("/");
+      window.location.href = "/";
     } catch (error) {
       console.error("Login failed:", error);
       setAction("login failed");
@@ -138,13 +151,25 @@ export default function Login({ switchForm }) {
               text="continue_with"
               onSuccess={async (credentialResponse) => {
                 try {
-                  await loginWithGoogleContext(credentialResponse.credential);
-                  navigate("/");
+                  const oldSessionId = localStorage.getItem("sessionId");
+                  const googleData = await loginWithGoogleContext(credentialResponse.credential);
+
+                  // Reemplazar carrito anónimo si existía
+                  if (oldSessionId && oldSessionId !== googleData.user._id) {
+                    try {
+                      await replaceAnonymousCart(oldSessionId);
+                      console.log("✅ Carrito anónimo reemplazado (Google)");
+                    } catch (cartError) {
+                      console.error("Error al reemplazar carrito:", cartError);
+                    }
+                  }
+
                   addToast({
                     title: "Login con Google exitoso",
                     color: "success",
                     duration: 4000,
                   });
+                  window.location.href = "/";
                 } catch (error) {
                   addToast({
                     title: "Error con Google",

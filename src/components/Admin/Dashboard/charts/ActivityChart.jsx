@@ -1,4 +1,5 @@
 import { Card, CardBody, CardHeader } from "@heroui/react";
+import { BarChart3 } from "lucide-react";
 import {
     AreaChart,
     Area,
@@ -15,7 +16,10 @@ export default function ActivityChart({ data }) {
         return (
             <Card className="w-full">
                 <CardHeader>
-                    <h2 className="text-lg font-semibold">📊 Actividad diaria</h2>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5" />
+                        Actividad diaria
+                    </h2>
                 </CardHeader>
                 <CardBody>
                     <div className="flex items-center justify-center h-64 text-gray-500">
@@ -25,11 +29,13 @@ export default function ActivityChart({ data }) {
             </Card>
         );
     }
-
     return (
         <Card className="w-full">
             <CardHeader>
-                <h2 className="text-lg font-semibold">📊 Actividad diaria</h2>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Actividad diaria
+                </h2>
             </CardHeader>
             <CardBody>
                 <ResponsiveContainer width="100%" height={300}>

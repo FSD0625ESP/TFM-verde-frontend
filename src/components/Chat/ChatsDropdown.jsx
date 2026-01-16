@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Avatar, Spinner, Input } from '@heroui/react';
 import { Search, MessageCircle, Store as StoreIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getUserChats } from '../../services/api';
 import { useSocket } from '../../contexts/SocketContext';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
+    const { user } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +91,7 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
                             },
                         };
                         // Incrementar no leídos si el mensaje es del otro usuario
-                        if (data.message.senderId._id !== chat.user._id) {
+                        if (data.message.senderId._id !== user?._id) {
                             newChat.unreadCount = (chat.unreadCount || 0) + 1;
                         }
                         return newChat;
@@ -151,7 +153,7 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
                     className="fixed bottom-24 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden z-40"
                 >
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white p-4">
+                    <div className="bg-linear-to-r from-primary-500 to-secondary-500 text-white p-4">
                         <h3 className="text-xl font-bold mb-3">Mensajes</h3>
                         <Input
                             placeholder="Buscar conversaciones..."
@@ -198,7 +200,7 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
                                                     <Avatar
                                                         src={chat.user.profileImage || `https://ui-avatars.com/api/?name=${chat.user.firstName}+${chat.user.lastName}&background=random`}
                                                         size="md"
-                                                        className="flex-shrink-0"
+                                                        className="shrink-0"
                                                     />
                                                     <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${chat.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                                                 </div>
@@ -215,7 +217,7 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
                                                         {chat.user.firstName} {chat.user.lastName}
                                                     </h4>
                                                     {chat.lastMessage && (
-                                                        <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                                                        <span className="text-xs text-gray-500 shrink-0 ml-2">
                                                             {formatTime(chat.lastMessage.timestamp)}
                                                         </span>
                                                     )}

@@ -1,5 +1,13 @@
-import { useEffect, useState, useContext, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { Link, useParams } from "react-router-dom";
+import Slider from "../components/Slider/Slider";
 import Gallery from "../components/Gallery/Gallery";
 import {
   Button,
@@ -15,9 +23,7 @@ import { format, parseISO } from "date-fns";
 import { ShoppingBag, User } from "lucide-react";
 import {
   getProductById,
-  getAllProducts,
   //getAllFeaturedProducts,
-  getAllCategories,
   getProductReviewsById,
   getStoreById,
   addProductReview,
@@ -83,21 +89,21 @@ export default function ProductDetailPage() {
   }, [socket, isConnected]);
 
   // función para redondear a n decimales - usada para el cálculo de la valoración media
-  function round(value, precision) {
+  const round = useCallback((value, precision) => {
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
-  }
+  }, []);
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const data = await getProductById(productId);
       setProduct(data);
     } catch (error) {
       console.error("Error al obtener el producto:", error);
     }
-  };
+  }, [productId]);
 
-  const fetchProductReviews = async () => {
+  const fetchProductReviews = useCallback(async () => {
     try {
       const data = await getProductReviewsById(productId);
       setProductReviews(data);
@@ -115,17 +121,7 @@ export default function ProductDetailPage() {
     } catch (error) {
       console.error("Error al obtener las reviews del producto:", error);
     }
-  };
-
-  const [productsList, setProductsList] = useState([]);
-  const fetchProducts = async () => {
-    try {
-      const data = await getAllProducts();
-      setProductsList(data);
-    } catch (error) {
-      console.error("Error al obtener los productos:", error);
-    }
-  };
+  }, [productId, round]);
 
   const [categoriesList, setCategoriesList] = useState([]);
   const fetchCategories = async () => {
@@ -157,12 +153,11 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     fetchProduct();
-    fetchProducts();
     fetchProductReviews();
     //fetchFeaturedProducts();
     fetchCategories();
     console.log("useEffect launched");
-  }, [productId]);
+  }, [fetchProduct, fetchProductReviews, productId]);
 
   // Registrar visita al producto en analytics cuando el producto esté cargado
   useEffect(() => {
@@ -171,15 +166,13 @@ export default function ProductDetailPage() {
         typeof product.storeId === "object"
           ? product.storeId._id
           : product.storeId;
-      console.log(
-        "📊 Tracking view_product - storeId:",
-        storeId,
-        "productId:",
-        product._id
-      );
       trackAnalyticsEvent("view_product", storeId, product._id);
     }
-  }, [product?._id]);
+  }, [product]);
+  const storeId =
+    typeof product.storeId === "object" ? product.storeId._id : product.storeId;
+
+  trackAnalyticsEvent("view_product", storeId, product._id);
 
   useEffect(() => {
     if (product?.storeId?._id) {
@@ -195,6 +188,12 @@ export default function ProductDetailPage() {
     ratingValue: 0,
     comment: "",
   });
+
+  const relatedCategories = useMemo(() => {
+    const cats = product?.categories;
+    if (!Array.isArray(cats)) return [];
+    return cats.map((cat) => cat?._id || cat).filter(Boolean);
+  }, [product?.categories]);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -508,7 +507,6 @@ export default function ProductDetailPage() {
                     <Rating
                       initialValue={0}
                       onRatingChange={(value) => {
-                        setRating(value);
                         setFormData((prev) => ({
                           ...prev,
                           ratingValue: value,
@@ -557,7 +555,7 @@ export default function ProductDetailPage() {
           <div className="container  px-8 mx-auto overflow-hidden">
             <RelatedProducts
               productId={productId}
-              categories={product.categories.map((cat) => cat._id || cat)}
+              categories={relatedCategories}
               limit={8}
             />
           </div>
