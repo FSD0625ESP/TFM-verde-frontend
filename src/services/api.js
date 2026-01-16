@@ -482,6 +482,11 @@ const getStoreOfferProducts = async (storeId) => {
   return response.data;
 };
 
+export const getPendingNotifications = async () => {
+  const response = await api.get("/notifications/pending");
+  return response.data;
+};
+
 // Export all functions
 export {
   loginUser,
@@ -562,7 +567,11 @@ export {
  * @param {string} [productId] - ID del producto (requerido para view_product y add_to_cart)
  */
 const trackAnalyticsEvent = async (eventType, storeId, productId = null) => {
-  console.log("[Frontend API] Enviando evento analytics:", { eventType, storeId, productId });
+  console.log("[Frontend API] Enviando evento analytics:", {
+    eventType,
+    storeId,
+    productId,
+  });
   try {
     // Obtener sessionId de localStorage (consistente para usuarios anónimos y logueados)
     const sessionId = localStorage.getItem("sessionId");
@@ -600,7 +609,9 @@ const getStoreDashboard = async (storeId, options = {}) => {
   if (options.endDate) params.append("endDate", options.endDate);
 
   const queryString = params.toString();
-  const url = `/analytics/dashboard/${storeId}${queryString ? `?${queryString}` : ""}`;
+  const url = `/analytics/dashboard/${storeId}${
+    queryString ? `?${queryString}` : ""
+  }`;
 
   const response = await api.get(url);
   return response.data;
@@ -612,6 +623,8 @@ const getStoreDashboard = async (storeId, options = {}) => {
  * @param {string} [period] - Período: "24h", "7d", "30d", "90d","year"
  */
 const getProductStats = async (productId, period = "7d") => {
-  const response = await api.get(`/analytics/product/${productId}?period=${period}`);
+  const response = await api.get(
+    `/analytics/product/${productId}?period=${period}`
+  );
   return response.data;
 };

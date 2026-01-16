@@ -37,6 +37,7 @@ import AdminProductList from "./components/Admin/AdminProductsList/AdminProducts
 import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+import GlobalNotifications from "./components/GlobalNotifications.jsx";
 
 // Rutas de HEAD
 import OrderDetailsPage from "./pages/OrderDetailsPage.jsx";
@@ -111,6 +112,7 @@ function App() {
   return (
     <AlertProvider>
       <BrowserRouter>
+        <GlobalNotifications />
         <Header />
 
         <main className="flex flex-col justify-center flex-1 bg-gray-100">
@@ -161,10 +163,7 @@ function App() {
                 )
               }
             >
-              <Route
-                index
-                element={<Dashboard />}
-              />
+              <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
 
               <Route path="tienda" element={<StoreForm />} />

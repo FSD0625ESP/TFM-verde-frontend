@@ -46,17 +46,28 @@ export default function ProductDetailPage() {
 
   const { socket, isConnected } = useSocket();
   const [viewersCount, setViewersCount] = useState(0);
+  const prevCountRef = useRef(0);
+  const [pulse, setPulse] = useState(false);
 
-  // Efecto para unirse al canal del producto (WEBSOCKET: emitir "join_product") y escuchar actualizaciones
+  // Efecto para unirse al canal del producto (WEBSOCKET: emit "join_product") y escuchar actualizaciones
   useEffect(() => {
     if (!socket || !isConnected || !productId) return;
 
-    socket.emit("join_product", { productId });
+    socket.emit("join_product", {
+      productId,
+      storeOwnerId: product?.storeId?.ownerId,
+    });
 
     const handleUpdate = ({ productId: incomingId, count }) => {
-      if (incomingId === productId) {
-        setViewersCount(count);
+      if (incomingId !== productId) return;
+
+      if (count > prevCountRef.current) {
+        setPulse(true);
+        setTimeout(() => setPulse(false), 300);
       }
+
+      prevCountRef.current = count;
+      setViewersCount(count);
     };
 
     socket.on("product_viewers_update", handleUpdate);
@@ -65,7 +76,11 @@ export default function ProductDetailPage() {
       socket.emit("leave_product", { productId });
       socket.off("product_viewers_update", handleUpdate);
     };
-  }, [socket, isConnected, productId]);
+  }, [socket, isConnected, productId, product?.storeId?.ownerId]);
+
+  useEffect(() => {
+    console.log("🧠 socket:", socket, "isConnected:", isConnected);
+  }, [socket, isConnected]);
 
   // función para redondear a n decimales - usada para el cálculo de la valoración media
   function round(value, precision) {
@@ -340,7 +355,7 @@ export default function ProductDetailPage() {
                     ? ` ${
                         product.stock > 4
                           ? `${product.stock} unidades`
-                          : "pocas unidades"
+                          : `solo ${product.stock} unidades`
                       }`
                     : "Agotado"}
                 </Chip>
@@ -352,10 +367,31 @@ export default function ProductDetailPage() {
                 </AddToCartButton>
               </div>
               <div className="flex flex-row items-center gap-2 py-2">
-                {viewersCount > 1 && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                    <User size={16} />
-                    {viewersCount - 1} personas viendo este producto ahora
+                {viewersCount > 0 && (
+                  <div
+                    className={`
+                      flex items-center gap-2 text-sm mt-1 transition-all
+                      ${pulse ? "scale-110 text-primary" : "text-gray-500"}
+                    `}
+                  >
+                    {user ? (
+                      // Usuario autenticado: me resto a mí mismo
+                      viewersCount > 1 && (
+                        <>
+                          <User size={16} />
+                          Otras {viewersCount - 1} personas viendo este producto
+                          ahora
+                        </>
+                      )
+                    ) : (
+                      // Usuario anónimo: NO me resto
+                      <>
+                        <User size={16} />
+                        {viewersCount === 1
+                          ? "1 persona viendo este producto ahora"
+                          : `${viewersCount} personas viendo este producto ahora`}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
