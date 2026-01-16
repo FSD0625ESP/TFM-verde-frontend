@@ -234,7 +234,7 @@ const CheckOutPage = () => {
                         className="flex gap-4 pb-4 border-b last:border-b-0"
                       >
                         <img
-                          src={product.images?.[0] || "/placeholder.png"}
+                          src={product.images?.[0].url || "/placeholder.png"}
                           alt={product.title}
                           className="w-20 h-20 object-cover rounded-md"
                         />

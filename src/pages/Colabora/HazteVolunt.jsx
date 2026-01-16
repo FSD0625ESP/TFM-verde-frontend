@@ -1,8 +1,14 @@
 import React from "react";
 import { Card, CardBody, Button, Input, Textarea } from "@heroui/react";
 import { Heart, Leaf, Users } from "lucide-react";
+import { useAlert } from "../../contexts/AlertContext";
+import { AuthContext } from "../../contexts/AuthContext";
 
 export default function HazteVolunt() {
+
+  const { addAlert } = useAlert();
+  const { user } = React.useContext(AuthContext);
+
   return (
     <div className="bg-white text-gray-800 container mx-auto shadow-sm rounded-lg">
       {/* Título + descripción */}
@@ -67,7 +73,7 @@ export default function HazteVolunt() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                alert("¡Gracias por unirte a MERAKI como voluntario! 🌿");
+                addAlert("¡Gracias por tu interés en ser voluntario! Nos pondremos en contacto contigo pronto.", "success");
               }}
               className="flex flex-col gap-4"
             >
@@ -75,11 +81,13 @@ export default function HazteVolunt() {
                 label="Nombre completo"
                 isRequired
                 placeholder="Tu nombre"
+                value={user ? `${user.firstName} ${user.lastName}` : ""}
               />
               <Input
                 label="Correo electrónico"
                 type="email"
                 isRequired
+                value={user ? user.email : ""}
                 placeholder="tucorreo@ejemplo.com"
               />
               <Textarea

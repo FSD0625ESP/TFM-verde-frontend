@@ -29,6 +29,7 @@ import {
   LogIn,
   Search,
   User,
+  LayoutDashboard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Buscador from "../Buscador/Buscador";
@@ -150,11 +151,10 @@ export default function App() {
                 to={menuItem.href}
                 aria-current="page"
                 className={`text-white text-shadow-sm font-bold hover:text-secondary hover:text-md transition-colors duration-200 uppercase text-sm
-                                    ${
-                                      location.pathname === menuItem.href
-                                        ? "font-bold text-black"
-                                        : ""
-                                    }
+                                    ${location.pathname === menuItem.href
+                    ? "font-bold text-black"
+                    : ""
+                  }
                    
                                 `}
               >
@@ -183,9 +183,8 @@ export default function App() {
                   as={Link}
                   to={menuItem.href}
                   aria-current="page"
-                  className={`relative flex flex-col items-center gap-1 text-shadow-xl ${
-                    location.pathname === "/cart" ? "text-black" : "text-white"
-                  } hover:text-secondary transition-colors duration-200`}
+                  className={`relative flex flex-col items-center gap-1 text-shadow-xl ${location.pathname === "/cart" ? "text-black" : "text-white"
+                    } hover:text-secondary transition-colors duration-200`}
                 >
                   <div className="relative">
                     <menuItem.icon
@@ -215,17 +214,15 @@ export default function App() {
                   to={menuItem.href}
                   aria-current="page"
                   className={`flex flex-col items-center gap-1 text-shadow-xl text-white hover:text-secondary transition-colors duration-200
-                                    ${
-                                      location.pathname === menuItem.href
-                                        ? "font-bold text-white"
-                                        : ""
-                                    }
-                      ${
-                        location.pathname.includes("store-admin") &&
-                        menuItem.href.includes("store-admin")
-                          ? "font-bold text-black"
-                          : ""
-                      }
+                                    ${location.pathname === menuItem.href
+                      ? "font-bold text-white"
+                      : ""
+                    }
+                      ${location.pathname.includes("store-admin") &&
+                      menuItem.href.includes("store-admin")
+                      ? "font-bold text-black"
+                      : ""
+                    }
                                 `}
                 >
                   <menuItem.icon
@@ -262,6 +259,7 @@ export default function App() {
                 if (key === "profile") return navigate("/profile");
                 if (key === "store") return navigate("/store-admin");
                 if (key === "orders") return navigate("/orders");
+                if (key === "admin") return navigate("/admin/dashboard");
               }}
             >
               <DropdownItem key="profile" startContent={<UserPlus size={18} />}>
@@ -274,6 +272,17 @@ export default function App() {
               >
                 Mis pedidos
               </DropdownItem>
+
+              {user.role === "admin" && (
+                <DropdownItem
+                  key="admin"
+                  startContent={<LayoutDashboard size={18} />}
+                  className="text-primary"
+                >
+                  Pizarra Admin
+                </DropdownItem>
+              )}
+
               <DropdownItem
                 key="logout"
                 className="text-danger"
@@ -312,11 +321,10 @@ export default function App() {
                 as={Link}
                 to={item.href}
                 onPress={() => setIsMenuOpen(false)}
-                className={`w-full flex items-center gap-3 py-2 transition-colors relative ${
-                  location.pathname === item.href
+                className={`w-full flex items-center gap-3 py-2 transition-colors relative ${location.pathname === item.href
                     ? "text-primary-500 font-bold"
                     : "text-foreground"
-                }`}
+                  }`}
               >
                 {item.icon && <item.icon size={20} />}
                 {item.label}

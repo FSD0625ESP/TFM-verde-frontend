@@ -32,6 +32,7 @@ import "./accordion.css";
 
 import { AuthContext } from "../contexts/AuthContext";
 import StartChatButton from "../components/Chat/StartChatButton";
+import ReportStoreButton from "../components/utils/ReportStoreButton";
 
 export default function ProductDetailPage() {
   //obtenemos la id del producto de la url
@@ -295,7 +296,7 @@ export default function ProductDetailPage() {
           <div className="container px-8 py-4 mx-auto">
             {store && (
               <motion.div
-                className="w-full grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
+                className="container grid grid-cols-1 md:grid-cols-3 items-start justify-items-stretch gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -360,10 +361,16 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="p-1 justify-self-center">
-                  <StartChatButton
-                    storeId={store._id}
-                    storeName={store.name}
-                  />
+                  <div className="flex flex-row items-center gap-2">
+                    <StartChatButton
+                      storeId={store._id}
+                      storeName={store.name}
+                    />
+                    <ReportStoreButton
+                      storeId={store._id}
+                      storeName={store.name}
+                    />
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -385,7 +392,7 @@ export default function ProductDetailPage() {
                   transition={{ duration: 0.6 }}
                   viewport={{ once: true }}
                 >
-                  <div className=" px-8 mx-auto">
+                  <div className="container px-8 mx-auto">
                     <div className="mb-8">
                       <motion.h2
                         className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
@@ -420,8 +427,8 @@ export default function ProductDetailPage() {
                           640: 2,
                           840: 3,
                           1024: 4,
-                          1200: 5,
-                          1400: 6,
+                          1200: 4,
+                          1400: 4,
                         }}
                       />
                     </motion.div>
@@ -439,7 +446,7 @@ export default function ProductDetailPage() {
                   transition={{ duration: 0.6 }}
                   viewport={{ once: true }}
                 >
-                  <div className=" px-8 mx-auto">
+                  <div className="container px-8 mx-auto">
                     <div className="mb-8">
                       <motion.h2
                         className="text-3xl font-bold text-gray-800 mb-2 text-center text-shadow-md"
@@ -474,8 +481,8 @@ export default function ProductDetailPage() {
                           640: 2,
                           840: 3,
                           1024: 4,
-                          1200: 5,
-                          1400: 6,
+                          1200: 4,
+                          1400: 4,
                         }}
                       />
                     </motion.div>

@@ -584,6 +584,11 @@ export {
   getStoreDashboard,
   getProductStats,
   getAdminOrders,
+  // Reports
+  createStoreReport,
+  updateReportStatus,
+  // Admin
+  getAdminGlobalStats,
 };
 
 // ==================== ANALYTICS ====================
@@ -645,5 +650,45 @@ const getStoreDashboard = async (storeId, options = {}) => {
  */
 const getProductStats = async (productId, period = "7d") => {
   const response = await api.get(`/analytics/product/${productId}?period=${period}`);
+  return response.data;
+};
+
+// ==================== REPORTS ====================
+
+/**
+ * Crear un reporte de tienda
+ * @param {string} reporterId - ID del usuario que reporta
+ * @param {string} storeId - ID de la tienda reportada
+ * @param {string} reason - Razón del reporte: "spam", "inappropriate", "other"
+ * @param {string} [description] - Descripción adicional del reporte
+ */
+const createStoreReport = async (reporterId, storeId, reason, description = "") => {
+  const response = await api.post("/reports", {
+    reporterId,
+    storeId,
+    reason,
+    description,
+  });
+  return response.data;
+};
+
+// ==================== ADMIN ====================
+
+/**
+ * Obtener estadísticas globales del panel de administración
+ * Solo accesible para usuarios con role: "admin"
+ */
+const getAdminGlobalStats = async () => {
+  const response = await api.get("/admin/stats");
+  return response.data;
+};
+
+/**
+ * Actualizar el estado de un reporte
+ * @param {string} reportId - ID del reporte
+ * @param {string} status - Nuevo estado: "pending", "reviewed", "resolved"
+ */
+const updateReportStatus = async (reportId, status) => {
+  const response = await api.patch(`/reports/${reportId}/status`, { status });
   return response.data;
 };

@@ -57,7 +57,7 @@ export default function TopProductsTable({ products }) {
                 return (
                     <div className="flex items-center gap-3">
                         <Image
-                            src={product.productImage || "/placeholder-product.png"}
+                            src={product.productImage?.url || "/placeholder-product.png"}
                             alt={product.productName || "Producto"}
                             className="w-10 h-10 object-cover rounded"
                             fallbackSrc="/placeholder-product.png"

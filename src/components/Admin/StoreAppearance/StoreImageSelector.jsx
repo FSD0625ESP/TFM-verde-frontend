@@ -5,6 +5,7 @@ import { useContext, useRef, useState, useEffect } from "react";
 import { StoreContext } from "../../../contexts/StoreContext.jsx";
 import { uploadStoreImage } from "../../../services/api";
 import ListElement from "../../ListElement/ListElement";
+import ImageEditorModal from "../ImageEditorModal/ImageEditorModal";
 
 import { FilePond, registerPlugin } from "react-filepond";
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
@@ -22,6 +23,22 @@ registerPlugin(
     FilePondPluginImagePreview
 );
 
+// Presets de tamaño para las imágenes
+const IMAGE_PRESETS = {
+    featured: {
+        label: "Imagen destacada",
+        minWidth: 800,
+        minHeight: 600,
+        aspectRatio: 4 / 3,
+    },
+    logo: {
+        label: "Logo",
+        minWidth: 200,
+        minHeight: 200,
+        aspectRatio: 1,
+    },
+};
+
 export default function StoreImageSelector() {
     const { storeData, setStoreData } = useContext(StoreContext);
 
@@ -33,8 +50,15 @@ export default function StoreImageSelector() {
 
     const [isSaving, setIsSaving] = useState(false);
 
+    // Estados para el editor de crop
+    const [editorFile, setEditorFile] = useState(null);
+    const [editorType, setEditorType] = useState(null); // "image" o "logo"
+
     const imagePondRef = useRef();
     const logoPondRef = useRef();
+
+    // Flag para evitar reabrir el editor cuando añadimos el archivo editado
+    const isAddingFromEditor = useRef(false);
 
     // Inicializar con los datos actuales
     useEffect(() => {
@@ -80,6 +104,41 @@ export default function StoreImageSelector() {
             setPendingLogoFile(null);
             logoPondRef.current?.removeFiles();
         }
+    };
+
+    /** -----------------------------------------
+     * Guardar edición del crop
+     * ---------------------------------------- */
+    const handleSaveEdit = (blob) => {
+        if (!blob || !editorType) return;
+
+        const newFile = new File(
+            [blob],
+            `${Date.now()}-${editorType === "logo" ? "logo" : "featured"}.jpg`,
+            {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+            }
+        );
+
+        if (editorType === "image") {
+            setPendingImageFile(newFile);
+            setPreviewFromFile(newFile, "image");
+            // Reemplazar en FilePond
+            imagePondRef.current?.removeFiles();
+            isAddingFromEditor.current = true; // Marcar que viene del editor
+            imagePondRef.current?.addFile(newFile);
+        } else if (editorType === "logo") {
+            setPendingLogoFile(newFile);
+            setPreviewFromFile(newFile, "logo");
+            // Reemplazar en FilePond
+            logoPondRef.current?.removeFiles();
+            isAddingFromEditor.current = true; // Marcar que viene del editor
+            logoPondRef.current?.addFile(newFile);
+        }
+
+        setEditorFile(null);
+        setEditorType(null);
     };
 
     /** -----------------------------------------
@@ -201,10 +260,25 @@ export default function StoreImageSelector() {
                             maxFileSize="5MB"
                             instantUpload={false}
                             allowProcess={false}
+                            onaddfile={(error, fileItem) => {
+                                if (!error && fileItem.file) {
+                                    // Solo abrir editor si NO viene del editor
+                                    if (isAddingFromEditor.current) {
+                                        isAddingFromEditor.current = false;
+                                        return;
+                                    }
+                                    // Abrir editor con el archivo
+                                    setEditorFile(fileItem.file);
+                                    setEditorType("image");
+                                }
+                            }}
                             onupdatefiles={(items) => {
-                                const file = items?.[0]?.file || null;
-                                setPendingImageFile(file);
-                                setPreviewFromFile(file, "image");
+                                // Solo actualizar si no hay editor abierto
+                                if (!editorFile) {
+                                    const file = items?.[0]?.file || null;
+                                    setPendingImageFile(file);
+                                    setPreviewFromFile(file, "image");
+                                }
                             }}
                         />
                         <div className="mt-4 p-3 bg-linear-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
@@ -259,10 +333,25 @@ export default function StoreImageSelector() {
                             maxFileSize="2MB"
                             instantUpload={false}
                             allowProcess={false}
+                            onaddfile={(error, fileItem) => {
+                                if (!error && fileItem.file) {
+                                    // Solo abrir editor si NO viene del editor
+                                    if (isAddingFromEditor.current) {
+                                        isAddingFromEditor.current = false;
+                                        return;
+                                    }
+                                    // Abrir editor con el archivo
+                                    setEditorFile(fileItem.file);
+                                    setEditorType("logo");
+                                }
+                            }}
                             onupdatefiles={(items) => {
-                                const file = items?.[0]?.file || null;
-                                setPendingLogoFile(file);
-                                setPreviewFromFile(file, "logo");
+                                // Solo actualizar si no hay editor abierto
+                                if (!editorFile) {
+                                    const file = items?.[0]?.file || null;
+                                    setPendingLogoFile(file);
+                                    setPreviewFromFile(file, "logo");
+                                }
                             }}
                         />
                         <div className="mt-4 p-3 bg-linear-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
@@ -302,6 +391,25 @@ export default function StoreImageSelector() {
                     {isSaving ? "Subiendo..." : "Subir imágenes"}
                 </Button>
             </div>
+
+            {/* Modal de edición */}
+            {editorFile && editorType && (
+                <ImageEditorModal
+                    file={editorFile}
+                    onClose={() => {
+                        // Cancelar: limpiar el FilePond correspondiente
+                        if (editorType === "image") {
+                            imagePondRef.current?.removeFiles();
+                        } else if (editorType === "logo") {
+                            logoPondRef.current?.removeFiles();
+                        }
+                        setEditorFile(null);
+                        setEditorType(null);
+                    }}
+                    onSave={handleSaveEdit}
+                    imagePreset={IMAGE_PRESETS[editorType === "logo" ? "logo" : "featured"]}
+                />
+            )}
         </>
     );
 }

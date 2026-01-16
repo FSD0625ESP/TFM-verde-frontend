@@ -47,6 +47,7 @@ import PaymentPage from "./pages/PaymentPage.jsx";
 // Rutas de la rama
 import StoreAppearance from "./components/Admin/StoreAppearance/StoreAppearance.jsx";
 import Dashboard from "./components/Admin/Dashboard/Dashboard.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { AlertProvider } from "./contexts/AlertContext.jsx";
@@ -219,6 +220,18 @@ function App() {
 
             {/* Profile */}
             <Route path="/profile" element={<Profile />} />
+
+            {/* Admin Dashboard */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                isUserLoggedIn() && user.role === "admin" ? (
+                  <AdminDashboard />
+                ) : (
+                  <LoginPage />
+                )
+              }
+            />
 
             {/* Legal */}
             <Route path="/legal" element={<Legal />} />

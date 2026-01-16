@@ -3,6 +3,7 @@ import { Card, CardBody, CardHeader, Spinner, Select, SelectItem } from "@heroui
 import { Eye, ShoppingCart, TrendingUp, Package, DollarSign, Receipt, Trophy } from "lucide-react";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { getStoreDashboard } from "../../../services/api";
+import { RefreshCcw } from "lucide-react";
 
 // Componentes
 import StatCard from "./StatCard";
@@ -27,6 +28,7 @@ export default function Dashboard() {
     const [error, setError] = useState(null);
     const [period, setPeriod] = useState("7d");
     const [dashboardData, setDashboardData] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -47,7 +49,7 @@ export default function Dashboard() {
         };
 
         fetchDashboard();
-    }, [sellerStore?._id, period]);
+    }, [sellerStore?._id, period, refreshing]);
 
     if (loading) {
         return (
@@ -78,16 +80,22 @@ export default function Dashboard() {
             {/* Header con selector de período */}
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Dashboard de Analytics</h1>
-                <Select
-                    label="Período"
-                    selectedKeys={[period]}
-                    className="w-48"
-                    onSelectionChange={(keys) => setPeriod(Array.from(keys)[0])}
-                >
-                    {PERIOD_OPTIONS.map((option) => (
-                        <SelectItem key={option.key}>{option.label}</SelectItem>
-                    ))}
-                </Select>
+                <div className="flex items-center gap-4">
+                    <RefreshCcw
+                        className="w-6 h-6 text-gray-600 cursor-pointer hover:text-gray-800"
+                        onClick={() => { setRefreshing((prev) => !prev) }}
+                    />
+                    <Select
+                        label="Período"
+                        selectedKeys={[period]}
+                        className="w-48"
+                        onSelectionChange={(keys) => setPeriod(Array.from(keys)[0])}
+                    >
+                        {PERIOD_OPTIONS.map((option) => (
+                            <SelectItem key={option.key}>{option.label}</SelectItem>
+                        ))}
+                    </Select>
+                </div>
             </div>
 
             {/* Primera fila de tarjetas - Métricas principales */}
@@ -100,6 +108,7 @@ export default function Dashboard() {
                     color="emerald"
                     postCountCaracters="€"
                     isLarge
+                    description="Total de ingresos generados por pedidos completados en el período seleccionado. El ticket medio representa el valor promedio de cada pedido."
                 />
                 <StatCard
                     title="Pedidos"
@@ -107,6 +116,7 @@ export default function Dashboard() {
                     subtitle={`${ordersData.totalItemsSold || 0} productos vendidos`}
                     icon={<Receipt className="w-6 h-6 text-indigo-500" />}
                     color="indigo"
+                    description="Número total de pedidos realizados en tu tienda. Incluye la cantidad total de productos vendidos en estos pedidos."
                 />
                 <StatCard
                     title="Visitas a tienda"
@@ -114,6 +124,7 @@ export default function Dashboard() {
                     subtitle={`${summary.storeViews?.unique || 0} únicos`}
                     icon={<Eye className="w-6 h-6 text-blue-500" />}
                     color="blue"
+                    description="Número de veces que los usuarios han visitado tu tienda. Los visitantes únicos representan personas diferentes que han accedido."
                 />
                 <StatCard
                     title="Vistas de productos"
@@ -121,6 +132,7 @@ export default function Dashboard() {
                     subtitle={`${summary.productViews?.unique || 0} únicos`}
                     icon={<Package className="w-6 h-6 text-green-500" />}
                     color="green"
+                    description="Total de visualizaciones de fichas de productos. Los usuarios únicos indican cuántas personas diferentes han visto tus productos."
                 />
             </div>
 
@@ -132,6 +144,7 @@ export default function Dashboard() {
                     subtitle={`${summary.addToCartRate || 0}% tasa`}
                     icon={<ShoppingCart className="w-6 h-6 text-orange-500" />}
                     color="orange"
+                    description="Cantidad de veces que los usuarios han añadido productos al carrito. La tasa muestra el porcentaje respecto a las vistas de productos."
                 />
                 <StatCard
                     title="Compras registradas"
@@ -139,6 +152,7 @@ export default function Dashboard() {
                     subtitle={`${summary.conversionRate || 0}% conversión`}
                     icon={<TrendingUp className="w-6 h-6 text-purple-500" />}
                     color="purple"
+                    description="Número de compras finalizadas. La tasa de conversión indica el porcentaje de visitantes que realizaron una compra."
                 />
                 <div className="lg:col-span-2">
                     <OrderStatusCards ordersByStatus={ordersData.ordersByStatus} />

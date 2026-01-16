@@ -264,12 +264,9 @@ export default function DeliveryMap({ orderId, className = "" }) {
         if (currentLngLat) {
             if (!courierMarkerRef.current) {
                 const el = document.createElement("div");
-                el.style.width = "16px";
-                el.style.height = "16px";
-                el.style.borderRadius = "999px";
-                el.style.background = "#3b82f6";
-                el.style.border = "2px solid white";
-                el.style.boxSizing = "border-box";
+                el.textContent = "🚚";
+                el.style.fontSize = "32px";
+                el.style.lineHeight = "1";
                 courierMarkerRef.current = new mapboxgl.Marker({ element: el }).setLngLat(currentLngLat).addTo(map);
             } else {
                 courierMarkerRef.current.setLngLat(currentLngLat);
