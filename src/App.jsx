@@ -38,6 +38,7 @@ import AdminProductList from "./components/Admin/AdminProductsList/AdminProducts
 import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+import GlobalNotifications from "./components/GlobalNotifications.jsx";
 import AdminOrders from "./components/Admin/Orders/Orders.jsx";
 
 // Rutas de HEAD
@@ -108,11 +109,10 @@ function App() {
     return () => window.removeEventListener("openChat", handleOpenChat);
   }, []);
 
-
-
   return (
     <AlertProvider>
       <BrowserRouter>
+        <GlobalNotifications />
         <Header />
 
         <main className="flex flex-col justify-center flex-1 bg-gray-100">
@@ -163,10 +163,7 @@ function App() {
                 )
               }
             >
-              <Route
-                index
-                element={<Dashboard />}
-              />
+              <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
 
               <Route path="tienda" element={<StoreForm />} />

@@ -243,7 +243,11 @@ const getCart = async () => {
 
 const addToCart = async ({ productId, quantity = 1 }) => {
   const sessionId = localStorage.getItem("sessionId") || null;
-  const response = await api.post(`/cart/add`, { productId, quantity, sessionId });
+  const response = await api.post(`/cart/add`, {
+    productId,
+    quantity,
+    sessionId,
+  });
   return response.data;
 };
 
@@ -314,7 +318,6 @@ const deleteProductImage = async (productId, public_id) => {
   return response.data;
 };
 
-
 const createProduct = async (productData) => {
   const response = await api.post("/products/add", productData);
   return response.data;
@@ -384,9 +387,15 @@ const updateUserProfile = async (firstName, lastName, phone = null) => {
 
 // ========== ORDERS API ==========
 const getAdminOrders = async (params = {}) => {
-  const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', search = '' } = params;
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+    search = "",
+  } = params;
   const response = await api.get("/orders/admin", {
-    params: { page, limit, sortBy, sortOrder, search }
+    params: { page, limit, sortBy, sortOrder, search },
   });
   return response.data;
 };
@@ -395,8 +404,6 @@ const getOrders = async () => {
   const response = await api.get("/orders");
   return response.data;
 };
-
-
 
 const getOrderById = async (id) => {
   const response = await api.get(`/orders/${id}`);
@@ -509,6 +516,11 @@ const getStoreFeaturedProducts = async (storeId) => {
 
 const getStoreOfferProducts = async (storeId) => {
   const response = await api.get(`/stores/${storeId}/offer-products`);
+  return response.data;
+};
+
+export const getPendingNotifications = async () => {
+  const response = await api.get("/notifications/pending");
   return response.data;
 };
 
@@ -637,7 +649,9 @@ const getStoreDashboard = async (storeId, options = {}) => {
   if (options.endDate) params.append("endDate", options.endDate);
 
   const queryString = params.toString();
-  const url = `/analytics/dashboard/${storeId}${queryString ? `?${queryString}` : ""}`;
+  const url = `/analytics/dashboard/${storeId}${
+    queryString ? `?${queryString}` : ""
+  }`;
 
   const response = await api.get(url);
   return response.data;
@@ -649,7 +663,9 @@ const getStoreDashboard = async (storeId, options = {}) => {
  * @param {string} [period] - Período: "24h", "7d", "30d", "90d","year"
  */
 const getProductStats = async (productId, period = "7d") => {
-  const response = await api.get(`/analytics/product/${productId}?period=${period}`);
+  const response = await api.get(
+    `/analytics/product/${productId}?period=${period}`
+  );
   return response.data;
 };
 
