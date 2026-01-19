@@ -65,21 +65,12 @@ export const SocketProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    // Solo conectar si hay un usuario autenticado
-    if (!user) {
-      if (socket) {
-        socket.disconnect();
-        setSocket(null);
-        setIsConnected(false);
-      }
-      return;
-    }
     // Crear conexión de socket - Las cookies se envían automáticamente con withCredentials
     const newSocket = io(
       import.meta.env.VITE_API_URL || "http://localhost:3000",
       {
         withCredentials: true, // Esto enviará las cookies httpOnly automáticamente
-        transports: ["websocket", "polling"], // Intentar websocket primero
+        // @@@ transports: ["websocket", "polling"], // Intentar websocket primero
       }
     );
 
@@ -87,17 +78,17 @@ export const SocketProvider = ({ children }) => {
     newSocket.on("connect", () => {
       setIsConnected(true);
       // Forzar el join a todos mis chats (el server también lo hace al conectar)
-      newSocket.emit("join_my_chats");
+      // @@@ newSocket.emit("join_my_chats");
     });
 
     newSocket.on("disconnect", () => {
       setIsConnected(false);
-      setUnreadCount(0);
+      // @@@ setUnreadCount(0);
     });
 
     newSocket.on("connect_error", () => {
       setIsConnected(false);
-      setUnreadCount(0);
+      // @@@ setUnreadCount(0);
     });
 
     // Contador total de mensajes no leídos (autoritativo desde el backend)
@@ -116,6 +107,18 @@ export const SocketProvider = ({ children }) => {
 
     setSocket(newSocket);
 
+    newSocket.on("connect", () => {
+      console.log("✅ SOCKET CONNECTED", newSocket.id);
+    });
+
+    newSocket.on("connect_error", (err) => {
+      console.error("❌ SOCKET CONNECT ERROR", err.message);
+    });
+
+    newSocket.on("disconnect", (reason) => {
+      console.warn("⚠️ SOCKET DISCONNECTED", reason);
+    });
+
     // Cleanup
     return () => {
       if (newSocket) {
@@ -123,7 +126,8 @@ export const SocketProvider = ({ children }) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    // @@@ }, [user]);
+  }, []);
 
   const joinChats = useCallback(
     (chatIds) => {
@@ -307,8 +311,8 @@ export const SocketProvider = ({ children }) => {
   const onNewOrder = useCallback(
     (callback) => {
       if (socket) {
-        socket.on("new_order_notification", callback);
-        return () => socket.off("new_order_notification", callback);
+        socket.on("new_order", callback);
+        return () => socket.off("new_order", callback);
       }
     },
     [socket]

@@ -7,7 +7,6 @@ import {
   useCallback,
 } from "react";
 import { Link, useParams } from "react-router-dom";
-import Slider from "../components/Slider/Slider";
 import Gallery from "../components/Gallery/Gallery";
 import {
   Button,
@@ -123,6 +122,7 @@ export default function ProductDetailPage() {
     }
   }, [productId, round]);
 
+  /*   
   const [categoriesList, setCategoriesList] = useState([]);
   const fetchCategories = async () => {
     try {
@@ -132,6 +132,7 @@ export default function ProductDetailPage() {
       console.error("Error al obtener las categorías:", error);
     }
   };
+ */
 
   const [store, setStore] = useState({});
   const fetchStore = async () => {
@@ -155,7 +156,7 @@ export default function ProductDetailPage() {
     fetchProduct();
     fetchProductReviews();
     //fetchFeaturedProducts();
-    fetchCategories();
+    //fetchCategories();
     console.log("useEffect launched");
   }, [fetchProduct, fetchProductReviews, productId]);
 
