@@ -70,7 +70,7 @@ export const SocketProvider = ({ children }) => {
       import.meta.env.VITE_API_URL || "http://localhost:3000",
       {
         withCredentials: true, // Esto enviará las cookies httpOnly automáticamente
-        // @@@ transports: ["websocket", "polling"], // Intentar websocket primero
+        transports: ["websocket", "polling"], // Intentar websocket primero
       }
     );
 
@@ -83,22 +83,53 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on("disconnect", () => {
       setIsConnected(false);
-      // @@@ setUnreadCount(0);
+      setUnreadCount(0);
     });
 
     newSocket.on("connect_error", () => {
       setIsConnected(false);
-      // @@@ setUnreadCount(0);
+      setUnreadCount(0);
     });
 
     // Contador total de mensajes no leídos (autoritativo desde el backend)
     newSocket.on("unread_messages_count", (count) => {
+      console.log("📬 UNREAD COUNT RECEIVED:", count);
       if (typeof count === "number") {
         setUnreadCount(count);
+        console.log("📬 SET UNREAD COUNT TO:", count);
         return;
       }
       // Compatibilidad por si en algún momento se envía un objeto { total }
-      setUnreadCount(Number(count?.total || 0));
+      const finalCount = Number(count?.total || 0);
+      setUnreadCount(finalCount);
+      console.log("📬 SET UNREAD COUNT TO:", finalCount);
+    });
+
+    // Unirse automáticamente a un nuevo chat cuando se crea
+    newSocket.on("join_new_chat", ({ chatId }) => {
+      console.log("✨ JOIN NEW CHAT:", chatId);
+      newSocket.emit("join_chats", [chatId]);
+    });
+
+    // Escuchar mensajes nuevos globalmente para actualizar contador
+    newSocket.on("new_message", (data) => {
+      console.log("📨 NEW MESSAGE RECEIVED:", data);
+      // Solo incrementar si el mensaje NO es del usuario actual
+      if (user && data.message?.senderId?._id !== user._id) {
+        setUnreadCount((prev) => {
+          const newCount = prev + 1;
+          console.log("📨 INCREMENTING UNREAD COUNT:", prev, "->", newCount);
+          return newCount;
+        });
+      }
+    });
+
+    // Escuchar cuando se marcan mensajes como leídos (el backend envía el total actualizado)
+    // Pero si el backend no lo envía, podemos confiar en que mark_as_read resetea localmente
+    newSocket.on("messages_read", (data) => {
+      console.log("✅ MESSAGES READ:", data);
+      // El backend debería enviar unread_messages_count actualizado
+      // Este listener es principalmente informativo
     });
 
     newSocket.on("error", () => {
@@ -125,9 +156,30 @@ export const SocketProvider = ({ children }) => {
         newSocket.disconnect();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    // @@@ }, [user]);
-  }, []);
+  }, [user]);
+
+  // Auto-join a todos los chats del usuario cuando se conecta
+  useEffect(() => {
+    const autoJoinChats = async () => {
+      if (!socket || !isConnected || !user) return;
+
+      try {
+        // Importar la función de API dinámicamente para evitar dependencia circular
+        const { getUserChats } = await import('../services/api');
+        const chats = await getUserChats();
+        const chatIds = chats.map(chat => chat._id);
+
+        if (chatIds.length > 0) {
+          console.log("🔗 AUTO-JOINING", chatIds.length, "chat rooms");
+          socket.emit("join_chats", chatIds);
+        }
+      } catch (error) {
+        console.error("❌ Error auto-joining chats:", error);
+      }
+    };
+
+    autoJoinChats();
+  }, [socket, isConnected, user]);
 
   const joinChats = useCallback(
     (chatIds) => {

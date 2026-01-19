@@ -120,9 +120,9 @@ export default function PaymentPage() {
                 <div key={item.productId._id} className="flex gap-4">
                   <div className="flex-shrink-0">
                     {item.productId.images &&
-                    item.productId.images.length > 0 ? (
+                      item.productId.images.length > 0 ? (
                       <img
-                        src={item.productId.images[0]}
+                        src={item.productId.images ? item.productId.images[0].url : "/placeholder.png"}
                         alt={item.productId.title}
                         className="w-20 h-20 object-cover rounded"
                       />

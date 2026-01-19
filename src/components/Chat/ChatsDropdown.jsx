@@ -6,13 +6,13 @@ import { getUserChats } from '../../services/api';
 import { useSocket } from '../../contexts/SocketContext';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
+const ChatsDropdown = ({ isOpen, onSelectChat }) => {
     const { user } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [onlineMap, setOnlineMap] = useState({});
-    const { onNewMessage, joinChats, requestPresence, onPresenceStatus, onUserOnline, onUserOffline } = useSocket();
+    const { onNewMessage, joinChats, requestPresence, onPresenceStatus, onUserOnline, onUserOffline, onMessagesRead } = useSocket();
 
     useEffect(() => {
         if (isOpen) {
@@ -26,12 +26,6 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
         try {
             const data = await getUserChats();
             setChats(data);
-
-            // Calcular total de no leídos
-            const totalUnread = data.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
-            if (onUnreadUpdate) {
-                onUnreadUpdate(totalUnread);
-            }
 
             // Unirse a todas las salas de chat
             const chatIds = data.map(chat => chat._id);
@@ -74,27 +68,21 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
         };
     }, [onUserOnline, onUserOffline]);
 
-    // Escuchar nuevos mensajes para actualizar la lista y contador de no leídos
+    // Escuchar nuevos mensajes para actualizar la lista (el backend maneja el contador)
     useEffect(() => {
-        if (!isOpen) return;
-
         const cleanup = onNewMessage((data) => {
             setChats((prevChats) => {
                 const updatedChats = prevChats.map((chat) => {
                     if (chat._id === data.chatId) {
-                        const newChat = {
+                        return {
                             ...chat,
                             lastMessage: {
                                 text: data.message.text,
                                 timestamp: data.message.timestamp,
                                 senderId: data.message.senderId._id,
                             },
+                            // El contador lo maneja el backend vía socket
                         };
-                        // Incrementar no leídos si el mensaje es del otro usuario
-                        if (data.message.senderId._id !== user?._id) {
-                            newChat.unreadCount = (chat.unreadCount || 0) + 1;
-                        }
-                        return newChat;
                     }
                     return chat;
                 }).sort((a, b) => {
@@ -103,18 +91,31 @@ const ChatsDropdown = ({ isOpen, onSelectChat, onUnreadUpdate }) => {
                     return timeB - timeA;
                 });
 
-                // Actualizar total de no leídos
-                const totalUnread = updatedChats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
-                if (onUnreadUpdate) {
-                    onUnreadUpdate(totalUnread);
-                }
-
                 return updatedChats;
             });
         });
 
         return cleanup;
-    }, [isOpen, onNewMessage, onUnreadUpdate]);
+    }, [onNewMessage]);
+
+    // Escuchar cuando se marcan mensajes como leídos
+    useEffect(() => {
+        const cleanup = onMessagesRead?.((data) => {
+            setChats((prevChats) => {
+                return prevChats.map((chat) => {
+                    if (chat._id === data.chatId) {
+                        return {
+                            ...chat,
+                            unreadCount: 0,
+                        };
+                    }
+                    return chat;
+                });
+            });
+        });
+
+        return cleanup;
+    }, [onMessagesRead]);
 
     const filteredChats = chats.filter(chat => {
         const searchLower = searchTerm.toLowerCase();

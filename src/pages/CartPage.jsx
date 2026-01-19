@@ -57,6 +57,7 @@ export default function CartPage() {
             <div className="flex flex-col gap-6">
               {cart.map((item) => {
                 const product = item.productId;
+                console.log("🛒 Cart Item Product:", product);
                 if (!product) return null; // evita errores si populate falla
 
                 return (

@@ -89,7 +89,7 @@ export default function ConfirmationPage() {
                 >
                   <div className="flex items-center gap-4 text-left">
                     <img
-                      src={images[0] || "/placeholder.png"}
+                      src={images ? images[0].url || "/placeholder.png" : "/placeholder.png"}
                       alt={title}
                       className="w-16 h-16 rounded-md object-cover"
                     />

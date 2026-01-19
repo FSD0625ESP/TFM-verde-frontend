@@ -60,7 +60,27 @@ function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
 
+  useEffect(() => {
+    console.log("🔵 App.jsx unreadCount:", unreadCount);
+  }, [unreadCount]);
+
   const isUserLoggedIn = () => user !== null;
+
+  const handleToggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+    if (isChatOpen) setSelectedChat(null);
+  };
+
+  const handleSelectChat = (chat) => {
+    setSelectedChat(chat);
+  };
+
+  const handleCloseChat = () => {
+    setSelectedChat(null);
+    setIsChatOpen(false);
+  };
+
+  const handleBackToList = () => setSelectedChat(null);
 
   // Gestión del sessionId para analytics
   // - Siempre usamos localStorage para persistencia consistente
@@ -81,22 +101,6 @@ function App() {
     }
     // Si es anónimo pero ya tiene sessionId, mantenerlo
   }, [user]);
-
-  const handleToggleChat = () => {
-    setIsChatOpen(!isChatOpen);
-    if (isChatOpen) setSelectedChat(null);
-  };
-
-  const handleSelectChat = (chat) => {
-    setSelectedChat(chat);
-  };
-
-  const handleCloseChat = () => {
-    setSelectedChat(null);
-    setIsChatOpen(false);
-  };
-
-  const handleBackToList = () => setSelectedChat(null);
 
   useEffect(() => {
     const handleOpenChat = (event) => {

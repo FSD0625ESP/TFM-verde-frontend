@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { Badge } from '@heroui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ChatToggler = ({ isOpen, onToggle, unreadCount = 0 }) => {
+    useEffect(() => {
+        console.log("🔴 ChatToggler unreadCount:", unreadCount);
+    }, [unreadCount]);
+
     return (
         <motion.div
             className="fixed bottom-6 right-6 z-50"
