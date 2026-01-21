@@ -234,7 +234,9 @@ const deleteChat = async (chatId) => {
 // Cart API helpers
 // -----------------------------
 const getCart = async () => {
-  const sessionId = localStorage.getItem("sessionId") || null;
+  // Solo enviar sessionId si NO hay usuario logueado
+  const user = localStorage.getItem("user");
+  const sessionId = user ? null : (localStorage.getItem("sessionId") || null);
   const response = await api.get(`/cart`, {
     params: { sessionId },
   });
@@ -242,7 +244,9 @@ const getCart = async () => {
 };
 
 const addToCart = async ({ productId, quantity = 1 }) => {
-  const sessionId = localStorage.getItem("sessionId") || null;
+  // Solo enviar sessionId si NO hay usuario logueado
+  const user = localStorage.getItem("user");
+  const sessionId = user ? null : (localStorage.getItem("sessionId") || null);
   const response = await api.post(`/cart/add`, {
     productId,
     quantity,
@@ -252,7 +256,9 @@ const addToCart = async ({ productId, quantity = 1 }) => {
 };
 
 const removeFromCart = async ({ productId }) => {
-  const sessionId = localStorage.getItem("sessionId") || null;
+  // Solo enviar sessionId si NO hay usuario logueado
+  const user = localStorage.getItem("user");
+  const sessionId = user ? null : (localStorage.getItem("sessionId") || null);
   console.log("API: removing product from cart", productId);
   const response = await api.delete(`/cart/remove`, {
     data: { productId, sessionId },
@@ -260,7 +266,9 @@ const removeFromCart = async ({ productId }) => {
   return response.data;
 };
 const clearCart = async () => {
-  const sessionId = localStorage.getItem("sessionId") || null;
+  // Solo enviar sessionId si NO hay usuario logueado
+  const user = localStorage.getItem("user");
+  const sessionId = user ? null : (localStorage.getItem("sessionId") || null);
   const response = await api.delete(`/cart/clear`, {
     data: { sessionId },
   });
@@ -649,9 +657,8 @@ const getStoreDashboard = async (storeId, options = {}) => {
   if (options.endDate) params.append("endDate", options.endDate);
 
   const queryString = params.toString();
-  const url = `/analytics/dashboard/${storeId}${
-    queryString ? `?${queryString}` : ""
-  }`;
+  const url = `/analytics/dashboard/${storeId}${queryString ? `?${queryString}` : ""
+    }`;
 
   const response = await api.get(url);
   return response.data;

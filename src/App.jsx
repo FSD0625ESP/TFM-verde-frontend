@@ -204,7 +204,7 @@ function App() {
             {/* Cart */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckOutPage />} />
-            <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="/confirmation/:orderId" element={<ConfirmationPage />} />
 
             {/* Orders */}
             <Route

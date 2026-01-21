@@ -32,7 +32,7 @@ export default function AddToCartButton({ productId, quantity = 1, showQuantity 
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed"
         aria-label="Añadir al carrito"
       >
         <ShoppingCart className="mr-2 h-5 w-5" />

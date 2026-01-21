@@ -6,6 +6,9 @@ import { AuthContext } from "../../contexts/AuthContext";
 
 export default function HazteVolunt() {
 
+
+  const [sent,setSent] = React.useState(false);
+
   const { addAlert } = useAlert();
   const { user } = React.useContext(AuthContext);
 
@@ -66,13 +69,14 @@ export default function HazteVolunt() {
         {/* Formulario */}
         <Card shadow="sm">
           <CardBody>
-            <h2 className="text-2xl font-semibold text-primary mb-6">
+            <h2 className="text-2xl font-semibold text-primary mb-6 justify-center align-center flex">
               ¡Inscríbete como voluntario!
             </h2>
 
-            <form
+            {!sent && (<form
               onSubmit={(e) => {
                 e.preventDefault();
+                setSent(true);
                 addAlert("¡Gracias por tu interés en ser voluntario! Nos pondremos en contacto contigo pronto.", "success");
               }}
               className="flex flex-col gap-4"
@@ -97,11 +101,13 @@ export default function HazteVolunt() {
               <Button
                 type="submit"
                 color="success"
+                disabled={sent}
                 className="bg-[#26A69A] text-white"
               >
                 Enviar solicitud 💌
               </Button>
-            </form>
+            </form>) }
+            {sent && (<p className="text-center text-green-600 h-full w-full flex items-center">¡Gracias por tu interés en ser voluntario! Nos pondremos en contacto contigo pronto.</p>)}
           </CardBody>
         </Card>
       </section>

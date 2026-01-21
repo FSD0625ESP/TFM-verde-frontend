@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useContext } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import { CircleCheck, CircleX, Ban, Link as LinkIcon } from "lucide-react";
+import { CircleCheck, CircleX, Ban, Link as LinkIcon, Eye as EyeIcon } from "lucide-react";
 import {
   Input,
   Textarea,
@@ -17,6 +17,7 @@ import { StoreContext } from "../../../contexts/StoreContext";
 //import { getAllCategories } from "../../../services/api";
 import slugify from "slugify";
 import { updateStoreById } from "../../../services/api";
+import { Link } from "react-router-dom";
 
 export default function StoreForm() {
   const navigate = useNavigate();
@@ -392,6 +393,7 @@ export default function StoreForm() {
       <form onSubmit={handleSubmit} className="product-form pt-3 ">
         <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 mb-4">
           <div className="flex flex-col gap-4 mt-4 mb-4">
+            <div className="flex gap-2 justify-between">
             <Switch
               isSelected={!!formData.active}
               color="success"
@@ -412,6 +414,10 @@ export default function StoreForm() {
                 </span>
               )}
             </Switch>
+            <Button  color="warning" onClick={() => navigate(`/store/${formData.slug}/${storeData._id}`)}>
+              <EyeIcon className="mr-2" />Preview Store
+            </Button>
+            </div>
             <Input
               type="text"
               name="name"

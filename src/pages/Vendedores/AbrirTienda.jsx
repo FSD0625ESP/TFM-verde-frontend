@@ -9,7 +9,7 @@ export default function AbrirTienda() {
 
   const handleOpenStore = () => {
     if (isLoggedIn) {
-      navigate("/dashboard");
+      navigate("/store-admin/dashboard");
     } else {
       navigate("/register/seller");
     }
@@ -68,7 +68,7 @@ export default function AbrirTienda() {
             size="lg"
             color="success"
             className="bg-primary text-white text-xl px-12 py-8 h-auto"
-            onClick={handleOpenStore}
+            onPress={handleOpenStore}
           >
             Abrir mi tienda 💚
           </Button>

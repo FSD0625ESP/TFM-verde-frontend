@@ -87,24 +87,8 @@ const CheckOutPage = () => {
         price: item.productId?.price || 0,
       }));
 
-      // Obtener storeId del primer producto (todos los productos deben ser de la misma tienda en un carrito real)
+      // Obtener storeId del primer producto
       const storeId = cart[0]?.productId?.storeId;
-
-      // 🔥 GUARDAR DATOS EN LOCAL STORAGE
-      localStorage.setItem(
-        "paymentData",
-        JSON.stringify({
-          cart,
-          total,
-          items: transformedItems,
-          storeId,
-          user,
-          selectedAddressId,
-        })
-      );
-
-      // 🔥 NAVEGAR A PAYMENTPAGE SIN STATE
-      navigate("/payment");
 
       if (!storeId) {
         throw new Error(
@@ -112,18 +96,7 @@ const CheckOutPage = () => {
         );
       }
 
-      navigate("/payment", {
-        state: {
-          cart,
-          total,
-          items: transformedItems,
-          storeId,
-          user,
-          selectedAddressId,
-        },
-      });
-
-      // 2️⃣ Confirmar orden usando API
+      // 2️⃣ Crear orden usando API
       const orderData = await createOrder({
         customerId: user._id,
         storeId: storeId,
@@ -134,21 +107,21 @@ const CheckOutPage = () => {
       // 3️⃣ Vaciar carrito
       await clearCart();
 
-      // 4️⃣ Navegar a página de confirmación con los datos
-      navigate("/confirmation", {
-        state: {
-          cart: cart,
-          total: total,
-          customerName: `${user.firstName} ${user.lastName}`,
-          orderId: orderData._id,
-        },
-      });
-
       addToast({
-        title: "✅ Pedido confirmado",
-        description: "Tu orden ha sido creada exitosamente",
+        title: "✅ Pedido creado",
+        description: "Procede al pago para confirmar tu orden",
         color: "success",
         duration: 3000,
+      });
+
+      // 4️⃣ Navegar a página de pago con el ID de la orden
+      navigate("/payment", {
+        state: {
+          orderId: orderData._id,
+          cart,
+          total,
+          user,
+        },
       });
     } catch (err) {
       console.error("Error al confirmar pedido:", err.response?.data || err);

@@ -40,6 +40,7 @@ const ListElement = ({ item, type, showLogo = false }) => {
       );
     } else {
       const storeName = item.slug || "tienda";
+      console.log("Navigating to store", storeName)
       navigate(`/store/${encodeURIComponent(storeName)}/${item._id}`);
     }
   };
@@ -183,7 +184,7 @@ const ListElement = ({ item, type, showLogo = false }) => {
 
   // Tarjeta de tienda (diseño ResultsPage)
   return (
-    <div onClick={handleClick} className="cursor-pointer">
+    <div onClick={() => handleClick()}  className="cursor-pointer">
       <Card
         className="element-card relative shadow-sm border-1 border-gray-200 hover:shadow-lg transition-shadow group"
       >

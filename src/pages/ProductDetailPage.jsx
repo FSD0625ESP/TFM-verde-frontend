@@ -127,7 +127,6 @@ export default function ProductDetailPage() {
     try {
       const data = await getStoreById(product?.storeId._id);
       setStore(data);
-      console.log("fetchStore - store", data);
     } catch (error) {
       console.error("Error al obtener los datos de la tienda:", error);
     }
@@ -164,6 +163,7 @@ export default function ProductDetailPage() {
   trackAnalyticsEvent("view_product", storeId, product._id);
 
   useEffect(() => {
+    console.log("product222", product);
     if (product?.storeId?._id) {
       fetchProductReviews();
       fetchStore();

@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, Input } from "@heroui/react";
-import { createOrder } from "../services/api";
 import { addToast } from "@heroui/react";
 
 export default function PaymentPage() {
-  const stored = localStorage.getItem("paymentData");
-  const state = stored ? JSON.parse(stored) : null;
+  const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [orderData, setOrderData] = useState(null);
 
-  if (!state) {
+  // Get data from location state instead of localStorage
+  const { orderId, cart, total, user } = location.state || {};
+
+  if (!orderId || !cart || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-xl">No hay información del pedido</p>
@@ -19,21 +19,11 @@ export default function PaymentPage() {
     );
   }
 
-  const { cart, total, items, storeId, user, selectedAddressId } = state;
-
   const handlePayment = async () => {
     setIsLoading(true);
     try {
-      // 1️⃣ crear orden
-      const order = await createOrder({
-        customerId: user._id,
-        storeId,
-        addressId: selectedAddressId,
-        items,
-      });
-
-      console.log("Orden creada:", order);
-      setOrderData(order);
+      // Simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       addToast({
         title: "Pago realizado",
@@ -42,6 +32,9 @@ export default function PaymentPage() {
       });
 
       setIsLoading(false);
+
+      // Navigate to confirmation with order ID in URL
+      navigate(`/confirmation/${orderId}`);
     } catch (err) {
       console.error(err);
 
@@ -55,37 +48,10 @@ export default function PaymentPage() {
     }
   };
 
-  const handleContinue = () => {
-    navigate("/confirmation", {
-      state: {
-        cart,
-        total,
-        customerName: `${user.firstName} ${user.lastName}`,
-        orderId: orderData._id,
-      },
-    });
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-8">Payment</h1>
-
-        {orderData && (
-          <div className="mb-8 p-4 bg-green-100 border-2 border-green-500 rounded-lg text-center">
-            <p className="text-green-800 font-bold text-lg mb-4">
-              ¡Pago realizado exitosamente!
-            </p>
-            <Button
-              color="primary"
-              className="bg-blue-600 text-white w-full"
-              onClick={handleContinue}
-              size="lg"
-            >
-              Continuar a confirmación
-            </Button>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Datos de tarjeta */}
@@ -104,7 +70,7 @@ export default function PaymentPage() {
                 className="bg-green-600 text-white"
                 onClick={handlePayment}
                 isLoading={isLoading}
-                disabled={isLoading || orderData}
+                disabled={isLoading}
               >
                 {isLoading ? "Procesando..." : `Pay $${total.toFixed(2)}`}
               </Button>
