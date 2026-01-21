@@ -399,7 +399,8 @@ export default function ProductForm({
           description: "Producto creado correctamente. Guardando imágenes...",
           color: "success",
         });
-        await uploadImages(productData.productId);
+        const finalImages = getFinalImages();
+        await uploadImages(productData.productId, finalImages);
       } catch (err) {
         console.error(err);
         addToast({
@@ -414,7 +415,7 @@ export default function ProductForm({
     }
   };
 
-  const uploadImages = async (productId, finalImages) => {
+  const uploadImages = async (productId, finalImages = []) => {
     try {
       if (!productId) throw new Error("ID de producto no válido");
 

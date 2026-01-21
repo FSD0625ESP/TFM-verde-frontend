@@ -38,7 +38,7 @@ import AdminProductList from "./components/Admin/AdminProductsList/AdminProducts
 import AdminProductListAux from "./components/Admin/AdminProductsList/AdminProductsList.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
-import GlobalNotifications from "./components/GlobalNotifications.jsx";
+import GlobalNotifications from "./components/Notifications/GlobalNotifications.jsx";
 import AdminOrders from "./components/Admin/Orders/Orders.jsx";
 
 // Rutas de HEAD

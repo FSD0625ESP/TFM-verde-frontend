@@ -327,7 +327,7 @@ export default function StoreLayout() {
                   />
                   Apariencia
                 </Button>
-
+                {/*
                 <Button
                   as={Link}
                   to="/store-admin/cuenta"
@@ -348,6 +348,7 @@ export default function StoreLayout() {
                   />
                   Cuenta
                 </Button>
+*/}
               </div>
             )}
           </div>

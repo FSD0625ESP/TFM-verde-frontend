@@ -276,8 +276,6 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-
-
       {canSeeStoreContent && (
         <>
           {/* SECCIÓN DE SLIDER PERSONALIZADO */}
@@ -384,7 +382,7 @@ export default function ProductDetailPage() {
 
             const featuredSection =
               storeAppearance?.appearance.showFeaturedSection &&
-                featuredProducts.length > 0 ? (
+              featuredProducts.length > 0 ? (
                 <motion.section
                   className="w-full py-12 shadow-sm"
                   initial={{ opacity: 0, y: 30 }}
@@ -438,7 +436,7 @@ export default function ProductDetailPage() {
 
             const offersSection =
               storeAppearance?.appearance.showOfferSection &&
-                offerProducts.length > 0 ? (
+              offerProducts.length > 0 ? (
                 <motion.section
                   className="w-full py-12 bg-danger-50/30 shadow-sm"
                   initial={{ opacity: 0, y: 30 }}
@@ -762,11 +760,8 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </motion.section>
-
-
         </>
       )}
-
 
       {store?.active === false && !isStoreOwner && (
         <div className="bg-white p-6 rounded-md shadow-md text-center text-gray-700 mt-10">
