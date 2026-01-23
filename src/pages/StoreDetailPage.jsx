@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import SliderStorePage from "../components/Slider/SliderStorePage";
 import ListItemSlider from "../components/Slider/ListItemSlider";
 import Filters from "../components/Filters/Filters";
@@ -45,6 +45,7 @@ export default function ProductDetailPage() {
   const [storeReviews, setStoreReviews] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
+  const [ratingFilter, setRatingFilter] = useState(null); // null = sin filtro, 1..5 = estrellas
   const [storeAppearance, setStoreAppearance] = useState(null);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [offerProducts, setOfferProducts] = useState([]);
@@ -90,8 +91,8 @@ export default function ProductDetailPage() {
       setAverageRating(
         round(
           data.reduce((acc, review) => acc + review.rating, 0) / data.length,
-          1
-        )
+          1,
+        ),
       );
     } catch (error) {
       console.error("Error al obtener las reseñas de la tienda:", error);
@@ -166,11 +167,11 @@ export default function ProductDetailPage() {
               return c;
             })
             .filter(Boolean)
-            .map((id) => String(id))
+            .map((id) => String(id)),
         );
 
         const filteredCategories = allCategories.filter((category) =>
-          productCategoryIds.has(String(category?._id))
+          productCategoryIds.has(String(category?._id)),
         );
 
         if (!isMounted) return;
@@ -237,7 +238,7 @@ export default function ProductDetailPage() {
 
       addToast({
         title: "Valoración enviada con éxito",
-        description: "Gracias por valorar este producto.",
+        description: "Gracias por valorar esta tienda.",
         color: "success",
         duration: 5000,
       });
@@ -266,6 +267,36 @@ export default function ProductDetailPage() {
       setMaxPrice(max);
     }
   }, [productsListByStore]);
+
+  // Filtrado de reseñas por rating
+  const filteredReviews =
+    ratingFilter === null
+      ? storeReviews
+      : storeReviews.filter((review) => review.rating === ratingFilter);
+
+  // Animación de las reseñas al filtrar por rating
+  const reviewVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
 
   return (
     <>
@@ -375,7 +406,7 @@ export default function ProductDetailPage() {
           </div>
           {(() => {
             const sectionsOrder = Array.isArray(
-              storeAppearance?.appearance?.sectionsOrder
+              storeAppearance?.appearance?.sectionsOrder,
             )
               ? storeAppearance.appearance.sectionsOrder
               : ["featured", "offers"];
@@ -672,14 +703,17 @@ export default function ProductDetailPage() {
                         className="flex flex-row justify-start items-end gap-3"
                       >
                         <Rating initialValue={5 - index} readonly size="lg" />
-                        <span className="text-sm text-gray-600">
+                        <button
+                          onClick={() => setRatingFilter(5 - index)}
+                          className="text-sm text-gray-600 underline hover:text-primary cursor-pointer duration-300 transition"
+                        >
                           {
                             storeReviews.filter(
-                              (review) => review.rating === 5 - index
+                              (review) => review.rating === 5 - index,
                             ).length
                           }{" "}
                           reseñas
-                        </span>
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -735,28 +769,68 @@ export default function ProductDetailPage() {
 
               <div>
                 <div className="flex flex-col p-3">
-                  {storeReviews.map((review) => (
-                    <div key={review.id} className="pt-8">
-                      <div className="flex flex-col gap-2">
-                        <Rating
-                          initialValue={review.rating}
-                          readonly
-                          size="lg"
-                        />
-                        {review.userId && (
-                          <p className="text-gray-600">
-                            <span className="font-bold">
-                              {review.userId.firstName} {review.userId.lastName}
+                  <AnimatePresence mode="popLayout">
+                    {filteredReviews.map((review) => (
+                      <motion.div
+                        key={review._id}
+                        variants={reviewVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        layout
+                        className="pt-0"
+                      >
+                        <div key={review._id} className="pt-8">
+                          <div className="flex flex-col gap-2">
+                            <Rating
+                              initialValue={review.rating}
+                              readonly
+                              size="lg"
+                            />
+                            {review.userId && (
+                              <p className="text-gray-600">
+                                <span className="font-bold">
+                                  {review.userId.firstName}{" "}
+                                  {review.userId.lastName}
+                                </span>
+                                {" - "}
+                                {format(
+                                  parseISO(review.createdAt),
+                                  "dd-MM-yyyy",
+                                )}
+                              </p>
+                            )}
+                            <span className="text-gray-600">
+                              {review.comment}
                             </span>
-                            {" - "}
-                            {format(parseISO(review.createdAt), "dd-MM-yyyy")}
-                          </p>
-                        )}
-                        <span className="text-gray-600">{review.comment}</span>
-                      </div>
-                    </div>
-                  ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
+
+                <AnimatePresence mode="wait">
+                  {ratingFilter !== null && (
+                    <motion.div
+                      key={ratingFilter}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                      className="mt-4 text-sm text-gray-600"
+                    >
+                      Mostrando reseñas de{" "}
+                      <strong>{ratingFilter} estrellas</strong>
+                      <button
+                        onClick={() => setRatingFilter(null)}
+                        className="ml-2 underline hover:text-primary"
+                      >
+                        Quitar filtro
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.section>
