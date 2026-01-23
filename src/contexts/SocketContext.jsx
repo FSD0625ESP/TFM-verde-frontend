@@ -304,6 +304,7 @@ export const SocketProvider = ({ children }) => {
   const startOrderShipping = useCallback(
     (orderId) => {
       if (socket && isConnected && orderId) {
+        console.log("Emitting start_order_shipping for orderId:", orderId);
         socket.emit("start_order_shipping", { orderId });
       }
     },

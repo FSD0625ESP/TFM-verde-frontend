@@ -37,6 +37,7 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     if (!id) return;
     if (!isConnected) return;
+    console.log("Joining order room:", id);
     joinOrder(id);
   }, [id, isConnected, joinOrder]);
 
