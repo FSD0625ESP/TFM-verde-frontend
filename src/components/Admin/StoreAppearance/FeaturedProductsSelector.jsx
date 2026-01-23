@@ -123,7 +123,7 @@ export default function FeaturedProductsSelector() {
                                                 <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                                                     {product.images?.[0] && (
                                                         <img
-                                                            src={product.images[0]}
+                                                            src={product.images[0]?.url}
                                                             alt={product.title}
                                                             className="w-full h-full object-cover"
                                                         />
