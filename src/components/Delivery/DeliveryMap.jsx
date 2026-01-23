@@ -329,7 +329,7 @@ export default function DeliveryMap({ orderId, className = "" }) {
             <div className={`w-full bg-white rounded-2xl shadow-md p-6 ${className}`}>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Seguimiento del reparto</h3>
                 <p className="text-sm text-gray-600">
-                    Falta configurar <strong>VITE_MAPBOX_ACCESS_TOKEN</strong> en el frontend.
+                    Falta configurar <strong>Mapbox settings</strong> en el frontend.
                 </p>
             </div>
         );
