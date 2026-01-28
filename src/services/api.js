@@ -5,9 +5,29 @@ const api = axios.create({
   withCredentials: true, // Habilita el envío de cookies
 });
 
+// Interceptor para añadir token desde localStorage si existe (fallback para navegación privada)
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 const loginUser = async (email, password) => {
   const response = await api.post("/users/login", { email, password });
   localStorage.setItem("user", JSON.stringify(response.data.user));
+  
+  // Si el backend envía token en el body, guardarlo (fallback para navegación privada)
+  if (response.data.token) {
+    localStorage.setItem("authToken", response.data.token);
+  }
+  
   return response.data;
 };
 
@@ -26,6 +46,12 @@ const registerUser = async (
     role,
   });
   localStorage.setItem("user", JSON.stringify(response.data.user));
+  
+  // Si el backend envía token en el body, guardarlo
+  if (response.data.token) {
+    localStorage.setItem("authToken", response.data.token);
+  }
+  
   return response.data;
 };
 
@@ -36,6 +62,8 @@ const getUser = async () => {
 
 const logoutUser = async () => {
   const response = await api.patch("/users/logout");
+  // Limpiar token de localStorage
+  localStorage.removeItem("authToken");
   return response.data;
 };
 
@@ -71,6 +99,12 @@ const updateStoreById = async (storeId, userId, storeData) => {
 const loginWithGoogle = async (idToken) => {
   const response = await api.post("/users/google", { idToken });
   localStorage.setItem("user", JSON.stringify(response.data.user));
+  
+  // Si el backend envía token en el body, guardarlo
+  if (response.data.token) {
+    localStorage.setItem("authToken", response.data.token);
+  }
+  
   return response.data;
 };
 

@@ -86,11 +86,20 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         localStorage.removeItem("user");
         localStorage.removeItem("sessionId");
-        window.location.href = "/";
+        localStorage.removeItem("authToken");
+        // Dar tiempo al navegador para procesar la eliminación de la cookie
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 300);
       })
       .catch((error) => {
         console.error("Logout failed:", error);
-        throw error;
+        // Incluso si el logout falla en el backend, limpiar el estado local
+        setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("sessionId");
+        localStorage.removeItem("authToken");
+        window.location.href = "/";
       });
   };
 
