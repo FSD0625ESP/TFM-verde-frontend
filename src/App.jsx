@@ -26,6 +26,7 @@ import Empleo from "./pages/Colabora/Empleo.jsx";
 import AbrirTienda from "./pages/Vendedores/AbrirTienda.jsx";
 import VentaParticulares from "./pages/Vendedores/VentaParticulares.jsx";
 import VentaProfesionales from "./pages/Vendedores/VentaProfesionales.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 import ResultadosPage from "./pages/ResultsPage.jsx";
 import CartPage from "./pages/CartPage.jsx";
 import Profile from "./pages/Profile";
@@ -186,6 +187,7 @@ function App() {
             <Route path="/resultados" element={<ResultadosPage />} />
 
             {/* Static pages */}
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/contact" element={<Contacto />} />
             <Route path="/quienes-somos" element={<QuienesSomos />} />
             <Route path="/donaciones" element={<Donaciones />} />

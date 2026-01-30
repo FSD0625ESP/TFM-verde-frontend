@@ -24,6 +24,9 @@ export default function Footer() {
           <div>
             <p className="font-bold mb-2 text-black">Conócenos</p>
             <Spacer y={0.3} />
+            <Link to="/landing" className="block hover:text-gray-200">
+              Descubre Meraki
+            </Link>
             <Link to="/quienes-somos" className="block hover:text-gray-200">
               ¿Quiénes somos?
             </Link>
