@@ -65,6 +65,15 @@ export const SocketProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    // Habilitar debug de Socket.IO si la variable de entorno está activa
+    const enableDebug = import.meta.env.VITE_SOCKET_DEBUG === 'true';
+    if (enableDebug) {
+      localStorage.setItem('debug', 'socket.io-client:*');
+      console.log('🐛 Socket.IO debug enabled');
+    } else {
+      localStorage.removeItem('debug');
+    }
+
     // Crear conexión de socket - Las cookies se envían automáticamente con withCredentials
     const newSocket = io(
       import.meta.env.VITE_API_URL || "http://localhost:3000",

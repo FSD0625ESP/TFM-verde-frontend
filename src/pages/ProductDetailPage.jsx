@@ -354,24 +354,22 @@ export default function ProductDetailPage() {
                           : "warning"
                         : "danger"
                     }
-                    className={`${
-                      product.stock > 4 ? "bg-white" : "text-white"
-                    }`}
+                    className={`${product.stock > 4 ? "bg-white" : "text-white"
+                      }`}
                   >
                     {product.stock > 0
-                      ? ` ${
-                          product.stock > 4
-                            ? `${product.stock} unidades`
-                            : `solo ${product.stock} unidades`
-                        }`
+                      ? ` ${product.stock > 4
+                        ? `${product.stock} unidades`
+                        : `solo ${product.stock} unidades`
+                      }`
                       : "Agotado"}
                   </Chip>
                 </div>
                 <div className="flex flex-row items-center gap-2 py-2">
-                  <AddToCartButton productId={product._id}>
+                  {product.stock > 0 ? (<AddToCartButton productId={product._id}>
                     {" "}
                     <ShoppingBag className="mr-2" /> Comprar{" "}
-                  </AddToCartButton>
+                  </AddToCartButton>) : (null)}
                 </div>
                 <div className="flex flex-row items-center gap-2 py-2">
                   {viewersCount > 0 && (
