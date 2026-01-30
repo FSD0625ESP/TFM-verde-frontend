@@ -30,6 +30,7 @@ import {
   Search,
   User,
   LayoutDashboard,
+  PackageCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Buscador from "../Buscador/Buscador";
@@ -322,8 +323,8 @@ export default function App() {
                 to={item.href}
                 onPress={() => setIsMenuOpen(false)}
                 className={`w-full flex items-center gap-3 py-2 transition-colors relative ${location.pathname === item.href
-                    ? "text-primary-500 font-bold"
-                    : "text-foreground"
+                  ? "text-primary-500 font-bold"
+                  : "text-foreground"
                   }`}
               >
                 {item.icon && <item.icon size={20} />}
@@ -348,6 +349,32 @@ export default function App() {
           <>
             <NavbarMenuItem className="pt-2">
               <div className="w-full h-px bg-gray-200"></div>
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <Button
+                fullWidth
+                color="primary"
+                onPress={() => {
+                  navigate("/profile");
+                }}
+                variant="flat"
+              >
+                <UserPlus size={22} className="mr-2" />
+                Mi perfil
+              </Button>
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <Button
+                fullWidth
+                color="secondary"
+                onPress={() => {
+                  navigate("/orders");
+                }}
+                variant="flat"
+              >
+                <PackageCheck size={22} className="mr-2" />
+                Mis pedidos
+              </Button>
             </NavbarMenuItem>
             <NavbarMenuItem>
               <Button

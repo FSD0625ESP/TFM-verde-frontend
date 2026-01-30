@@ -117,7 +117,7 @@ export default function OrderDetailsPage() {
   return (
     <div className=" py-12 px-4">
       <div className="container mx-auto bg-white rounded-2xl shadow p-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold">
               Pedido #{order._id?.slice(-8)}
@@ -126,7 +126,7 @@ export default function OrderDetailsPage() {
               Creado: {new Date(order.createdAt).toLocaleString()}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-col sm:flex-row mt-4 md:mt-0">
             <Chip
               startContent={<StatusIcon size={14} />}
               variant="flat"

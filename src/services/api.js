@@ -22,12 +22,12 @@ api.interceptors.request.use(
 const loginUser = async (email, password) => {
   const response = await api.post("/users/login", { email, password });
   localStorage.setItem("user", JSON.stringify(response.data.user));
-  
+
   // Si el backend envía token en el body, guardarlo (fallback para navegación privada)
   if (response.data.token) {
     localStorage.setItem("authToken", response.data.token);
   }
-  
+
   return response.data;
 };
 
@@ -46,12 +46,12 @@ const registerUser = async (
     role,
   });
   localStorage.setItem("user", JSON.stringify(response.data.user));
-  
+
   // Si el backend envía token en el body, guardarlo
   if (response.data.token) {
     localStorage.setItem("authToken", response.data.token);
   }
-  
+
   return response.data;
 };
 
@@ -99,12 +99,12 @@ const updateStoreById = async (storeId, userId, storeData) => {
 const loginWithGoogle = async (idToken) => {
   const response = await api.post("/users/google", { idToken });
   localStorage.setItem("user", JSON.stringify(response.data.user));
-  
+
   // Si el backend envía token en el body, guardarlo
   if (response.data.token) {
     localStorage.setItem("authToken", response.data.token);
   }
-  
+
   return response.data;
 };
 

@@ -38,15 +38,9 @@ export default function StoreAdminPage() {
 
   // abrir automáticamente secciones según URL
   useEffect(() => {
-    if (isActiveStarts("/store-admin/tienda")) setOpenSection("gestion");
     if (isActiveStarts("/store-admin/productos")) {
-      setOpenSection("gestion");
       setOpenSubSection("productos");
     }
-    if (isActiveStarts("/store-admin/pedidos")) setOpenSection("gestion");
-
-    if (isActiveStarts("/store-admin/apariencia")) setOpenSection("config");
-    if (isActiveStarts("/store-admin/cuenta")) setOpenSection("config");
   }, [currentPath]);
 
   const fetchAllCategories = async () => {
@@ -101,12 +95,11 @@ export default function StoreAdminPage() {
     <div className="w-full min-h-screen flex abasis-1 bg-gray-100">
       {/* SIDEBAR */}
       <aside
-        className={`bg-secondary/80 shadow-lg transition-[width] duration-300 flex flex-col overflow-x-hidden ${
-          collapsed ? "w-16" : "w-64"
-        }`}
+        className={`bg-secondary/80 shadow-lg transition-[width] duration-300 flex flex-col overflow-x-hidden ${collapsed ? "w-16" : "w-64"
+          }`}
       >
         {/* Header del sidebar */}
-        <div className="flex items-center justify-between p-3 border-b">
+        <div className="flex items-center justify-between p-3 border-b border-white/30 shadow-md mb-3">
           {!collapsed && (
             <>
               <Image
@@ -115,7 +108,7 @@ export default function StoreAdminPage() {
                 className="h-8 w-auto border-2 border-white rounded-md"
                 src={sellerStore?.logo}
               />
-              <h1 className="text-xl font-semibold">Dashboard</h1>
+              <h1 className="text-xl font-semibold text-white">Dashboard</h1>
             </>
           )}
 
@@ -123,6 +116,7 @@ export default function StoreAdminPage() {
             isIconOnly
             radius="full"
             variant="light"
+            className="text-white"
             onPress={() => setCollapsed(!collapsed)}
           >
             {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -136,244 +130,152 @@ export default function StoreAdminPage() {
             as={Link}
             to="/store-admin/dashboard"
             variant="light"
-            className={`w-full justify-start mb-2 ${
-              isActive("/store-admin/dashboard") || isActive("/store-admin/")
-                ? "bg-white/40 font-semibold text-secondary"
-                : ""
-            }`}
+            className={`w-full justify-start mb-2 ${isActive("/store-admin/dashboard") || isActive("/store-admin/")
+              ? "bg-white/40 font-semibold text-secondary"
+              : "text-white"
+              }`}
           >
             <BarChart3
               size={18}
-              className={`${
-                isActive("/store-admin/dashboard") || isActive("/store-admin/")
-                  ? "text-secondary"
-                  : "text-black"
-              }`}
+              className={`${isActive("/store-admin/dashboard") || isActive("/store-admin/")
+                ? "text-secondary"
+                : "text-white"
+                }`}
             />
             {!collapsed && "Dashboard"}
           </Button>
+          <Button
+            as={Link}
+            to="/store-admin/apariencia"
+            variant="light"
+            className={`w-full justify-start mb-2 ${isActive("/store-admin/apariencia")
+              ? "bg-white/40 font-semibold text-secondary"
+              : "text-white"
+              }`}
+          >
+            <Brush
+              size={18}
+              className={`${isActive("/store-admin/apariencia")
+                ? "text-secondary"
+                : "text-white"
+                }`}
+            />
+            {!collapsed && "Apariencia"}
+          </Button>
 
-          {/* --- Sección Gestión --- */}
-          <div>
-            <Button
-              className="w-full justify-between"
-              variant="light"
-              onPress={() =>
-                setOpenSection(openSection === "gestion" ? null : "gestion")
-              }
-            >
-              <span className="flex items-center gap-2">
-                {!collapsed && "Gestión"}
-              </span>
+          {/* --- Tienda --- */}
+          <Button
+            as={Link}
+            to="/store-admin/tienda"
+            variant="light"
+            className={`w-full justify-start mb-2 ${isActive("/store-admin/tienda")
+              ? "bg-white/40 font-semibold text-secondary"
+              : "text-white"
+              }`}
+          >
+            <Store
+              size={18}
+              className={`${isActive("/store-admin/tienda")
+                ? "text-secondary"
+                : "text-white"
+                }`}
+            />
+            {!collapsed && "Tienda"}
+          </Button>
 
-              {!collapsed && (
-                <ChevronDown
-                  className={`transition-transform ${
-                    openSection === "gestion" ? "rotate-180" : ""
+          {/* --- Productos --- */}
+          <Button
+            variant="light"
+            className={`w-full justify-start mb-2 ${isActiveStarts("/store-admin/productos")
+              ? "bg-white/40 font-semibold text-secondary"
+              : "text-white"
+              }`}
+            onPress={() =>
+              setOpenSubSection(
+                openSubSection === "productos" ? null : "productos"
+              )
+            }
+          >
+            <ShoppingBag
+              size={18}
+              className={`${isActiveStarts("/store-admin/productos")
+                ? "text-secondary"
+                : "text-white"
+                }`}
+            />
+            {!collapsed && "Productos"}
+            {!collapsed && (
+              <ChevronDown
+                className={`ml-auto transition-transform ${openSubSection === "productos" ? "rotate-180" : ""
                   }`}
-                />
-              )}
-            </Button>
-
-            {/* Contenido de la sección Gestión */}
-            {!collapsed && openSection === "gestion" && (
-              <div className="pl-6 py-2 flex flex-col gap-2">
-                {/* Usuarios */}
-                <Button
-                  as={Link}
-                  to="/store-admin/tienda"
-                  variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/tienda")
-                      ? "bg-white/40 font-semibold text-secondary"
-                      : ""
-                  }`}
-                >
-                  <Store
-                    size={18}
-                    className={`${
-                      isActive("/store-admin/tienda")
-                        ? "text-secondary"
-                        : "text-black"
-                    }`}
-                  />
-                  Tienda
-                </Button>
-
-                {/* Productos */}
-                <Button
-                  variant="light"
-                  className={`w-full justify-between ${
-                    isActiveStarts("/store-admin/productos")
-                      ? "bg-white/40 font-semibold text-secondary"
-                      : ""
-                  }`}
-                  onPress={() =>
-                    setOpenSubSection(
-                      openSubSection === "productos" ? null : "productos"
-                    )
-                  }
-                >
-                  <span className="flex items-center gap-2">
-                    <ShoppingBag
-                      size={18}
-                      className={`${
-                        isActiveStarts("/store-admin/productos")
-                          ? "text-secondary"
-                          : "text-black"
-                      }`}
-                    />
-                    {!collapsed && "Productos"}
-                  </span>
-
-                  {!collapsed && (
-                    <ChevronDown
-                      className={`transition-transform ${
-                        openSubSection === "productos" ? "rotate-180" : ""
-                      }`}
-                    />
-                  )}
-                </Button>
-
-                {/* Submenú Productos */}
-                {!collapsed && openSubSection === "productos" && (
-                  <div className="pl-6 py-2 flex flex-col gap-2">
-                    <Button
-                      as={Link}
-                      to="/store-admin/productos/todos"
-                      variant="light"
-                      className={`w-full justify-start ${
-                        isActive("/store-admin/productos/todos")
-                          ? "text-black/70 bg-primary/20 font-semibold"
-                          : ""
-                      }`}
-                    >
-                      <PackageSearch
-                        size={18}
-                        className={`${
-                          isActive("/store-admin/productos/todos")
-                            ? "text-black/70"
-                            : "text-black"
-                        }`}
-                      />
-                      Ver todos
-                    </Button>
-
-                    <Button
-                      as={Link}
-                      to="/store-admin/productos/nuevo"
-                      variant="light"
-                      className={`w-full justify-start ${
-                        isActive("/store-admin/productos/nuevo")
-                          ? "text-black/70 bg-primary/20 font-semibold"
-                          : ""
-                      }`}
-                    >
-                      <SquarePlus
-                        size={18}
-                        className={`${
-                          isActive("/store-admin/productos/nuevo")
-                            ? "text-black/70"
-                            : "text-black"
-                        }`}
-                      />
-                      Añadir producto
-                    </Button>
-                  </div>
-                )}
-
-                {/* Pedidos */}
-                <Button
-                  as={Link}
-                  to="/store-admin/pedidos"
-                  variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/pedidos")
-                      ? "bg-white/40 font-semibold text-secondary"
-                      : ""
-                  }`}
-                >
-                  <ClipboardList
-                    size={18}
-                    className={`${
-                      isActive("/store-admin/pedidos")
-                        ? "text-secondary"
-                        : "text-black"
-                    }`}
-                  />
-                  Pedidos
-                </Button>
-              </div>
+              />
             )}
-          </div>
+          </Button>
 
-          {/* --- Sección Configuración --- */}
-          <div>
-            <Button
-              className="w-full justify-between mt-4"
-              variant="light"
-              onPress={() =>
-                setOpenSection(openSection === "config" ? null : "config")
-              }
-            >
-              <span className="flex items-center gap-2">
-                {!collapsed && "Configuración"}
-              </span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`transition-transform ${
-                    openSection === "config" ? "rotate-180" : ""
+          {/* Submenú Productos */}
+          {!collapsed && openSubSection === "productos" && (
+            <div className="pl-6 pb-2 flex flex-col gap-2">
+              <Button
+                as={Link}
+                to="/store-admin/productos/todos"
+                variant="light"
+                className={`w-full justify-start ${isActive("/store-admin/productos/todos")
+                  ? "text-white/70 bg-primary/20 font-semibold"
+                  : "text-white"
                   }`}
+              >
+                <PackageSearch
+                  size={18}
+                  className={`${isActive("/store-admin/productos/todos")
+                    ? "text-white/70"
+                    : "text-white"
+                    }`}
                 />
-              )}
-            </Button>
+                Ver todos
+              </Button>
 
-            {!collapsed && openSection === "config" && (
-              <div className="pl-6 py-2 flex flex-col gap-2">
-                <Button
-                  as={Link}
-                  to="/store-admin/apariencia"
-                  variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/apariencia")
-                      ? "bg-white/40 font-semibold text-secondary"
-                      : ""
+              <Button
+                as={Link}
+                to="/store-admin/productos/nuevo"
+                variant="light"
+                className={`w-full justify-start ${isActive("/store-admin/productos/nuevo")
+                  ? "text-white/70 bg-primary/20 font-semibold"
+                  : "text-white"
                   }`}
-                >
-                  <Brush
-                    size={18}
-                    className={`${
-                      isActive("/store-admin/apariencia")
-                        ? "text-secondary"
-                        : "text-black"
+              >
+                <SquarePlus
+                  size={18}
+                  className={`${isActive("/store-admin/productos/nuevo")
+                    ? "text-white/70"
+                    : "text-white"
                     }`}
-                  />
-                  Apariencia
-                </Button>
+                />
+                Añadir producto
+              </Button>
+            </div>
+          )}
 
-                <Button
-                  as={Link}
-                  to="/store-admin/cuenta"
-                  variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/cuenta")
-                      ? "bg-white/40 font-semibold text-secondary"
-                      : ""
-                  }`}
-                >
-                  <UserRoundCog
-                    size={18}
-                    className={`${
-                      isActive("/store-admin/cuenta")
-                        ? "text-secondary"
-                        : "text-black"
-                    }`}
-                  />
-                  Cuenta
-                </Button>
-              </div>
-            )}
-          </div>
+          {/* --- Pedidos --- */}
+          <Button
+            as={Link}
+            to="/store-admin/pedidos"
+            variant="light"
+            className={`w-full justify-start ${isActive("/store-admin/pedidos")
+              ? "bg-white/40 font-semibold text-secondary"
+              : "text-white"
+              }`}
+          >
+            <ClipboardList
+              size={18}
+              className={`${isActive("/store-admin/pedidos")
+                ? "text-secondary"
+                : "text-white"
+                }`}
+            />
+            {!collapsed && "Pedidos"}
+          </Button>
+
+
         </nav>
       </aside>
 

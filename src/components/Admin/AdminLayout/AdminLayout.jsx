@@ -100,9 +100,8 @@ export default function StoreLayout() {
     <div className="w-full min-h-screen flex abasis-1 bg-gray-100">
       {/* SIDEBAR */}
       <aside
-        className={`bg-secondary/80 shadow-lg transition-[width] duration-300 flex flex-col overflow-x-hidden ${
-          collapsed ? "w-16" : "w-64"
-        }`}
+        className={`bg-secondary/80 shadow-lg transition-[width] duration-300 flex flex-col overflow-x-hidden ${collapsed ? "w-16" : "w-64"
+          }`}
       >
         {/* Header del sidebar */}
         <div className="flex items-center justify-between p-3 border-b">
@@ -145,9 +144,8 @@ export default function StoreLayout() {
 
               {!collapsed && (
                 <ChevronDown
-                  className={`transition-transform ${
-                    openSection === "gestion" ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${openSection === "gestion" ? "rotate-180" : ""
+                    }`}
                 />
               )}
             </Button>
@@ -160,19 +158,17 @@ export default function StoreLayout() {
                   as={Link}
                   to="/store-admin/tienda"
                   variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/tienda")
+                  className={`w-full justify-start ${isActive("/store-admin/tienda")
                       ? "bg-white/40 font-semibold text-secondary"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Store
                     size={18}
-                    className={`${
-                      isActive("/store-admin/tienda")
+                    className={`${isActive("/store-admin/tienda")
                         ? "text-secondary"
                         : "text-black"
-                    }`}
+                      }`}
                   />
                   Tienda
                 </Button>
@@ -180,11 +176,10 @@ export default function StoreLayout() {
                 {/* Productos */}
                 <Button
                   variant="light"
-                  className={`w-full justify-between ${
-                    isActiveStarts("/store-admin/productos")
+                  className={`w-full justify-between ${isActiveStarts("/store-admin/productos")
                       ? "bg-white/40 font-semibold text-secondary"
                       : ""
-                  }`}
+                    }`}
                   onPress={() =>
                     setOpenSubSection(
                       openSubSection === "productos" ? null : "productos"
@@ -194,20 +189,18 @@ export default function StoreLayout() {
                   <span className="flex items-center gap-2">
                     <ShoppingBag
                       size={18}
-                      className={`${
-                        isActiveStarts("/store-admin/productos")
+                      className={`${isActiveStarts("/store-admin/productos")
                           ? "text-secondary"
                           : "text-black"
-                      }`}
+                        }`}
                     />
                     {!collapsed && "Productos"}
                   </span>
 
                   {!collapsed && (
                     <ChevronDown
-                      className={`transition-transform ${
-                        openSubSection === "productos" ? "rotate-180" : ""
-                      }`}
+                      className={`transition-transform ${openSubSection === "productos" ? "rotate-180" : ""
+                        }`}
                     />
                   )}
                 </Button>
@@ -219,19 +212,17 @@ export default function StoreLayout() {
                       as={Link}
                       to="/store-admin/productos/todos"
                       variant="light"
-                      className={`w-full justify-start ${
-                        isActive("/store-admin/productos/todos")
+                      className={`w-full justify-start ${isActive("/store-admin/productos/todos")
                           ? "text-black/70 bg-primary/20 font-semibold"
                           : ""
-                      }`}
+                        }`}
                     >
                       <PackageSearch
                         size={18}
-                        className={`${
-                          isActive("/store-admin/productos/todos")
+                        className={`${isActive("/store-admin/productos/todos")
                             ? "text-black/70"
                             : "text-black"
-                        }`}
+                          }`}
                       />
                       Ver todos
                     </Button>
@@ -240,19 +231,17 @@ export default function StoreLayout() {
                       as={Link}
                       to="/store-admin/productos/nuevo"
                       variant="light"
-                      className={`w-full justify-start ${
-                        isActive("/store-admin/productos/nuevo")
+                      className={`w-full justify-start ${isActive("/store-admin/productos/nuevo")
                           ? "text-black/70 bg-primary/20 font-semibold"
                           : ""
-                      }`}
+                        }`}
                     >
                       <SquarePlus
                         size={18}
-                        className={`${
-                          isActive("/store-admin/productos/nuevo")
+                        className={`${isActive("/store-admin/productos/nuevo")
                             ? "text-black/70"
                             : "text-black"
-                        }`}
+                          }`}
                       />
                       Añadir producto
                     </Button>
@@ -264,19 +253,17 @@ export default function StoreLayout() {
                   as={Link}
                   to="/store-admin/pedidos"
                   variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/pedidos")
+                  className={`w-full justify-start ${isActive("/store-admin/pedidos")
                       ? "bg-white/40 font-semibold text-secondary"
                       : ""
-                  }`}
+                    }`}
                 >
                   <ClipboardList
                     size={18}
-                    className={`${
-                      isActive("/store-admin/pedidos")
+                    className={`${isActive("/store-admin/pedidos")
                         ? "text-secondary"
                         : "text-black"
-                    }`}
+                      }`}
                   />
                   Pedidos
                 </Button>
@@ -298,9 +285,8 @@ export default function StoreLayout() {
               </span>
               {!collapsed && (
                 <ChevronDown
-                  className={`transition-transform ${
-                    openSection === "config" ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform ${openSection === "config" ? "rotate-180" : ""
+                    }`}
                 />
               )}
             </Button>
@@ -311,19 +297,17 @@ export default function StoreLayout() {
                   as={Link}
                   to="/store-admin/apariencia"
                   variant="light"
-                  className={`w-full justify-start ${
-                    isActive("/store-admin/apariencia")
+                  className={`w-full justify-start ${isActive("/store-admin/apariencia")
                       ? "bg-white/40 font-semibold text-secondary"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Brush
                     size={18}
-                    className={`${
-                      isActive("/store-admin/apariencia")
+                    className={`${isActive("/store-admin/apariencia")
                         ? "text-secondary"
                         : "text-black"
-                    }`}
+                      }`}
                   />
                   Apariencia
                 </Button>
